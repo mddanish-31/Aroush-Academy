@@ -7,7 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:attendance": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-attendance.ts",
+    "test:timetable": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-timetable.ts",
+    "test:online-classes": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-online-classes.ts",
+    "test:examinations": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-examinations.ts",
+    "test:cross-portal": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-cross-portal.ts"
   },
   "dependencies": {
     "next": "16.4.0",
