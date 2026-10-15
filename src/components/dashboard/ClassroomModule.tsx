@@ -1,22 +1,30 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useRef } from "react";
-import {
+import React, { useState, useMemo, useEffect } from "react";
+import type {
   UserRole,
   ClassroomSession,
-  ClassroomChatMessage,
-  ClassroomParticipant,
+  MeetingProvider,
+  ClassroomSessionStatus,
 } from "@/types";
-import {
-  SAMPLE_CLASSROOM_SESSIONS,
-  INITIAL_CHAT_MESSAGES,
-  getSessionParticipants,
-} from "@/data/classroomData";
-import { SAMPLE_ENROLLMENTS, SAMPLE_STUDENTS, SAMPLE_TEACHERS } from "@/data/enrollmentFeeData";
+import { SAMPLE_CLASSROOM_SESSIONS } from "@/data/classroomData";
+import { SAMPLE_TEACHERS, SAMPLE_STUDENTS, SAMPLE_ENROLLMENTS } from "@/data/enrollmentFeeData";
+import { SAMPLE_BATCHES } from "@/data/dashboardModulesData";
+import { DEFAULT_SUBJECTS } from "@/data/academicMasterData";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useDemoStorage, DEMO_STORAGE_KEYS } from "@/lib/demoStorage";
+import { getSubjectTheme } from "@/lib/timetableUtils";
+import {
+  detectMeetingProvider,
+  getProviderLabel,
+  getProviderBadgeStyle,
+  getStudentOnlineClasses,
+  isMeetingJoinable,
+  validateOnlineClassPayload,
+  getTeacherRecentMeetingUrls,
+} from "@/lib/onlineClassUtils";
 
 interface ClassroomModuleProps {
   role: UserRole;
@@ -29,1310 +37,624 @@ export function ClassroomModule({
   currentTeacherId = "tch-azhar",
   currentStudentId = "std-101",
 }: ClassroomModuleProps) {
-  // Session repository in local state (enables starting / ending demo sessions, persisted across roles)
+  // Shared persistent online class schedule dataset across all 4 roles
   const [sessions, setSessions] = useDemoStorage<ClassroomSession[]>(
     DEMO_STORAGE_KEYS.CLASSROOM_SESSIONS,
     SAMPLE_CLASSROOM_SESSIONS
   );
 
-  // Filter states
+  // Dynamic catalogs from demo storage
+  const [faculty] = useDemoStorage(DEMO_STORAGE_KEYS.FACULTY, SAMPLE_TEACHERS);
+  const [batches] = useDemoStorage(DEMO_STORAGE_KEYS.BATCHES, SAMPLE_BATCHES);
+  const [subjects] = useDemoStorage(DEMO_STORAGE_KEYS.ACADEMIC_SUBJECTS, DEFAULT_SUBJECTS);
+  const [enrollments] = useDemoStorage(DEMO_STORAGE_KEYS.ENROLLMENTS, SAMPLE_ENROLLMENTS);
+  const [students] = useDemoStorage(DEMO_STORAGE_KEYS.STUDENTS, SAMPLE_STUDENTS);
+
+  // Active student object (for Student & Parent roles)
+  const currentStudent = useMemo(() => {
+    return students.find((s) => s.id === currentStudentId) || null;
+  }, [students, currentStudentId]);
+
+  // Active teacher object
+  const activeTeacher = useMemo(() => {
+    return faculty.find((t) => t.id === currentTeacherId) || faculty[0];
+  }, [faculty, currentTeacherId]);
+
+  // Teacher-eligible subjects and batches
+  const teacherEligibleSubjects = useMemo(() => {
+    if (role !== "teacher" || !activeTeacher) return subjects.map((s) => s.name);
+    return activeTeacher.assignedSubjects.length > 0
+      ? activeTeacher.assignedSubjects
+      : ["Mathematics"];
+  }, [role, activeTeacher, subjects]);
+
+  const teacherEligibleBatches = useMemo(() => {
+    if (role !== "teacher" || !activeTeacher) return batches;
+    return batches.filter(
+      (b) =>
+        b.teacherId === activeTeacher.id ||
+        activeTeacher.assignedSubjects.some((s) =>
+          b.subject.toLowerCase().includes(s.toLowerCase())
+        ) ||
+        activeTeacher.batches.includes(b.name)
+    );
+  }, [role, activeTeacher, batches]);
+
+  // Filters
+  const [statusTab, setStatusTab] = useState<"all" | "scheduled" | "completed" | "cancelled">("all");
   const [filterSubject, setFilterSubject] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [filterBatch, setFilterBatch] = useState<string>("all");
   const [filterTeacher, setFilterTeacher] = useState<string>("all");
+  const [filterProvider, setFilterProvider] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
-  // Active Live Classroom interface state (null = session listing mode)
-  const [activeLiveSessionId, setActiveLiveSessionId] = useState<string | null>(null);
+  // Notification Banner
+  const [notification, setNotification] = useState<{
+    type: "success" | "error" | "info";
+    message: string;
+  } | null>(null);
 
-  // Live session interactive states
-  const [chatMessages, setChatMessages] = useState<Record<string, ClassroomChatMessage[]>>(INITIAL_CHAT_MESSAGES);
-  const [chatInputText, setChatInputText] = useState<string>("");
-  const [isHandRaised, setIsHandRaised] = useState<boolean>(false);
-  const [isMicMuted, setIsMicMuted] = useState<boolean>(true);
-  const [isVideoEnabled, setIsVideoEnabled] = useState<boolean>(false);
-  const [isScreenSharing, setIsScreenSharing] = useState<boolean>(false);
-  const [sidebarTab, setSidebarTab] = useState<"chat" | "participants" | "notes">("chat");
-  const [elapsedSeconds, setElapsedSeconds] = useState<number>(842); // Demo initial elapsed time ~14 mins
-  const [countdownSeconds, setCountdownSeconds] = useState<number>(7200); // 2 hours countdown demo
+  const showNotification = (message: string, type: "success" | "error" | "info" = "success") => {
+    setNotification({ type, message });
+    setTimeout(() => setNotification(null), 5000);
+  };
 
-  // Whiteboard drawing tools
-  const [activeBoardTool, setActiveBoardTool] = useState<"pen" | "eraser">("pen");
-  const [penColor, setPenColor] = useState<string>("#1D1D1F");
-  const [penWidth, setPenWidth] = useState<number>(3);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const isDrawingRef = useRef<boolean>(false);
+  // Modals
+  const [detailsSession, setDetailsSession] = useState<ClassroomSession | null>(null);
+  const [isFormModalOpen, setIsFormModalOpen] = useState<boolean>(false);
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
 
-  // Session notes editing for teacher
-  const [activeNotesSessionId, setActiveNotesSessionId] = useState<string | null>(null);
-  const [sessionNotesInput, setSessionNotesInput] = useState<string>("");
-  const [actionNotice, setActionNotice] = useState<string | null>(null);
+  // Scheduling Form State
+  const [formTopic, setFormTopic] = useState<string>("");
+  const [formSubject, setFormSubject] = useState<string>("Mathematics");
+  const [formBatch, setFormBatch] = useState<string>("Batch Alpha (Class IX-X)");
+  const [formProvider, setFormProvider] = useState<MeetingProvider>("google-meet");
+  const [formUrl, setFormUrl] = useState<string>("https://meet.google.com/");
+  const [formDate, setFormDate] = useState<string>("2026-10-14");
+  const [formStartTime, setFormStartTime] = useState<string>("16:30");
+  const [formEndTime, setFormEndTime] = useState<string>("18:00");
+  const [formInstructions, setFormInstructions] = useState<string>("");
+  const [formTeacherId, setFormTeacherId] = useState<string>(
+    role === "teacher" ? currentTeacherId : faculty[0]?.id || "tch-azhar"
+  );
+  const [formStatus, setFormStatus] = useState<ClassroomSessionStatus>("scheduled");
+  const [formError, setFormError] = useState<string | null>(null);
 
-  // Roster inspection modal for teacher / admin
-  const [rosterModalSession, setRosterModalSession] = useState<ClassroomSession | null>(null);
-
-  // Details modal for student / parent viewing session instructions
-  const [detailsModalSession, setDetailsModalSession] = useState<ClassroomSession | null>(null);
-
-  // Ticker effect for elapsed session timer and countdown
+  // Close modals on Escape key
   useEffect(() => {
-    const timer = setInterval(() => {
-      setElapsedSeconds((prev) => prev + 1);
-      setCountdownSeconds((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Escape key handler for open modals
-  useEffect(() => {
-    if (!rosterModalSession && !detailsModalSession && !activeNotesSessionId) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setRosterModalSession(null);
-        setDetailsModalSession(null);
-        setActiveNotesSessionId(null);
+        setDetailsSession(null);
+        setIsFormModalOpen(false);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [rosterModalSession, detailsModalSession, activeNotesSessionId]);
+  }, []);
 
-  // Format seconds into HH:MM:SS
-  const formatTimer = (totalSecs: number) => {
-    const hours = Math.floor(totalSecs / 3600);
-    const minutes = Math.floor((totalSecs % 3600) / 60);
-    const seconds = totalSecs % 60;
-    const pad = (n: number) => String(n).padStart(2, "0");
-    if (hours > 0) {
-      return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-    }
-    return `${pad(minutes)}:${pad(seconds)}`;
+  // Recent meeting URLs used by the current teacher for 1-click reuse
+  const recentMeetingUrls = useMemo(() => {
+    const teacherId = role === "teacher" ? currentTeacherId : formTeacherId;
+    return getTeacherRecentMeetingUrls(teacherId, sessions);
+  }, [role, currentTeacherId, formTeacherId, sessions]);
+
+  // Open Create Schedule Modal
+  const openCreateModal = () => {
+    setEditingSessionId(null);
+    setFormTopic("");
+    setFormSubject(teacherEligibleSubjects[0] || "Mathematics");
+    setFormBatch(teacherEligibleBatches[0]?.name || "Batch Alpha (Class IX-X)");
+    setFormProvider("google-meet");
+    setFormUrl("https://meet.google.com/");
+    setFormDate("2026-10-14");
+    setFormStartTime("16:30");
+    setFormEndTime("18:00");
+    setFormInstructions("");
+    setFormTeacherId(role === "teacher" ? currentTeacherId : faculty[0]?.id || "tch-azhar");
+    setFormStatus("scheduled");
+    setFormError(null);
+    setIsFormModalOpen(true);
   };
 
-  // Determine role-scoped sessions
+  // Open Edit Schedule Modal
+  const openEditModal = (session: ClassroomSession) => {
+    setEditingSessionId(session.id);
+    setFormTopic(session.topic);
+    setFormSubject(session.subject);
+    setFormBatch(session.batchName);
+    const resolvedProvider = session.meetingProvider || detectMeetingProvider(session.meetingUrl || "");
+    setFormProvider(resolvedProvider);
+    setFormUrl(session.meetingUrl || session.meetingLinkDemo || "https://meet.google.com/");
+    setFormDate(session.date);
+    // Convert 12hr e.g. "04:30 PM" to 24hr for time inputs if needed
+    setFormStartTime(session.startTime.includes("M") ? "16:30" : session.startTime);
+    setFormEndTime(session.endTime.includes("M") ? "18:00" : session.endTime);
+    const instr = Array.isArray(session.instructions)
+      ? session.instructions.join("\n")
+      : session.instructions || session.notes || "";
+    setFormInstructions(instr);
+    setFormTeacherId(session.teacherId);
+    setFormStatus(session.status);
+    setFormError(null);
+    setDetailsSession(null);
+    setIsFormModalOpen(true);
+  };
+
+  // Save Schedule Handler
+  const handleSaveSchedule = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+
+    // Validate Form Fields
+    const validation = validateOnlineClassPayload({
+      topic: formTopic,
+      subject: formSubject,
+      batch: formBatch,
+      meetingUrl: formUrl,
+      date: formDate,
+      startTime: formStartTime,
+      endTime: formEndTime,
+    });
+
+    if (!validation.isValid) {
+      setFormError(validation.error || "Please check the form inputs.");
+      return;
+    }
+
+    const teacherObj = faculty.find((t) => t.id === formTeacherId);
+    const teacherName = teacherObj ? teacherObj.name : "Faculty";
+    const batchObj = batches.find((b) => b.name === formBatch);
+    const batchId = batchObj?.id || formBatch.toLowerCase().replace(/[^a-z0-9]/g, "-");
+    const classGrade = batchObj?.classGrade || "Class X";
+    const subjectObj = subjects.find((s) => s.name === formSubject);
+    const subjectId = subjectObj?.id || formSubject.toLowerCase().replace(/[^a-z0-9]/g, "-");
+
+    const cleanUrl = formUrl.trim();
+    const finalProvider = formProvider === "other" ? detectMeetingProvider(cleanUrl) : formProvider;
+
+    if (editingSessionId) {
+      // In-place update
+      setSessions((prev) =>
+        prev.map((s) =>
+          s.id === editingSessionId
+            ? {
+                ...s,
+                topic: formTopic.trim(),
+                subject: formSubject,
+                subjectId,
+                batchName: formBatch,
+                batchId,
+                classGrade,
+                teacherId: formTeacherId,
+                teacherName,
+                date: formDate,
+                startTime: formStartTime,
+                endTime: formEndTime,
+                meetingProvider: finalProvider,
+                meetingUrl: cleanUrl,
+                meetingLinkDemo: cleanUrl,
+                instructions: formInstructions.trim(),
+                status: formStatus,
+              }
+            : s
+        )
+      );
+      showNotification(`Updated online class for ${formSubject} (${formBatch}).`);
+    } else {
+      // Create new online class session
+      const newSession: ClassroomSession = {
+        id: `cls-online-${Date.now()}`,
+        topic: formTopic.trim(),
+        subject: formSubject,
+        subjectId,
+        batchName: formBatch,
+        batchId,
+        classGrade,
+        teacherId: formTeacherId,
+        teacherName,
+        date: formDate,
+        startTime: formStartTime,
+        endTime: formEndTime,
+        durationMinutes: 90,
+        meetingProvider: finalProvider,
+        meetingUrl: cleanUrl,
+        meetingLinkDemo: cleanUrl,
+        instructions: formInstructions.trim(),
+        status: "scheduled",
+      };
+      setSessions((prev) => [newSession, ...prev]);
+      showNotification(`Scheduled new online class: ${formTopic.trim()}`);
+    }
+
+    setIsFormModalOpen(false);
+  };
+
+  // Status Action Handlers
+  const handleCancelSession = (session: ClassroomSession) => {
+    setSessions((prev) =>
+      prev.map((s) => (s.id === session.id ? { ...s, status: "cancelled" } : s))
+    );
+    showNotification(`Cancelled online class: ${session.topic}`);
+    if (detailsSession?.id === session.id) {
+      setDetailsSession({ ...detailsSession, status: "cancelled" });
+    }
+  };
+
+  const handleCompleteSession = (session: ClassroomSession) => {
+    setSessions((prev) =>
+      prev.map((s) => (s.id === session.id ? { ...s, status: "completed" } : s))
+    );
+    showNotification(`Marked as completed: ${session.topic}`);
+    if (detailsSession?.id === session.id) {
+      setDetailsSession({ ...detailsSession, status: "completed" });
+    }
+  };
+
+  const handleReactivateSession = (session: ClassroomSession) => {
+    setSessions((prev) =>
+      prev.map((s) => (s.id === session.id ? { ...s, status: "scheduled" } : s))
+    );
+    showNotification(`Reactivated online class: ${session.topic}`);
+    if (detailsSession?.id === session.id) {
+      setDetailsSession({ ...detailsSession, status: "scheduled" });
+    }
+  };
+
+  // Join Meeting Handler (Opens external URL in new browser tab)
+  const handleJoinMeeting = (session: ClassroomSession) => {
+    const url = session.meetingUrl || session.meetingLinkDemo;
+    if (!url || session.status === "cancelled") return;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  // Role-Isolated Base Sessions (Strict Scope Enforcement)
+  const roleBaseSessions = useMemo(() => {
+    if (role === "teacher") {
+      return sessions.filter((s) => s.teacherId === currentTeacherId);
+    }
+    if (role === "student" || role === "parent") {
+      if (!currentStudentId) return [];
+      return getStudentOnlineClasses(currentStudentId, enrollments, sessions);
+    }
+    // Academy Admin sees complete academy schedule
+    return sessions;
+  }, [role, sessions, currentTeacherId, currentStudentId, enrollments]);
+
+  // Filtered Visible Sessions
   const visibleSessions = useMemo(() => {
-    return sessions.filter((session) => {
-      // 1. Role Scoping
-      if (role === "teacher") {
-        if (session.teacherId !== currentTeacherId) return false;
-      } else if (role === "student" || role === "parent") {
-        // Enrolled subjects for Taha Rahman (std-101): Class X Maths & Physics/Chemistry
-        if (session.classGrade !== "Class X") return false;
-      } else if (role === "academy-admin") {
-        // Admin sees all, but can filter by teacher
-        if (filterTeacher !== "all" && session.teacherId !== filterTeacher) return false;
+    return roleBaseSessions.filter((session) => {
+      // Status Tab Filter
+      if (statusTab !== "all") {
+        if (statusTab === "scheduled" && session.status !== "scheduled" && session.status !== "upcoming") {
+          return false;
+        }
+        if (statusTab === "completed" && session.status !== "completed") return false;
+        if (statusTab === "cancelled" && session.status !== "cancelled") return false;
       }
 
-      // 2. Filter Controls
+      // Dropdown Filters
       if (filterSubject !== "all" && session.subject !== filterSubject) return false;
-      if (filterStatus !== "all" && session.status !== filterStatus) return false;
+      if (filterBatch !== "all" && session.batchName !== filterBatch) return false;
+      if (filterTeacher !== "all" && session.teacherId !== filterTeacher) return false;
+      if (filterProvider !== "all") {
+        const prov = session.meetingProvider || detectMeetingProvider(session.meetingUrl || "");
+        if (prov !== filterProvider) return false;
+      }
 
-      // 3. Search Query
+      // Search Query Filter
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesTopic = session.topic.toLowerCase().includes(q);
         const matchesTeacher = session.teacherName.toLowerCase().includes(q);
         const matchesBatch = session.batchName.toLowerCase().includes(q);
         const matchesSubject = session.subject.toLowerCase().includes(q);
-        if (!matchesTopic && !matchesTeacher && !matchesBatch && !matchesSubject) return false;
+        const instrText = Array.isArray(session.instructions)
+          ? session.instructions.join(" ")
+          : session.instructions || "";
+        const matchesInstr = instrText.toLowerCase().includes(q);
+        if (!matchesTopic && !matchesTeacher && !matchesBatch && !matchesSubject && !matchesInstr) {
+          return false;
+        }
       }
 
       return true;
     });
-  }, [sessions, role, currentTeacherId, filterTeacher, filterSubject, filterStatus, searchQuery]);
+  }, [
+    roleBaseSessions,
+    statusTab,
+    filterSubject,
+    filterBatch,
+    filterTeacher,
+    filterProvider,
+    searchQuery,
+  ]);
 
-  // Current active session object if in live room
-  const activeSession = useMemo(() => {
-    if (!activeLiveSessionId) return null;
-    return sessions.find((s) => s.id === activeLiveSessionId) || null;
-  }, [sessions, activeLiveSessionId]);
+  // Metric Counts calculated from actual underlying records
+  const totalClassesCount = roleBaseSessions.length;
+  const scheduledCount = roleBaseSessions.filter(
+    (s) => s.status === "scheduled" || s.status === "upcoming"
+  ).length;
+  const completedCount = roleBaseSessions.filter((s) => s.status === "completed").length;
+  const cancelledCount = roleBaseSessions.filter((s) => s.status === "cancelled").length;
 
-  // Compute participants for active live session
-  const currentParticipants: ClassroomParticipant[] = useMemo(() => {
-    if (!activeSession) return [];
-    const base = getSessionParticipants(activeSession, role, currentStudentId);
-    // Reflect local hand-raise state
-    return base.map((p) => {
-      if ((role === "student" && p.role === "student" && p.name.includes("(You)")) ||
-          (role === "teacher" && p.role === "teacher")) {
-        return {
-          ...p,
-          isHandRaised: isHandRaised,
-          isAudioMuted: isMicMuted,
-          isVideoEnabled: isVideoEnabled,
-        };
-      }
-      return p;
-    });
-  }, [activeSession, role, currentStudentId, isHandRaised, isMicMuted, isVideoEnabled]);
-
-  // Current session's chat messages
-  const currentChat = useMemo(() => {
-    if (!activeLiveSessionId) return [];
-    return chatMessages[activeLiveSessionId] || [];
-  }, [activeLiveSessionId, chatMessages]);
-
-  // Next scheduled class for countdown display
-  const nextScheduledClass = useMemo(() => {
-    const live = visibleSessions.find((s) => s.status === "live-demo");
-    if (live) return { session: live, isLiveNow: true };
-    const upcoming = visibleSessions.find((s) => s.status === "upcoming");
-    if (upcoming) return { session: upcoming, isLiveNow: false };
-    return null;
-  }, [visibleSessions]);
-
-  // Handlers for starting and ending demo sessions
-  const handleStartDemoSession = (sessionId: string) => {
-    setSessions((prev) =>
-      prev.map((s) => (s.id === sessionId ? { ...s, status: "live-demo" } : s))
-    );
-    setActiveLiveSessionId(sessionId);
-    setIsHandRaised(false);
-    setActionNotice("Demo session activated. Local simulation live.");
-    setTimeout(() => setActionNotice(null), 4000);
-  };
-
-  const handleEndDemoSession = (sessionId: string) => {
-    setSessions((prev) =>
-      prev.map((s) => (s.id === sessionId ? { ...s, status: "completed", recordingAvailable: true } : s))
-    );
-    if (activeLiveSessionId === sessionId) {
-      setActiveLiveSessionId(null);
-    }
-    setActionNotice("Demo session marked as completed. Local state updated.");
-    setTimeout(() => setActionNotice(null), 4000);
-  };
-
-  const handleJoinClass = (sessionId: string) => {
-    setActiveLiveSessionId(sessionId);
-    setIsHandRaised(false);
-  };
-
-  const handleLeaveClass = () => {
-    setActiveLiveSessionId(null);
-    setIsHandRaised(false);
-  };
-
-  // Chat message sending
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatInputText.trim() || !activeLiveSessionId) return;
-
-    const senderName =
-      role === "teacher"
-        ? (SAMPLE_TEACHERS.find((t) => t.id === currentTeacherId)?.name || "Faculty")
-        : role === "student"
-        ? (SAMPLE_STUDENTS.find((s) => s.id === currentStudentId)?.name || "Student")
-        : role === "parent"
-        ? "Mrs. Amina Rahman (Parent)"
-        : "Academy Administrator";
-
-    const newMessage: ClassroomChatMessage = {
-      id: `msg-${Date.now()}`,
-      sessionId: activeLiveSessionId,
-      senderName,
-      senderRole: role,
-      senderId: role === "teacher" ? currentTeacherId : currentStudentId,
-      text: chatInputText.trim(),
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    };
-
-    setChatMessages((prev) => ({
-      ...prev,
-      [activeLiveSessionId]: [...(prev[activeLiveSessionId] || []), newMessage],
-    }));
-    setChatInputText("");
-  };
-
-  // Hand raise toggle
-  const handleToggleHandRaise = () => {
-    const nextState = !isHandRaised;
-    setIsHandRaised(nextState);
-
-    if (activeLiveSessionId) {
-      const studentName =
-        role === "student"
-          ? (SAMPLE_STUDENTS.find((s) => s.id === currentStudentId)?.name || "Student")
-          : role === "parent"
-          ? "Parent Observer"
-          : "Participant";
-
-      const systemMessage: ClassroomChatMessage = {
-        id: `sys-${Date.now()}`,
-        sessionId: activeLiveSessionId,
-        senderName: "Classroom System",
-        senderRole: "academy-admin",
-        senderId: "system",
-        text: nextState
-          ? `✋ ${studentName} raised their hand.`
-          : `${studentName} lowered their hand.`,
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        isSystem: true,
-      };
-
-      setChatMessages((prev) => ({
-        ...prev,
-        [activeLiveSessionId]: [...(prev[activeLiveSessionId] || []), systemMessage],
-      }));
-    }
-  };
-
-  // Canvas Drawing Methods (Native HTML5 Canvas)
-  const startDrawing = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    isDrawingRef.current = true;
-  };
-
-  const draw = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!isDrawingRef.current) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    ctx.lineWidth = activeBoardTool === "eraser" ? 18 : penWidth;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.strokeStyle = activeBoardTool === "eraser" ? "#FFFFFF" : penColor;
-
-    ctx.lineTo(x, y);
-    ctx.stroke();
-  };
-
-  const stopDrawing = () => {
-    isDrawingRef.current = false;
-  };
-
-  const handleClearCanvas = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  };
-
-  const handleAddSampleFormula = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    ctx.save();
-    ctx.font = "bold 18px -apple-system, sans-serif";
-    ctx.fillStyle = "#007AFF";
-    ctx.fillText("Discriminant Condition: D = b² - 4ac", 30, 50);
-    ctx.font = "14px -apple-system, sans-serif";
-    ctx.fillStyle = "#1D1D1F";
-    ctx.fillText("• D > 0 ⇒ Two real and distinct roots", 30, 85);
-    ctx.fillText("• D = 0 ⇒ Two real and equal roots", 30, 110);
-    ctx.fillText("• D < 0 ⇒ No real roots (complex conjugate roots)", 30, 135);
-    ctx.restore();
-  };
-
-  // Notes update handler
-  const handleSaveNotes = (sessionId: string) => {
-    setSessions((prev) =>
-      prev.map((s) => (s.id === sessionId ? { ...s, notes: sessionNotesInput } : s))
-    );
-    setActiveNotesSessionId(null);
-    setActionNotice("Session lecture notes updated locally.");
-    setTimeout(() => setActionNotice(null), 3000);
-  };
-
-  // -------------------------------------------------------------
-  // RENDER: LIVE CLASSROOM WORKSPACE (If activeLiveSessionId is set)
-  // -------------------------------------------------------------
-  if (activeSession) {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
-        {/* Top Control & Notification Banner */}
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
+      {/* Notification Banner */}
+      {notification && (
         <div
           style={{
-            backgroundColor: "#1D1D1F",
-            color: "#FFFFFF",
-            borderRadius: "var(--radius-lg)",
-            padding: "var(--space-3) var(--space-4)",
+            padding: "10px 16px",
+            backgroundColor:
+              notification.type === "error"
+                ? "rgba(255, 59, 48, 0.12)"
+                : "rgba(52, 199, 89, 0.12)",
+            color:
+              notification.type === "error"
+                ? "var(--color-danger, #FF3B30)"
+                : "var(--color-success, #34C759)",
+            border: `1px solid ${
+              notification.type === "error"
+                ? "rgba(255, 59, 48, 0.3)"
+                : "rgba(52, 199, 89, 0.3)"
+            }`,
+            borderRadius: "var(--radius-md)",
+            fontSize: "var(--text-xs)",
+            fontWeight: 600,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+          role="status"
+        >
+          <span>{notification.message}</span>
+          <button
+            type="button"
+            onClick={() => setNotification(null)}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              fontWeight: 700,
+              color: "inherit",
+              padding: "0 4px",
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* Header Card */}
+      <Card padding="md">
+        <div
+          style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             flexWrap: "wrap",
             gap: "var(--space-3)",
-            boxShadow: "var(--shadow-md)",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", flexWrap: "wrap" }}>
-            <Badge variant="accent" size="sm">
-              🔴 LIVE DEMO
-            </Badge>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: "var(--text-base)", color: "#FFFFFF" }}>
-                {activeSession.subject}: {activeSession.topic}
-              </div>
-              <div style={{ fontSize: "11px", color: "var(--color-neutral)" }}>
-                {activeSession.batchName} • Faculty: {activeSession.teacherName}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)" }}>
+          <div>
             <div
               style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "var(--text-xs)",
-                backgroundColor: "rgba(255, 255, 255, 0.12)",
-                padding: "4px 10px",
-                borderRadius: "var(--radius-full)",
                 display: "flex",
                 alignItems: "center",
-                gap: "6px",
+                gap: "var(--space-2)",
+                marginBottom: "4px",
               }}
             >
-              <span>⏱️</span>
-              <span>{formatTimer(elapsedSeconds)}</span>
-            </div>
-
-            <div
-              style={{
-                fontSize: "var(--text-xs)",
-                backgroundColor: "rgba(255, 255, 255, 0.12)",
-                padding: "4px 10px",
-                borderRadius: "var(--radius-full)",
-              }}
-            >
-              👥 {currentParticipants.length} Online
-            </div>
-
-            {role === "teacher" && (
-              <button
-                type="button"
-                onClick={() => handleEndDemoSession(activeSession.id)}
-                style={{
-                  backgroundColor: "#FF3B30",
-                  color: "#FFFFFF",
-                  border: "none",
-                  padding: "6px 12px",
-                  borderRadius: "var(--radius-md)",
-                  fontSize: "var(--text-xs)",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                }}
-              >
-                End Demo Session
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={handleLeaveClass}
-              style={{
-                backgroundColor: "rgba(255, 255, 255, 0.2)",
-                color: "#FFFFFF",
-                border: "none",
-                padding: "6px 14px",
-                borderRadius: "var(--radius-md)",
-                fontSize: "var(--text-xs)",
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
-              Leave Session
-            </button>
-          </div>
-        </div>
-
-        {/* Live Interface Split Layout */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 1fr) minmax(320px, 380px)",
-            gap: "var(--space-4)",
-          }}
-          className="live-classroom-grid"
-        >
-          {/* Main Stage: Video Placeholder + Interactive Whiteboard */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
-            {/* Video Canvas Placeholder */}
-            <div
-              style={{
-                backgroundColor: "#0A0A0C",
-                borderRadius: "var(--radius-lg)",
-                overflow: "hidden",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
-                display: "flex",
-                flexDirection: "column",
-                position: "relative",
-                minHeight: "360px",
-              }}
-            >
-              {/* Speaker Video Center Stage */}
-              <div
-                style={{
-                  flex: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "var(--space-8)",
-                  textAlign: "center",
-                  position: "relative",
-                }}
-              >
-                {/* Presenter Avatar with Speaking Animation Indicator */}
-                <div
-                  style={{
-                    width: "80px",
-                    height: "80px",
-                    borderRadius: "var(--radius-full)",
-                    backgroundColor: "var(--color-primary-light)",
-                    border: "3px solid #007AFF",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#FFFFFF",
-                    fontSize: "var(--text-2xl)",
-                    fontWeight: 700,
-                    marginBottom: "var(--space-3)",
-                    boxShadow: "0 0 20px rgba(0, 122, 255, 0.4)",
-                  }}
-                >
-                  {activeSession.teacherName.charAt(0)}
-                </div>
-
-                <div style={{ color: "#FFFFFF", fontWeight: 600, fontSize: "var(--text-base)" }}>
-                  {activeSession.teacherName} (Faculty Host)
-                </div>
-
-                <div style={{ color: "var(--color-neutral)", fontSize: "var(--text-xs)", marginTop: "4px" }}>
-                  Active Audio Feed • 1080p HD Video Channel
-                </div>
-
-                {/* Clear Technical Disclaimer Overlay */}
-                <div
-                  style={{
-                    marginTop: "var(--space-4)",
-                    backgroundColor: "rgba(0, 0, 0, 0.65)",
-                    border: "1px dashed rgba(255, 255, 255, 0.25)",
-                    borderRadius: "var(--radius-md)",
-                    padding: "8px 16px",
-                    maxWidth: "520px",
-                    fontSize: "11px",
-                    color: "#D1D1D6",
-                    lineHeight: "1.4",
-                  }}
-                >
-                  <strong>Simulated Video Stream:</strong> High-definition video camera placeholder. Real-time video/audio broadcast and multi-peer synchronization will utilize production WebRTC / SFU infrastructure.
-                </div>
-              </div>
-
-              {/* In-Call Media Controls Bar */}
-              <div
-                style={{
-                  backgroundColor: "rgba(20, 20, 24, 0.95)",
-                  borderTop: "1px solid rgba(255, 255, 255, 0.1)",
-                  padding: "10px 16px",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  gap: "var(--space-3)",
-                  flexWrap: "wrap",
-                }}
-              >
-                {/* Mic Control */}
-                <button
-                  type="button"
-                  onClick={() => setIsMicMuted(!isMicMuted)}
-                  style={{
-                    backgroundColor: isMicMuted ? "#FF3B30" : "rgba(255, 255, 255, 0.15)",
-                    color: "#FFFFFF",
-                    border: "none",
-                    padding: "8px 14px",
-                    borderRadius: "var(--radius-md)",
-                    fontSize: "var(--text-xs)",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                >
-                  <span>{isMicMuted ? "🔇" : "🎙️"}</span>
-                  <span>{isMicMuted ? "Unmute Mic" : "Mute Mic"}</span>
-                </button>
-
-                {/* Video Control */}
-                <button
-                  type="button"
-                  onClick={() => setIsVideoEnabled(!isVideoEnabled)}
-                  style={{
-                    backgroundColor: isVideoEnabled ? "#34C759" : "rgba(255, 255, 255, 0.15)",
-                    color: "#FFFFFF",
-                    border: "none",
-                    padding: "8px 14px",
-                    borderRadius: "var(--radius-md)",
-                    fontSize: "var(--text-xs)",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                >
-                  <span>{isVideoEnabled ? "📹" : "📷"}</span>
-                  <span>{isVideoEnabled ? "Camera On (Demo)" : "Camera Off"}</span>
-                </button>
-
-                {/* Screen Share Control */}
-                <button
-                  type="button"
-                  onClick={() => setIsScreenSharing(!isScreenSharing)}
-                  style={{
-                    backgroundColor: isScreenSharing ? "#007AFF" : "rgba(255, 255, 255, 0.15)",
-                    color: "#FFFFFF",
-                    border: "none",
-                    padding: "8px 14px",
-                    borderRadius: "var(--radius-md)",
-                    fontSize: "var(--text-xs)",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                >
-                  <span>🖥️</span>
-                  <span>{isScreenSharing ? "Sharing Screen" : "Share Screen"}</span>
-                </button>
-
-                {/* Hand Raise Control */}
-                <button
-                  type="button"
-                  onClick={handleToggleHandRaise}
-                  style={{
-                    backgroundColor: isHandRaised ? "#FF9500" : "rgba(255, 255, 255, 0.15)",
-                    color: "#FFFFFF",
-                    border: "none",
-                    padding: "8px 14px",
-                    borderRadius: "var(--radius-md)",
-                    fontSize: "var(--text-xs)",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                >
-                  <span>✋</span>
-                  <span>{isHandRaised ? "Lower Hand" : "Raise Hand"}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Interactive Whiteboard (Native HTML5 Canvas) */}
-            <Card padding="md">
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "var(--space-3)",
-                  flexWrap: "wrap",
-                  gap: "var(--space-2)",
-                }}
-              >
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
-                    <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700 }}>
-                      Interactive Classroom Whiteboard
-                    </h3>
-                    <Badge variant="neutral" size="sm">
-                      Zero-Dependency Canvas
-                    </Badge>
-                  </div>
-                  <p style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)" }}>
-                    Draw mathematical diagrams, step-by-step equations, or geometry annotations in real time.
-                  </p>
-                </div>
-
-                {/* Whiteboard Controls Toolbar */}
-                <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-                  {/* Tool selector */}
-                  <button
-                    type="button"
-                    onClick={() => setActiveBoardTool("pen")}
-                    style={{
-                      padding: "4px 10px",
-                      borderRadius: "var(--radius-sm)",
-                      fontSize: "var(--text-xs)",
-                      fontWeight: activeBoardTool === "pen" ? 600 : 400,
-                      backgroundColor: activeBoardTool === "pen" ? "var(--color-primary)" : "var(--color-surface-muted)",
-                      color: activeBoardTool === "pen" ? "#FFFFFF" : "var(--color-primary)",
-                      border: "1px solid var(--color-border)",
-                      cursor: "pointer",
-                    }}
-                  >
-                    ✏️ Pen
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveBoardTool("eraser")}
-                    style={{
-                      padding: "4px 10px",
-                      borderRadius: "var(--radius-sm)",
-                      fontSize: "var(--text-xs)",
-                      fontWeight: activeBoardTool === "eraser" ? 600 : 400,
-                      backgroundColor: activeBoardTool === "eraser" ? "var(--color-primary)" : "var(--color-surface-muted)",
-                      color: activeBoardTool === "eraser" ? "#FFFFFF" : "var(--color-primary)",
-                      border: "1px solid var(--color-border)",
-                      cursor: "pointer",
-                    }}
-                  >
-                    🧹 Eraser
-                  </button>
-
-                  {/* Pen Colors */}
-                  <div style={{ display: "flex", gap: "4px", marginLeft: "4px" }}>
-                    {["#1D1D1F", "#007AFF", "#FF3B30", "#34C759"].map((color) => (
-                      <button
-                        key={color}
-                        type="button"
-                        onClick={() => {
-                          setPenColor(color);
-                          setActiveBoardTool("pen");
-                        }}
-                        style={{
-                          width: "20px",
-                          height: "20px",
-                          borderRadius: "var(--radius-full)",
-                          backgroundColor: color,
-                          border: penColor === color && activeBoardTool === "pen" ? "2px solid #000000" : "1px solid rgba(0,0,0,0.15)",
-                          cursor: "pointer",
-                          transform: penColor === color ? "scale(1.15)" : "scale(1)",
-                        }}
-                        title={`Select color ${color}`}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Stroke Size */}
-                  <select
-                    value={penWidth}
-                    onChange={(e) => setPenWidth(Number(e.target.value))}
-                    style={{
-                      fontSize: "var(--text-xs)",
-                      padding: "3px 6px",
-                      borderRadius: "var(--radius-sm)",
-                      border: "1px solid var(--color-border)",
-                      backgroundColor: "var(--color-surface)",
-                      marginLeft: "4px",
-                    }}
-                  >
-                    <option value={2}>Thin (2px)</option>
-                    <option value={4}>Medium (4px)</option>
-                    <option value={8}>Thick (8px)</option>
-                  </select>
-
-                  {/* Preset Formula helper */}
-                  <button
-                    type="button"
-                    onClick={handleAddSampleFormula}
-                    style={{
-                      padding: "4px 8px",
-                      borderRadius: "var(--radius-sm)",
-                      fontSize: "var(--text-xs)",
-                      backgroundColor: "var(--color-accent-subtle)",
-                      color: "var(--color-accent)",
-                      border: "1px solid rgba(0, 122, 255, 0.2)",
-                      cursor: "pointer",
-                      fontWeight: 600,
-                    }}
-                  >
-                    + Formula
-                  </button>
-
-                  {/* Clear button */}
-                  <button
-                    type="button"
-                    onClick={handleClearCanvas}
-                    style={{
-                      padding: "4px 8px",
-                      borderRadius: "var(--radius-sm)",
-                      fontSize: "var(--text-xs)",
-                      backgroundColor: "var(--color-surface-muted)",
-                      color: "var(--color-neutral-dark)",
-                      border: "1px solid var(--color-border)",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Clear Board
-                  </button>
-                </div>
-              </div>
-
-              {/* Canvas Surface */}
-              <div
-                style={{
-                  border: "1px solid var(--color-border)",
-                  borderRadius: "var(--radius-md)",
-                  backgroundColor: "#FFFFFF",
-                  boxShadow: "inset 0 1px 3px rgba(0,0,0,0.05)",
-                  overflow: "hidden",
-                  touchAction: "none",
-                }}
-              >
-                <canvas
-                  ref={canvasRef}
-                  width={800}
-                  height={240}
-                  onPointerDown={startDrawing}
-                  onPointerMove={draw}
-                  onPointerUp={stopDrawing}
-                  onPointerLeave={stopDrawing}
-                  style={{
-                    width: "100%",
-                    height: "240px",
-                    display: "block",
-                    cursor: activeBoardTool === "eraser" ? "crosshair" : "default",
-                  }}
-                />
-              </div>
-            </Card>
-          </div>
-
-          {/* Right Column: Chat Stream, Participants Roster, and Session Notes */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
-            <Card padding="none" style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
-              {/* Tab Header */}
-              <div
-                style={{
-                  display: "flex",
-                  borderBottom: "1px solid var(--color-border)",
-                  backgroundColor: "var(--color-surface-muted)",
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setSidebarTab("chat")}
-                  style={{
-                    flex: 1,
-                    padding: "10px 8px",
-                    fontSize: "var(--text-xs)",
-                    fontWeight: sidebarTab === "chat" ? 700 : 500,
-                    backgroundColor: sidebarTab === "chat" ? "var(--color-surface)" : "transparent",
-                    color: sidebarTab === "chat" ? "var(--color-primary)" : "var(--color-neutral-dark)",
-                    border: "none",
-                    borderBottom: sidebarTab === "chat" ? "2px solid var(--color-accent)" : "none",
-                    cursor: "pointer",
-                  }}
-                >
-                  💬 Chat ({currentChat.length})
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setSidebarTab("participants")}
-                  style={{
-                    flex: 1,
-                    padding: "10px 8px",
-                    fontSize: "var(--text-xs)",
-                    fontWeight: sidebarTab === "participants" ? 700 : 500,
-                    backgroundColor: sidebarTab === "participants" ? "var(--color-surface)" : "transparent",
-                    color: sidebarTab === "participants" ? "var(--color-primary)" : "var(--color-neutral-dark)",
-                    border: "none",
-                    borderBottom: sidebarTab === "participants" ? "2px solid var(--color-accent)" : "none",
-                    cursor: "pointer",
-                  }}
-                >
-                  👥 Roster ({currentParticipants.length})
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setSidebarTab("notes")}
-                  style={{
-                    flex: 1,
-                    padding: "10px 8px",
-                    fontSize: "var(--text-xs)",
-                    fontWeight: sidebarTab === "notes" ? 700 : 500,
-                    backgroundColor: sidebarTab === "notes" ? "var(--color-surface)" : "transparent",
-                    color: sidebarTab === "notes" ? "var(--color-primary)" : "var(--color-neutral-dark)",
-                    border: "none",
-                    borderBottom: sidebarTab === "notes" ? "2px solid var(--color-accent)" : "none",
-                    cursor: "pointer",
-                  }}
-                >
-                  📋 Notes
-                </button>
-              </div>
-
-              {/* Tab Content: CHAT */}
-              {sidebarTab === "chat" && (
-                <div style={{ display: "flex", flexDirection: "column", height: "480px" }}>
-                  <div
-                    style={{
-                      flex: 1,
-                      overflowY: "auto",
-                      padding: "var(--space-3)",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "var(--space-3)",
-                    }}
-                  >
-                    {currentChat.map((msg) => {
-                      if (msg.isSystem) {
-                        return (
-                          <div
-                            key={msg.id}
-                            style={{
-                              textAlign: "center",
-                              fontSize: "11px",
-                              color: "var(--color-neutral-dark)",
-                              backgroundColor: "var(--color-surface-muted)",
-                              padding: "4px 8px",
-                              borderRadius: "var(--radius-sm)",
-                            }}
-                          >
-                            {msg.text}
-                          </div>
-                        );
-                      }
-
-                      const isMe =
-                        (role === "teacher" && msg.senderRole === "teacher") ||
-                        (role === "student" && msg.senderName.includes("Taha"));
-
-                      return (
-                        <div
-                          key={msg.id}
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: isMe ? "flex-end" : "flex-start",
-                          }}
-                        >
-                          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "2px" }}>
-                            <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-primary)" }}>
-                              {msg.senderName}
-                            </span>
-                            <Badge
-                              variant={msg.senderRole === "teacher" ? "accent" : "neutral"}
-                              size="sm"
-                              style={{ fontSize: "9px", padding: "1px 5px" }}
-                            >
-                              {msg.senderRole}
-                            </Badge>
-                            <span style={{ fontSize: "10px", color: "var(--color-neutral)" }}>
-                              {msg.timestamp}
-                            </span>
-                          </div>
-
-                          <div
-                            style={{
-                              backgroundColor: isMe ? "var(--color-accent)" : "var(--color-surface-muted)",
-                              color: isMe ? "#FFFFFF" : "var(--color-primary)",
-                              padding: "6px 12px",
-                              borderRadius: "var(--radius-md)",
-                              maxWidth: "85%",
-                              fontSize: "var(--text-xs)",
-                              lineHeight: "1.4",
-                              wordBreak: "break-word",
-                            }}
-                          >
-                            {msg.text}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Chat Input */}
-                  <form
-                    onSubmit={handleSendMessage}
-                    style={{
-                      padding: "var(--space-3)",
-                      borderTop: "1px solid var(--color-border)",
-                      display: "flex",
-                      gap: "var(--space-2)",
-                      backgroundColor: "var(--color-surface)",
-                    }}
-                  >
-                    <input
-                      type="text"
-                      placeholder="Type a doubt or question..."
-                      value={chatInputText}
-                      onChange={(e) => setChatInputText(e.target.value)}
-                      style={{
-                        flex: 1,
-                        fontSize: "var(--text-xs)",
-                        padding: "6px 10px",
-                        borderRadius: "var(--radius-sm)",
-                        border: "1px solid var(--color-border)",
-                        outline: "none",
-                      }}
-                    />
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      size="sm"
-                      disabled={!chatInputText.trim()}
-                    >
-                      Send
-                    </Button>
-                  </form>
-                  <div
-                    style={{
-                      padding: "4px 8px",
-                      fontSize: "10px",
-                      color: "var(--color-neutral)",
-                      textAlign: "center",
-                      backgroundColor: "var(--color-surface-muted)",
-                      borderTop: "1px solid var(--color-border)",
-                    }}
-                  >
-                    Local simulation: Chat does not persist after session exit.
-                  </div>
-                </div>
-              )}
-
-              {/* Tab Content: PARTICIPANTS */}
-              {sidebarTab === "participants" && (
-                <div style={{ height: "480px", overflowY: "auto", padding: "var(--space-3)" }}>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
-                    {currentParticipants.map((p) => (
-                      <div
-                        key={p.id}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          padding: "8px 10px",
-                          borderRadius: "var(--radius-md)",
-                          backgroundColor: "var(--color-surface-muted)",
-                          border: p.isHandRaised ? "1px solid #FF9500" : "1px solid var(--color-border)",
-                        }}
-                      >
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                          <div
-                            style={{
-                              width: "28px",
-                              height: "28px",
-                              borderRadius: "var(--radius-full)",
-                              backgroundColor: p.role === "teacher" ? "#007AFF" : "var(--color-primary)",
-                              color: "#FFFFFF",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontSize: "11px",
-                              fontWeight: 700,
-                            }}
-                          >
-                            {p.name.charAt(0)}
-                          </div>
-                          <div>
-                            <div style={{ fontSize: "var(--text-xs)", fontWeight: 600 }}>
-                              {p.name}
-                            </div>
-                            <div style={{ fontSize: "10px", color: "var(--color-neutral-dark)" }}>
-                              {p.role === "teacher" ? "Lead Faculty" : "Enrolled Student"}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          {p.isHandRaised && (
-                            <Badge variant="warning" size="sm">
-                              ✋ Hand Raised
-                            </Badge>
-                          )}
-                          <span style={{ fontSize: "12px" }}>
-                            {p.isAudioMuted ? "🔇" : "🎙️"}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div style={{ marginTop: "var(--space-4)", textAlign: "center" }}>
-                    <Button
-                      variant={isHandRaised ? "secondary" : "primary"}
-                      size="sm"
-                      onClick={handleToggleHandRaise}
-                    >
-                      {isHandRaised ? "✋ Lower My Hand" : "✋ Raise Hand"}
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Tab Content: SESSION NOTES */}
-              {sidebarTab === "notes" && (
-                <div style={{ height: "480px", overflowY: "auto", padding: "var(--space-3)" }}>
-                  <h4 style={{ fontSize: "var(--text-xs)", fontWeight: 700, marginBottom: "var(--space-2)" }}>
-                    Lecture Objectives & Summary
-                  </h4>
-                  <div
-                    style={{
-                      fontSize: "var(--text-xs)",
-                      color: "var(--color-primary)",
-                      backgroundColor: "var(--color-surface-muted)",
-                      padding: "10px",
-                      borderRadius: "var(--radius-md)",
-                      lineHeight: "1.5",
-                      marginBottom: "var(--space-3)",
-                    }}
-                  >
-                    {activeSession.notes || "No notes entered for this session yet."}
-                  </div>
-
-                  <h4 style={{ fontSize: "var(--text-xs)", fontWeight: 700, marginBottom: "var(--space-2)" }}>
-                    Preparation Instructions
-                  </h4>
-                  <ul style={{ fontSize: "var(--text-xs)", paddingLeft: "16px", color: "var(--color-neutral-dark)", lineHeight: "1.5" }}>
-                    {activeSession.instructions.map((inst, i) => (
-                      <li key={i} style={{ marginBottom: "4px" }}>
-                        {inst}
-                      </li>
-                    ))}
-                  </ul>
-
-                  {role === "teacher" && (
-                    <div style={{ marginTop: "var(--space-4)" }}>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => {
-                          setActiveNotesSessionId(activeSession.id);
-                          setSessionNotesInput(activeSession.notes || "");
-                        }}
-                      >
-                        Edit Session Notes
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </Card>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // -------------------------------------------------------------
-  // RENDER: STANDARD ONLINE CLASSROOM PORTAL (Session Schedule & Management)
-  // -------------------------------------------------------------
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
-      {/* Toast Notification Banner */}
-      {actionNotice && (
-        <div
-          style={{
-            backgroundColor: "#34C759",
-            color: "#FFFFFF",
-            padding: "8px 16px",
-            borderRadius: "var(--radius-md)",
-            fontSize: "var(--text-xs)",
-            fontWeight: 600,
-            textAlign: "center",
-            boxShadow: "var(--shadow-sm)",
-          }}
-        >
-          {actionNotice}
-        </div>
-      )}
-
-      {/* Header Card & Demo Mode Notice */}
-      <Card padding="md">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "var(--space-3)" }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)", marginBottom: "4px" }}>
-              <h2 style={{ fontSize: "var(--text-lg)" }}>
-                {role === "teacher"
-                  ? "Faculty Live Classroom Workspace"
+              <h2 style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: "var(--color-primary)" }}>
+                {role === "parent"
+                  ? "Ward's Online Classes & Meeting Links"
                   : role === "student"
-                  ? "Online Classroom & Live Sessions"
-                  : role === "parent"
-                  ? "Ward's Scheduled Online Classes"
-                  : "Academy Live Classrooms & Scheduled Sessions"}
+                  ? "My Online Classes & Meeting Links"
+                  : role === "teacher"
+                  ? "Faculty Online Lectures & Meeting Links"
+                  : "Online Classrooms Management"}
               </h2>
               <Badge variant="accent" size="sm">
-                Session 2026–27
+                {role === "teacher"
+                  ? `Faculty: ${activeTeacher?.name || "Assigned"}`
+                  : role === "student"
+                  ? currentStudent ? `${currentStudent.name} (${currentStudent.classGrade})` : "Student Scope"
+                  : role === "parent"
+                  ? currentStudent ? `Ward: ${currentStudent.name}` : "Guardian Scope"
+                  : "Central Academy Directory"}
               </Badge>
             </div>
-            <p style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)" }}>
-              {role === "teacher"
-                ? `Manage live classes, initiate interactive sessions, and track enrolled student rosters for ${SAMPLE_TEACHERS.find((t) => t.id === currentTeacherId)?.name}.`
+            <p
+              style={{
+                fontSize: "var(--text-xs)",
+                color: "var(--color-neutral-dark)",
+              }}
+            >
+              {role === "parent"
+                ? "View and join verified external Google Meet or Zoom class meetings for your enrolled ward."
                 : role === "student"
-                ? "Join scheduled online lectures, practice with faculty on the interactive whiteboard, and access lecture archives."
-                : role === "parent"
-                ? "Inspect scheduled lectures, live session status, and syllabus coverage for Taha Rahman (Class X)."
-                : "Institutional supervision of all faculty live schedules, attendance synchronization, and room allocations."}
+                ? "Access verified external Google Meet or Zoom lectures for your enrolled subjects and batch."
+                : role === "teacher"
+                ? "Schedule and manage external meeting URLs (Google Meet or Zoom) for your assigned batches."
+                : "Central institutional management of external video lecture links across all teachers and batches."}
             </p>
           </div>
 
-          <Badge variant="warning" size="sm">
-            Demo Mode Active
-          </Badge>
+          {/* Schedule Button for Teacher & Admin */}
+          {(role === "teacher" || role === "academy-admin") && (
+            <Button variant="primary" size="sm" onClick={openCreateModal}>
+              + Schedule Online Class
+            </Button>
+          )}
         </div>
 
-        {/* Clear Demo Label Alert */}
+        {/* KPI Summary Metrics */}
         <div
           style={{
-            marginTop: "var(--space-3)",
-            padding: "10px 14px",
-            backgroundColor: "var(--color-surface-muted)",
-            border: "1px dashed var(--color-border)",
-            borderRadius: "var(--radius-md)",
-            fontSize: "var(--text-xs)",
-            color: "var(--color-neutral-dark)",
-            lineHeight: "1.4",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
+            gap: "var(--space-3)",
+            marginTop: "var(--space-4)",
           }}
         >
-          <strong>Simulated Environment:</strong> Starting or ending sessions only modifies local client demo state. No camera hardware is accessed. Real-time audio/video streaming, chat persistence, and multi-user signaling require future WebRTC / SFU media infrastructure.
+          <div
+            style={{
+              padding: "var(--space-3)",
+              backgroundColor: "var(--color-surface-muted)",
+              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--color-border)",
+            }}
+          >
+            <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>
+              Total Meetings
+            </span>
+            <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--color-primary)", marginTop: "2px" }}>
+              {totalClassesCount}
+            </div>
+            <span style={{ fontSize: "10px", color: "var(--color-neutral-dark)" }}>All records</span>
+          </div>
+
+          <div
+            style={{
+              padding: "var(--space-3)",
+              backgroundColor: "var(--color-surface-muted)",
+              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--color-border)",
+            }}
+          >
+            <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>
+              Upcoming
+            </span>
+            <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--color-accent)", marginTop: "2px" }}>
+              {scheduledCount}
+            </div>
+            <span style={{ fontSize: "10px", color: "var(--color-neutral-dark)" }}>Ready to join</span>
+          </div>
+
+          <div
+            style={{
+              padding: "var(--space-3)",
+              backgroundColor: "var(--color-surface-muted)",
+              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--color-border)",
+            }}
+          >
+            <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>
+              Completed
+            </span>
+            <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--color-success, #34C759)", marginTop: "2px" }}>
+              {completedCount}
+            </div>
+            <span style={{ fontSize: "10px", color: "var(--color-neutral-dark)" }}>Archived sessions</span>
+          </div>
+
+          <div
+            style={{
+              padding: "var(--space-3)",
+              backgroundColor: "var(--color-surface-muted)",
+              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--color-border)",
+            }}
+          >
+            <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>
+              Cancelled
+            </span>
+            <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: cancelledCount > 0 ? "var(--color-danger, #FF3B30)" : "var(--color-neutral-dark)", marginTop: "2px" }}>
+              {cancelledCount}
+            </div>
+            <span style={{ fontSize: "10px", color: "var(--color-neutral-dark)" }}>Link disabled</span>
+          </div>
         </div>
-      </Card>
 
-      {/* Countdown Card to Next Scheduled Class */}
-      {nextScheduledClass && (
-        <Card padding="md" style={{ borderLeft: "4px solid var(--color-accent)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-3)" }}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                <span style={{ fontSize: "var(--text-xs)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--color-accent)" }}>
-                  {nextScheduledClass.isLiveNow ? "🔴 Live Classroom Now in Progress" : "⏰ Next Scheduled Session"}
-                </span>
-                <Badge variant={nextScheduledClass.isLiveNow ? "accent" : "neutral"} size="sm">
-                  {nextScheduledClass.session.subject}
-                </Badge>
-              </div>
-
-              <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--color-primary)" }}>
-                {nextScheduledClass.session.topic}
-              </div>
-
-              <div style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", marginTop: "2px" }}>
-                {nextScheduledClass.session.batchName} • Faculty: {nextScheduledClass.session.teacherName} • {nextScheduledClass.session.startTime} - {nextScheduledClass.session.endTime}
-              </div>
-            </div>
-
-            <div style={{ display: "flex", alignItems: "center", gap: "var(--space-4)" }}>
-              {!nextScheduledClass.isLiveNow && (
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: "10px", color: "var(--color-neutral-dark)", fontWeight: 600 }}>
-                    Starts In:
-                  </div>
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: "var(--text-lg)", fontWeight: 700, color: "var(--color-primary)" }}>
-                    {formatTimer(countdownSeconds)}
-                  </div>
-                </div>
-              )}
-
-              {nextScheduledClass.isLiveNow ? (
-                <Button
-                  variant="primary"
-                  onClick={() => handleJoinClass(nextScheduledClass.session.id)}
-                >
-                  Join Live Class Now →
-                </Button>
-              ) : role === "teacher" && nextScheduledClass.session.teacherId === currentTeacherId ? (
-                <Button
-                  variant="primary"
-                  onClick={() => handleStartDemoSession(nextScheduledClass.session.id)}
-                >
-                  Start Demo Session →
-                </Button>
-              ) : (
-                <Button
-                  variant="secondary"
-                  onClick={() => setDetailsModalSession(nextScheduledClass.session)}
-                >
-                  View Preparation Checklist
-                </Button>
-              )}
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* Search & Filter Controls */}
-      <Card padding="sm">
-        <div style={{ display: "flex", gap: "var(--space-3)", flexWrap: "wrap", alignItems: "center" }}>
-          {/* Search bar */}
-          <div style={{ flex: "1 1 200px" }}>
-            <input
-              type="text"
-              placeholder="Search by topic, faculty, or batch..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+        {/* Filter Strip */}
+        <div
+          style={{
+            display: "flex",
+            gap: "var(--space-3)",
+            flexWrap: "wrap",
+            alignItems: "center",
+            marginTop: "var(--space-4)",
+            paddingTop: "var(--space-3)",
+            borderTop: "1px solid var(--color-border)",
+          }}
+        >
+          {/* Status Tabs */}
+          <div
+            style={{
+              display: "flex",
+              backgroundColor: "var(--color-surface-muted)",
+              padding: "3px",
+              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--color-border)",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setStatusTab("all")}
               style={{
-                width: "100%",
-                padding: "6px 12px",
-                fontSize: "var(--text-xs)",
+                padding: "4px 10px",
                 borderRadius: "var(--radius-sm)",
-                border: "1px solid var(--color-border)",
-                outline: "none",
-              }}
-            />
-          </div>
-
-          {/* Subject Filter */}
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <span style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
-              Subject:
-            </span>
-            <select
-              value={filterSubject}
-              onChange={(e) => setFilterSubject(e.target.value)}
-              style={{
                 fontSize: "var(--text-xs)",
-                padding: "5px 8px",
-                borderRadius: "var(--radius-sm)",
-                border: "1px solid var(--color-border)",
-                backgroundColor: "var(--color-surface)",
+                fontWeight: statusTab === "all" ? 700 : 500,
+                backgroundColor: statusTab === "all" ? "var(--color-surface)" : "transparent",
+                color: "var(--color-primary)",
+                border: "none",
+                cursor: "pointer",
+                boxShadow: statusTab === "all" ? "var(--shadow-sm)" : "none",
               }}
             >
-              <option value="all">All Subjects</option>
-              <option value="Mathematics">Mathematics</option>
-              <option value="Physics">Physics</option>
-              <option value="Chemistry">Chemistry</option>
-              <option value="Accountancy">Accountancy</option>
-            </select>
-          </div>
-
-          {/* Status Filter */}
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <span style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
-              Status:
-            </span>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
+              All ({totalClassesCount})
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusTab("scheduled")}
               style={{
-                fontSize: "var(--text-xs)",
-                padding: "5px 8px",
+                padding: "4px 10px",
                 borderRadius: "var(--radius-sm)",
-                border: "1px solid var(--color-border)",
-                backgroundColor: "var(--color-surface)",
+                fontSize: "var(--text-xs)",
+                fontWeight: statusTab === "scheduled" ? 700 : 500,
+                backgroundColor: statusTab === "scheduled" ? "var(--color-surface)" : "transparent",
+                color: "var(--color-primary)",
+                border: "none",
+                cursor: "pointer",
+                boxShadow: statusTab === "scheduled" ? "var(--shadow-sm)" : "none",
               }}
             >
-              <option value="all">All Statuses</option>
-              <option value="live-demo">Live Demo</option>
-              <option value="upcoming">Upcoming</option>
-              <option value="completed">Completed</option>
-            </select>
+              Upcoming ({scheduledCount})
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusTab("completed")}
+              style={{
+                padding: "4px 10px",
+                borderRadius: "var(--radius-sm)",
+                fontSize: "var(--text-xs)",
+                fontWeight: statusTab === "completed" ? 700 : 500,
+                backgroundColor: statusTab === "completed" ? "var(--color-surface)" : "transparent",
+                color: "var(--color-primary)",
+                border: "none",
+                cursor: "pointer",
+                boxShadow: statusTab === "completed" ? "var(--shadow-sm)" : "none",
+              }}
+            >
+              Completed ({completedCount})
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusTab("cancelled")}
+              style={{
+                padding: "4px 10px",
+                borderRadius: "var(--radius-sm)",
+                fontSize: "var(--text-xs)",
+                fontWeight: statusTab === "cancelled" ? 700 : 500,
+                backgroundColor: statusTab === "cancelled" ? "var(--color-surface)" : "transparent",
+                color: "var(--color-primary)",
+                border: "none",
+                cursor: "pointer",
+                boxShadow: statusTab === "cancelled" ? "var(--shadow-sm)" : "none",
+              }}
+            >
+              Cancelled ({cancelledCount})
+            </button>
           </div>
 
           {/* Admin Faculty Filter */}
@@ -1346,79 +668,149 @@ export function ClassroomModule({
                 onChange={(e) => setFilterTeacher(e.target.value)}
                 style={{
                   fontSize: "var(--text-xs)",
-                  padding: "5px 8px",
+                  padding: "4px 8px",
                   borderRadius: "var(--radius-sm)",
                   border: "1px solid var(--color-border)",
                   backgroundColor: "var(--color-surface)",
                 }}
               >
-                <option value="all">All Faculty</option>
-                <option value="tch-azhar">Azhar Sir</option>
-                <option value="tch-alvi">Dr. Tariq Alvi</option>
-                <option value="tch-roy">Prof. N. Roy</option>
+                <option value="all">All Teachers</option>
+                {faculty.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
               </select>
             </div>
           )}
 
-          {/* Clear Filters */}
-          {(filterSubject !== "all" || filterStatus !== "all" || searchQuery || filterTeacher !== "all") && (
-            <button
-              type="button"
-              onClick={() => {
-                setFilterSubject("all");
-                setFilterStatus("all");
-                setSearchQuery("");
-                setFilterTeacher("all");
-              }}
+          {/* Subject Filter */}
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
+              Subject:
+            </span>
+            <select
+              value={filterSubject}
+              onChange={(e) => setFilterSubject(e.target.value)}
               style={{
                 fontSize: "var(--text-xs)",
-                color: "var(--color-accent)",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
                 padding: "4px 8px",
+                borderRadius: "var(--radius-sm)",
+                border: "1px solid var(--color-border)",
+                backgroundColor: "var(--color-surface)",
               }}
             >
-              Reset Filters
-            </button>
+              <option value="all">All Subjects</option>
+              {subjects.map((s) => (
+                <option key={s.id} value={s.name}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Batch Filter */}
+          {(role === "academy-admin" || role === "teacher") && (
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
+                Batch:
+              </span>
+              <select
+                value={filterBatch}
+                onChange={(e) => setFilterBatch(e.target.value)}
+                style={{
+                  fontSize: "var(--text-xs)",
+                  padding: "4px 8px",
+                  borderRadius: "var(--radius-sm)",
+                  border: "1px solid var(--color-border)",
+                  backgroundColor: "var(--color-surface)",
+                }}
+              >
+                <option value="all">All Batches</option>
+                {(role === "teacher" ? teacherEligibleBatches : batches).map((b) => (
+                  <option key={b.id} value={b.name}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
+
+          {/* Provider Filter */}
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
+              Provider:
+            </span>
+            <select
+              value={filterProvider}
+              onChange={(e) => setFilterProvider(e.target.value)}
+              style={{
+                fontSize: "var(--text-xs)",
+                padding: "4px 8px",
+                borderRadius: "var(--radius-sm)",
+                border: "1px solid var(--color-border)",
+                backgroundColor: "var(--color-surface)",
+              }}
+            >
+              <option value="all">All Providers</option>
+              <option value="google-meet">Google Meet</option>
+              <option value="zoom">Zoom</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          {/* Search Query */}
+          <div style={{ flex: "1 1 200px" }}>
+            <input
+              type="text"
+              placeholder="Search by topic, teacher, or notes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: "100%",
+                fontSize: "var(--text-xs)",
+                padding: "5px 10px",
+                borderRadius: "var(--radius-sm)",
+                border: "1px solid var(--color-border)",
+                backgroundColor: "var(--color-surface)",
+              }}
+            />
+          </div>
         </div>
       </Card>
 
-      {/* Sessions Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: "var(--space-4)" }}>
-        {visibleSessions.length === 0 ? (
-          <div
-            style={{
-              gridColumn: "1 / -1",
-              padding: "var(--space-8)",
-              textAlign: "center",
-              backgroundColor: "var(--color-surface)",
-              borderRadius: "var(--radius-lg)",
-              border: "1px solid var(--color-border)",
-              color: "var(--color-neutral-dark)",
-              fontSize: "var(--text-sm)",
-            }}
-          >
-            <p>No classroom sessions match the selected filter criteria.</p>
-            <Button
-              variant="secondary"
-              size="sm"
-              style={{ marginTop: "var(--space-3)" }}
-              onClick={() => {
-                setFilterSubject("all");
-                setFilterStatus("all");
-                setSearchQuery("");
-                setFilterTeacher("all");
-              }}
-            >
-              Show All Sessions
-            </Button>
+      {/* Online Classes Listing Grid */}
+      {visibleSessions.length === 0 ? (
+        <Card padding="lg">
+          <div style={{ textAlign: "center", padding: "var(--space-8)" }}>
+            <div style={{ fontSize: "32px", marginBottom: "8px" }}>🌐</div>
+            <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, marginBottom: "4px" }}>
+              {role === "parent" && !currentStudent
+                ? "No Linked Student Found"
+                : "No Online Classes Found"}
+            </h3>
+            <p style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", maxWidth: "420px", margin: "0 auto" }}>
+              {role === "parent" && !currentStudent
+                ? "Please ensure a valid student profile is linked to your parent account to view their online meetings."
+                : role === "student" || role === "parent"
+                ? "No online classes are currently scheduled for your enrolled subjects and batch."
+                : "No online classes match the selected filter criteria. Use '+ Schedule Online Class' to create a new session."}
+            </p>
           </div>
-        ) : (
-          visibleSessions.map((session) => {
-            const isLive = session.status === "live-demo";
-            const isUpcoming = session.status === "upcoming";
+        </Card>
+      ) : (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
+            gap: "var(--space-4)",
+          }}
+        >
+          {visibleSessions.map((session) => {
+            const theme = getSubjectTheme(session.subject);
+            const providerBadge = getProviderBadgeStyle(session.meetingProvider);
+            const isJoinable = isMeetingJoinable(session);
+            const isCancelled = session.status === "cancelled";
             const isCompleted = session.status === "completed";
 
             return (
@@ -1427,9 +819,14 @@ export function ClassroomModule({
                 style={{
                   backgroundColor: "var(--color-surface)",
                   borderRadius: "var(--radius-lg)",
-                  border: isLive ? "2px solid #007AFF" : "1px solid var(--color-border)",
+                  border: `1px solid ${
+                    isCancelled ? "rgba(255, 59, 48, 0.25)" : "var(--color-border)"
+                  }`,
+                  borderLeft: `5px solid ${
+                    isCancelled ? "var(--color-danger, #FF3B30)" : theme.primary
+                  }`,
                   padding: "var(--space-4)",
-                  boxShadow: isLive ? "0 4px 14px rgba(0, 122, 255, 0.15)" : "var(--shadow-sm)",
+                  boxShadow: "var(--shadow-sm)",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
@@ -1437,410 +834,903 @@ export function ClassroomModule({
                 }}
               >
                 <div>
-                  {/* Card Header */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "var(--space-2)" }}>
+                  {/* Top Badges: Subject, Provider, Status */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: "6px",
+                      marginBottom: "var(--space-2)",
+                      flexWrap: "wrap",
+                    }}
+                  >
                     <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-                      <Badge variant={session.subject === "Mathematics" ? "accent" : "neutral"} size="sm">
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          padding: "2px 8px",
+                          borderRadius: "var(--radius-sm)",
+                          backgroundColor: theme.badgeBg,
+                          color: theme.badgeText,
+                        }}
+                      >
                         {session.subject}
-                      </Badge>
-                      <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
-                        {session.classGrade}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 600,
+                          padding: "2px 8px",
+                          borderRadius: "var(--radius-sm)",
+                          backgroundColor: providerBadge.bg,
+                          color: providerBadge.color,
+                          border: `1px solid ${providerBadge.border}`,
+                        }}
+                      >
+                        {providerBadge.icon} {providerBadge.label}
                       </span>
                     </div>
 
-                    <Badge
-                      variant={isLive ? "accent" : isCompleted ? "neutral" : "warning"}
-                      size="sm"
-                    >
-                      {isLive ? "🔴 Live Demo" : isCompleted ? "Completed" : "Upcoming"}
-                    </Badge>
+                    {isCancelled ? (
+                      <Badge variant="danger" size="sm">
+                        Cancelled
+                      </Badge>
+                    ) : isCompleted ? (
+                      <Badge variant="neutral" size="sm">
+                        Completed
+                      </Badge>
+                    ) : (
+                      <Badge variant="success" size="sm">
+                        Scheduled
+                      </Badge>
+                    )}
                   </div>
 
-                  {/* Topic Title */}
-                  <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--color-primary)", marginBottom: "4px" }}>
+                  {/* Topic / Title */}
+                  <h3
+                    style={{
+                      fontSize: "var(--text-base)",
+                      fontWeight: 700,
+                      color: "var(--color-primary)",
+                      marginBottom: "6px",
+                      lineHeight: "1.3",
+                      textDecoration: isCancelled ? "line-through" : "none",
+                    }}
+                  >
                     {session.topic}
+                  </h3>
+
+                  {/* Timing & Date */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      fontSize: "var(--text-xs)",
+                      color: "var(--color-neutral-dark)",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    <span>📅 {session.date}</span>
+                    <span>⏰ {session.startTime} – {session.endTime}</span>
                   </div>
 
-                  {/* Timetable & Faculty Information */}
-                  <div style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", lineHeight: "1.5" }}>
-                    <div>📅 {session.date} • {session.startTime} - {session.endTime} ({session.durationMinutes} mins)</div>
-                    <div>🏷️ {session.batchName}</div>
-                    <div>👨‍🏫 Faculty: <strong>{session.teacherName}</strong></div>
+                  {/* Batch & Teacher */}
+                  <div
+                    style={{
+                      fontSize: "var(--text-xs)",
+                      color: "var(--color-neutral-dark)",
+                      marginBottom: "6px",
+                    }}
+                  >
+                    <span>👥 {session.batchName}</span> &bull; <span>👤 {session.teacherName}</span>
                   </div>
 
-                  {/* Short instructions snippet */}
-                  {session.instructions.length > 0 && (
+                  {/* Instructions Preview */}
+                  {session.instructions && (
                     <div
                       style={{
-                        marginTop: "var(--space-2)",
                         fontSize: "11px",
                         color: "var(--color-neutral-dark)",
                         backgroundColor: "var(--color-surface-muted)",
                         padding: "6px 8px",
                         borderRadius: "var(--radius-sm)",
+                        marginTop: "4px",
+                        lineHeight: "1.4",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
                       }}
                     >
-                      💡 {session.instructions[0]}
-                    </div>
-                  )}
-
-                  {/* Completed session note preview */}
-                  {isCompleted && session.notes && (
-                    <div
-                      style={{
-                        marginTop: "var(--space-2)",
-                        fontSize: "11px",
-                        color: "#34C759",
-                        backgroundColor: "rgba(52, 199, 89, 0.08)",
-                        padding: "6px 8px",
-                        borderRadius: "var(--radius-sm)",
-                      }}
-                    >
-                      ✓ Notes & Homework recorded. Recording demo archived.
+                      📝 {Array.isArray(session.instructions) ? session.instructions[0] : session.instructions}
                     </div>
                   )}
                 </div>
 
-                {/* Card Actions */}
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    borderTop: "1px solid var(--color-border)",
-                    paddingTop: "var(--space-3)",
-                    gap: "var(--space-2)",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <div style={{ display: "flex", gap: "6px" }}>
-                    <button
-                      type="button"
-                      onClick={() => setDetailsModalSession(session)}
-                      style={{
-                        fontSize: "11px",
-                        color: "var(--color-accent)",
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        fontWeight: 600,
-                        padding: "4px",
-                      }}
-                    >
-                      Instructions
-                    </button>
+                {/* Bottom Action Area */}
+                <div>
+                  <div
+                    style={{
+                      borderTop: "1px solid var(--color-border)",
+                      paddingTop: "var(--space-3)",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: "var(--space-2)",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {/* Primary Join Action (Disabled if cancelled or missing URL) */}
+                    <div>
+                      {isJoinable ? (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleJoinMeeting(session)}
+                          title={`Open ${getProviderLabel(session.meetingProvider)} meeting in a new browser tab`}
+                        >
+                          Join Meeting ↗
+                        </Button>
+                      ) : isCancelled ? (
+                        <span
+                          style={{
+                            fontSize: "var(--text-xs)",
+                            color: "var(--color-danger, #FF3B30)",
+                            fontWeight: 600,
+                          }}
+                        >
+                          Meeting Cancelled
+                        </span>
+                      ) : (
+                        <span
+                          style={{
+                            fontSize: "var(--text-xs)",
+                            color: "var(--color-neutral-dark)",
+                          }}
+                        >
+                          Link Not Configured
+                        </span>
+                      )}
+                    </div>
 
-                    {(role === "teacher" || role === "academy-admin") && (
-                      <button
-                        type="button"
-                        onClick={() => setRosterModalSession(session)}
-                        style={{
-                          fontSize: "11px",
-                          color: "var(--color-neutral-dark)",
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          fontWeight: 500,
-                          padding: "4px",
-                        }}
-                      >
-                        Roster
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Contextual Action Button */}
-                  {isLive ? (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => handleJoinClass(session.id)}
-                    >
-                      Join Live Demo →
-                    </Button>
-                  ) : isUpcoming ? (
-                    role === "teacher" && session.teacherId === currentTeacherId ? (
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => handleStartDemoSession(session.id)}
-                      >
-                        Start Demo Session
-                      </Button>
-                    ) : (
+                    {/* Secondary & Admin/Teacher Controls */}
+                    <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
                       <Button
                         variant="secondary"
                         size="sm"
-                        onClick={() => handleJoinClass(session.id)}
+                        onClick={() => setDetailsSession(session)}
                       >
-                        Enter Room (Demo)
+                        Details
                       </Button>
-                    )
-                  ) : (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => {
-                        setActiveNotesSessionId(session.id);
-                        setSessionNotesInput(session.notes || "");
-                      }}
-                    >
-                      {role === "teacher" ? "Edit Notes" : "View Notes"}
-                    </Button>
-                  )}
+
+                      {(role === "teacher" || role === "academy-admin") && (
+                        <>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => openEditModal(session)}
+                          >
+                            Edit
+                          </Button>
+                          {isCancelled ? (
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => handleReactivateSession(session)}
+                            >
+                              Reactivate
+                            </Button>
+                          ) : (
+                            <>
+                              {!isCompleted && (
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={() => handleCompleteSession(session)}
+                                >
+                                  Complete
+                                </Button>
+                              )}
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => handleCancelSession(session)}
+                              >
+                                Cancel
+                              </Button>
+                            </>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             );
-          })
-        )}
-      </div>
-
-      {/* Batch Student Roster Modal */}
-      {rosterModalSession && (
-        <div
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setRosterModalSession(null);
-          }}
-          style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.4)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-            padding: "var(--space-4)",
-          }}
-        >
-          <Card padding="lg" style={{ maxWidth: "560px", width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "var(--space-3)" }}>
-              <div>
-                <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700 }}>
-                  Enrolled Students: {rosterModalSession.batchName}
-                </h3>
-                <p style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)" }}>
-                  {rosterModalSession.subject} • {rosterModalSession.classGrade} • Faculty: {rosterModalSession.teacherName}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setRosterModalSession(null)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  fontSize: "var(--text-lg)",
-                  cursor: "pointer",
-                  color: "var(--color-neutral-dark)",
-                }}
-              >
-                ✕
-              </button>
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "var(--space-3)" }}>
-              {SAMPLE_ENROLLMENTS
-                .filter((e) => e.batchName === rosterModalSession.batchName && e.status === "active")
-                .map((enr) => {
-                  const student = SAMPLE_STUDENTS.find((s) => s.id === enr.studentId);
-                  return (
-                    <div
-                      key={enr.id}
-                      style={{
-                        padding: "8px 12px",
-                        borderRadius: "var(--radius-sm)",
-                        backgroundColor: "var(--color-surface-muted)",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <div>
-                        <div style={{ fontSize: "var(--text-xs)", fontWeight: 600 }}>
-                          {enr.studentName}
-                        </div>
-                        <div style={{ fontSize: "10px", color: "var(--color-neutral-dark)" }}>
-                          Guardian: {student?.guardianName || "Registered Parent"} ({student?.guardianPhone || "Verified"})
-                        </div>
-                      </div>
-                      <Badge variant="accent" size="sm">
-                        Enrolled
-                      </Badge>
-                    </div>
-                  );
-                })}
-            </div>
-
-            <div style={{ marginTop: "var(--space-4)", textAlign: "right" }}>
-              <Button size="sm" variant="secondary" onClick={() => setRosterModalSession(null)}>
-                Close Roster
-              </Button>
-            </div>
-          </Card>
+          })}
         </div>
       )}
 
-      {/* Session Instructions & Details Modal */}
-      {detailsModalSession && (
+      {/* ========================================================================= */}
+      {/* 1. CLASS DETAILS MODAL                                                    */}
+      {/* ========================================================================= */}
+      {detailsSession && (
         <div
           onClick={(e) => {
-            if (e.target === e.currentTarget) setDetailsModalSession(null);
+            if (e.target === e.currentTarget) setDetailsSession(null);
           }}
           style={{
             position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.4)",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            backdropFilter: "blur(4px)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 1000,
+            zIndex: 100,
             padding: "var(--space-4)",
           }}
+          role="dialog"
+          aria-modal="true"
         >
-          <Card padding="lg" style={{ maxWidth: "540px", width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "var(--space-3)" }}>
+          <div
+            style={{
+              backgroundColor: "var(--color-surface)",
+              borderRadius: "var(--radius-lg)",
+              maxWidth: "500px",
+              width: "100%",
+              padding: "var(--space-6)",
+              boxShadow: "var(--shadow-lg)",
+              border: "1px solid var(--color-border)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: "var(--space-4)",
+              }}
+            >
               <div>
-                <Badge variant="accent" size="sm" style={{ marginBottom: "4px" }}>
-                  {detailsModalSession.subject}
-                </Badge>
-                <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700 }}>
-                  {detailsModalSession.topic}
+                <span
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    padding: "2px 8px",
+                    borderRadius: "var(--radius-sm)",
+                    backgroundColor: getSubjectTheme(detailsSession.subject).badgeBg,
+                    color: getSubjectTheme(detailsSession.subject).badgeText,
+                    display: "inline-block",
+                    marginBottom: "4px",
+                  }}
+                >
+                  {detailsSession.subject}
+                </span>
+                <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 700, margin: 0 }}>
+                  {detailsSession.topic}
                 </h3>
-                <p style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)" }}>
-                  {detailsModalSession.batchName} • Faculty: {detailsModalSession.teacherName}
-                </p>
               </div>
               <button
                 type="button"
-                onClick={() => setDetailsModalSession(null)}
+                onClick={() => setDetailsSession(null)}
                 style={{
                   background: "none",
                   border: "none",
-                  fontSize: "var(--text-lg)",
-                  cursor: "pointer",
+                  fontSize: "18px",
                   color: "var(--color-neutral-dark)",
+                  cursor: "pointer",
+                  padding: "0 4px",
                 }}
               >
                 ✕
               </button>
             </div>
 
-            <div style={{ marginTop: "var(--space-3)" }}>
-              <h4 style={{ fontSize: "var(--text-xs)", fontWeight: 700, marginBottom: "var(--space-2)" }}>
-                Student Preparation Checklist:
-              </h4>
-              <ul style={{ fontSize: "var(--text-xs)", paddingLeft: "16px", color: "var(--color-primary)", lineHeight: "1.6" }}>
-                {detailsModalSession.instructions.map((inst, idx) => (
-                  <li key={idx} style={{ marginBottom: "6px" }}>
-                    {inst}
-                  </li>
-                ))}
-              </ul>
-
-              {detailsModalSession.notes && (
-                <div style={{ marginTop: "var(--space-3)" }}>
-                  <h4 style={{ fontSize: "var(--text-xs)", fontWeight: 700, marginBottom: "4px" }}>
-                    Faculty Session Notes:
-                  </h4>
-                  <div
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "var(--space-3)",
+                backgroundColor: "var(--color-surface-muted)",
+                padding: "var(--space-4)",
+                borderRadius: "var(--radius-md)",
+                fontSize: "var(--text-xs)",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "var(--color-neutral-dark)" }}>Meeting Provider:</span>
+                <strong>{getProviderLabel(detailsSession.meetingProvider)}</strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "var(--color-neutral-dark)" }}>Scheduled Date:</span>
+                <strong>{detailsSession.date}</strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "var(--color-neutral-dark)" }}>Time Interval:</span>
+                <strong>{detailsSession.startTime} – {detailsSession.endTime}</strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "var(--color-neutral-dark)" }}>Batch &amp; Grade:</span>
+                <strong>{detailsSession.batchName} ({detailsSession.classGrade})</strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "var(--color-neutral-dark)" }}>Faculty:</span>
+                <strong>{detailsSession.teacherName}</strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ color: "var(--color-neutral-dark)" }}>Status:</span>
+                <span style={{ fontWeight: 700, textTransform: "capitalize" }}>
+                  {detailsSession.status}
+                </span>
+              </div>
+              {Boolean(detailsSession.meetingUrl || detailsSession.meetingLinkDemo) && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                  <span style={{ color: "var(--color-neutral-dark)" }}>External URL:</span>
+                  <a
+                    href={detailsSession.meetingUrl || detailsSession.meetingLinkDemo}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     style={{
-                      fontSize: "var(--text-xs)",
-                      color: "var(--color-neutral-dark)",
-                      backgroundColor: "var(--color-surface-muted)",
-                      padding: "8px 12px",
-                      borderRadius: "var(--radius-sm)",
+                      color: "var(--color-accent)",
+                      wordBreak: "break-all",
+                      textDecoration: "underline",
+                      fontSize: "11px",
                     }}
                   >
-                    {detailsModalSession.notes}
-                  </div>
+                    {detailsSession.meetingUrl || detailsSession.meetingLinkDemo}
+                  </a>
                 </div>
               )}
             </div>
 
-            <div style={{ marginTop: "var(--space-4)", display: "flex", justifyContent: "flex-end", gap: "8px" }}>
-              <Button size="sm" variant="secondary" onClick={() => setDetailsModalSession(null)}>
-                Close
-              </Button>
-              <Button
-                size="sm"
-                variant="primary"
-                onClick={() => {
-                  setDetailsModalSession(null);
-                  handleJoinClass(detailsModalSession.id);
-                }}
-              >
-                Join Classroom (Demo)
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {/* Session Notes Editing Modal */}
-      {activeNotesSessionId && (
-        <div
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setActiveNotesSessionId(null);
-          }}
-          style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.4)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-            padding: "var(--space-4)",
-          }}
-        >
-          <Card padding="lg" style={{ maxWidth: "500px", width: "100%" }}>
-            <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, marginBottom: "var(--space-2)" }}>
-              {role === "teacher" ? "Update Session Lecture Notes" : "Session Lecture Notes"}
-            </h3>
-            <p style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", marginBottom: "var(--space-3)" }}>
-              Summary of key concepts covered, assigned homework, and formula references.
-            </p>
-
-            {role === "teacher" ? (
-              <textarea
-                rows={5}
-                value={sessionNotesInput}
-                onChange={(e) => setSessionNotesInput(e.target.value)}
-                placeholder="Enter key questions solved, homework exercises assigned, and notes..."
-                style={{
-                  width: "100%",
-                  padding: "8px 12px",
-                  fontSize: "var(--text-xs)",
-                  borderRadius: "var(--radius-sm)",
-                  border: "1px solid var(--color-border)",
-                  outline: "none",
-                  fontFamily: "inherit",
-                }}
-              />
-            ) : (
-              <div
-                style={{
-                  fontSize: "var(--text-xs)",
-                  backgroundColor: "var(--color-surface-muted)",
-                  padding: "12px",
-                  borderRadius: "var(--radius-sm)",
-                  lineHeight: "1.5",
-                }}
-              >
-                {sessionNotesInput || "No lecture notes recorded yet for this session."}
+            {/* Instructions / Notes Block */}
+            {detailsSession.instructions && (
+              <div style={{ marginTop: "var(--space-3)", fontSize: "var(--text-xs)" }}>
+                <strong style={{ display: "block", marginBottom: "4px" }}>Instructions &amp; Prerequisites:</strong>
+                <p style={{ color: "var(--color-neutral-dark)", margin: 0, lineHeight: "1.4" }}>
+                  {Array.isArray(detailsSession.instructions)
+                    ? detailsSession.instructions.join(" ")
+                    : detailsSession.instructions}
+                </p>
               </div>
             )}
 
-            <div style={{ marginTop: "var(--space-4)", display: "flex", justifyContent: "flex-end", gap: "8px" }}>
-              <Button size="sm" variant="secondary" onClick={() => setActiveNotesSessionId(null)}>
-                Cancel
-              </Button>
-              {role === "teacher" && (
-                <Button size="sm" variant="primary" onClick={() => handleSaveNotes(activeNotesSessionId)}>
-                  Save Notes
+            {/* Modal Actions */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "var(--space-2)",
+                marginTop: "var(--space-5)",
+              }}
+            >
+              {isMeetingJoinable(detailsSession) && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => handleJoinMeeting(detailsSession)}
+                >
+                  Join Meeting in New Tab ↗
                 </Button>
               )}
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setDetailsSession(null)}
+              >
+                Close
+              </Button>
             </div>
-          </Card>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 2. SCHEDULE / EDIT ONLINE CLASS MODAL                                     */}
+      {/* ========================================================================= */}
+      {isFormModalOpen && (
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsFormModalOpen(false);
+          }}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 100,
+            padding: "var(--space-4)",
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            style={{
+              backgroundColor: "var(--color-surface)",
+              borderRadius: "var(--radius-lg)",
+              maxWidth: "540px",
+              width: "100%",
+              padding: "var(--space-6)",
+              boxShadow: "var(--shadow-lg)",
+              border: "1px solid var(--color-border)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "var(--space-4)",
+              }}
+            >
+              <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: 0 }}>
+                {editingSessionId ? "Edit Online Class" : "Schedule Online Class"}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsFormModalOpen(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontSize: "18px",
+                  color: "var(--color-neutral-dark)",
+                  cursor: "pointer",
+                  padding: "0 4px",
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveSchedule}>
+              {/* Validation Error Banner */}
+              {formError && (
+                <div
+                  style={{
+                    marginBottom: "var(--space-4)",
+                    padding: "10px 12px",
+                    backgroundColor: "rgba(255, 59, 48, 0.1)",
+                    color: "var(--color-danger, #FF3B30)",
+                    border: "1px solid rgba(255, 59, 48, 0.3)",
+                    borderRadius: "var(--radius-sm)",
+                    fontSize: "var(--text-xs)",
+                    fontWeight: 600,
+                  }}
+                  role="alert"
+                >
+                  ⚠️ {formError}
+                </div>
+              )}
+
+              {/* Class Topic / Title */}
+              <div style={{ marginBottom: "var(--space-3)" }}>
+                <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>
+                  Class Title / Topic: *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g., Quadratic Equations: Problem Solving Clinic"
+                  value={formTopic}
+                  onChange={(e) => {
+                    setFormTopic(e.target.value);
+                    setFormError(null);
+                  }}
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "var(--radius-sm)",
+                    border: "1px solid var(--color-border)",
+                    fontSize: "var(--text-xs)",
+                    backgroundColor: "var(--color-surface)",
+                  }}
+                />
+              </div>
+
+              {/* Subject & Batch Selectors (Restricted to teacher's permitted subjects/batches) */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "var(--space-3)",
+                  marginBottom: "var(--space-3)",
+                }}
+              >
+                <div>
+                  <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>
+                    Subject: *
+                  </label>
+                  <select
+                    value={formSubject}
+                    onChange={(e) => {
+                      setFormSubject(e.target.value);
+                      setFormError(null);
+                    }}
+                    style={{
+                      width: "100%",
+                      padding: "8px",
+                      borderRadius: "var(--radius-sm)",
+                      border: "1px solid var(--color-border)",
+                      fontSize: "var(--text-xs)",
+                      backgroundColor: "var(--color-surface)",
+                    }}
+                  >
+                    {teacherEligibleSubjects.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>
+                    Batch / Class: *
+                  </label>
+                  <select
+                    value={formBatch}
+                    onChange={(e) => {
+                      setFormBatch(e.target.value);
+                      setFormError(null);
+                    }}
+                    style={{
+                      width: "100%",
+                      padding: "8px",
+                      borderRadius: "var(--radius-sm)",
+                      border: "1px solid var(--color-border)",
+                      fontSize: "var(--text-xs)",
+                      backgroundColor: "var(--color-surface)",
+                    }}
+                  >
+                    {teacherEligibleBatches.map((b) => (
+                      <option key={b.id} value={b.name}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Meeting Provider & Meeting URL */}
+              <div style={{ marginBottom: "var(--space-3)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                  <label style={{ fontSize: "var(--text-xs)", fontWeight: 600 }}>
+                    Meeting Provider: *
+                  </label>
+                  {/* Reuse Existing Recurring Meeting URL */}
+                  {recentMeetingUrls.length > 0 && (
+                    <select
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          setFormUrl(e.target.value);
+                          setFormProvider(detectMeetingProvider(e.target.value));
+                          setFormError(null);
+                        }
+                      }}
+                      defaultValue=""
+                      style={{
+                        fontSize: "11px",
+                        padding: "2px 6px",
+                        borderRadius: "var(--radius-sm)",
+                        border: "1px solid var(--color-border)",
+                        backgroundColor: "var(--color-surface-muted)",
+                        color: "var(--color-accent)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <option value="" disabled>
+                        Reuse Recurring Link...
+                      </option>
+                      {recentMeetingUrls.map((r, i) => (
+                        <option key={i} value={r.url}>
+                          {r.label}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                {/* Provider Radio Pills */}
+                <div style={{ display: "flex", gap: "var(--space-2)", marginBottom: "8px" }}>
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "5px 12px",
+                      borderRadius: "var(--radius-sm)",
+                      border: `1px solid ${
+                        formProvider === "google-meet" ? "var(--color-accent)" : "var(--color-border)"
+                      }`,
+                      backgroundColor:
+                        formProvider === "google-meet" ? "rgba(0, 122, 255, 0.08)" : "var(--color-surface)",
+                      fontSize: "var(--text-xs)",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="meetingProvider"
+                      checked={formProvider === "google-meet"}
+                      onChange={() => {
+                        setFormProvider("google-meet");
+                        if (!formUrl || formUrl === "https://zoom.us/") {
+                          setFormUrl("https://meet.google.com/");
+                        }
+                      }}
+                    />
+                    🟢 Google Meet
+                  </label>
+
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "5px 12px",
+                      borderRadius: "var(--radius-sm)",
+                      border: `1px solid ${
+                        formProvider === "zoom" ? "var(--color-accent)" : "var(--color-border)"
+                      }`,
+                      backgroundColor:
+                        formProvider === "zoom" ? "rgba(0, 122, 255, 0.08)" : "var(--color-surface)",
+                      fontSize: "var(--text-xs)",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="meetingProvider"
+                      checked={formProvider === "zoom"}
+                      onChange={() => {
+                        setFormProvider("zoom");
+                        if (!formUrl || formUrl === "https://meet.google.com/") {
+                          setFormUrl("https://zoom.us/j/");
+                        }
+                      }}
+                    />
+                    🔵 Zoom
+                  </label>
+
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "5px 12px",
+                      borderRadius: "var(--radius-sm)",
+                      border: `1px solid ${
+                        formProvider === "other" ? "var(--color-accent)" : "var(--color-border)"
+                      }`,
+                      backgroundColor:
+                        formProvider === "other" ? "rgba(0, 122, 255, 0.08)" : "var(--color-surface)",
+                      fontSize: "var(--text-xs)",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="meetingProvider"
+                      checked={formProvider === "other"}
+                      onChange={() => setFormProvider("other")}
+                    />
+                    🔗 Other
+                  </label>
+                </div>
+
+                {/* Meeting URL Input */}
+                <input
+                  type="url"
+                  required
+                  placeholder="https://meet.google.com/... or https://zoom.us/j/..."
+                  value={formUrl}
+                  onChange={(e) => {
+                    setFormUrl(e.target.value);
+                    setFormError(null);
+                  }}
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "var(--radius-sm)",
+                    border: "1px solid var(--color-border)",
+                    fontSize: "var(--text-xs)",
+                    backgroundColor: "var(--color-surface)",
+                  }}
+                />
+                <span style={{ fontSize: "10px", color: "var(--color-neutral-dark)", marginTop: "2px", display: "block" }}>
+                  Must start with <strong>https://</strong>. Students and parents will open this meeting link externally.
+                </span>
+              </div>
+
+              {/* Date & Timings */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1.2fr 1fr 1fr",
+                  gap: "var(--space-3)",
+                  marginBottom: "var(--space-3)",
+                }}
+              >
+                <div>
+                  <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>
+                    Scheduled Date: *
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={formDate}
+                    onChange={(e) => {
+                      setFormDate(e.target.value);
+                      setFormError(null);
+                    }}
+                    style={{
+                      width: "100%",
+                      padding: "8px",
+                      borderRadius: "var(--radius-sm)",
+                      border: "1px solid var(--color-border)",
+                      fontSize: "var(--text-xs)",
+                      backgroundColor: "var(--color-surface)",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>
+                    Start Time: *
+                  </label>
+                  <input
+                    type="time"
+                    required
+                    value={formStartTime}
+                    onChange={(e) => {
+                      setFormStartTime(e.target.value);
+                      setFormError(null);
+                    }}
+                    style={{
+                      width: "100%",
+                      padding: "8px",
+                      borderRadius: "var(--radius-sm)",
+                      border: "1px solid var(--color-border)",
+                      fontSize: "var(--text-xs)",
+                      backgroundColor: "var(--color-surface)",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>
+                    End Time: *
+                  </label>
+                  <input
+                    type="time"
+                    required
+                    value={formEndTime}
+                    onChange={(e) => {
+                      setFormEndTime(e.target.value);
+                      setFormError(null);
+                    }}
+                    style={{
+                      width: "100%",
+                      padding: "8px",
+                      borderRadius: "var(--radius-sm)",
+                      border: "1px solid var(--color-border)",
+                      fontSize: "var(--text-xs)",
+                      backgroundColor: "var(--color-surface)",
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Admin Faculty Selector */}
+              {role === "academy-admin" && (
+                <div style={{ marginBottom: "var(--space-3)" }}>
+                  <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>
+                    Assigned Faculty: *
+                  </label>
+                  <select
+                    value={formTeacherId}
+                    onChange={(e) => setFormTeacherId(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "8px",
+                      borderRadius: "var(--radius-sm)",
+                      border: "1px solid var(--color-border)",
+                      fontSize: "var(--text-xs)",
+                      backgroundColor: "var(--color-surface)",
+                    }}
+                  >
+                    {faculty.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name} ({t.assignedSubjects.join(", ")})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Instructions / Notes */}
+              <div style={{ marginBottom: "var(--space-3)" }}>
+                <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>
+                  Instructions / Notes for Students: (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g., Have NCERT Chapter 4 open. Keep homework problem sheet handy."
+                  value={formInstructions}
+                  onChange={(e) => setFormInstructions(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "var(--radius-sm)",
+                    border: "1px solid var(--color-border)",
+                    fontSize: "var(--text-xs)",
+                    backgroundColor: "var(--color-surface)",
+                    resize: "vertical",
+                  }}
+                />
+              </div>
+
+              {/* Status Selector (when editing) */}
+              {editingSessionId && (
+                <div style={{ marginBottom: "var(--space-4)" }}>
+                  <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>
+                    Status Lifecycle:
+                  </label>
+                  <select
+                    value={formStatus}
+                    onChange={(e) => setFormStatus(e.target.value as ClassroomSessionStatus)}
+                    style={{
+                      width: "100%",
+                      padding: "8px",
+                      borderRadius: "var(--radius-sm)",
+                      border: "1px solid var(--color-border)",
+                      fontSize: "var(--text-xs)",
+                      backgroundColor: "var(--color-surface)",
+                    }}
+                  >
+                    <option value="scheduled">Scheduled (Active Link)</option>
+                    <option value="completed">Completed (Archived)</option>
+                    <option value="cancelled">Cancelled (Link Disabled)</option>
+                  </select>
+                </div>
+              )}
+
+              {/* Form Buttons */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: "var(--space-2)",
+                  marginTop: "var(--space-4)",
+                }}
+              >
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setIsFormModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" variant="primary" size="sm">
+                  {editingSessionId ? "Save Changes" : "Save & Schedule"}
+                </Button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
