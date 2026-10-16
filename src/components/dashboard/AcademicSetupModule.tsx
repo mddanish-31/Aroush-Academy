@@ -19,6 +19,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useDemoStorage, DEMO_STORAGE_KEYS } from "@/lib/demoStorage";
+import { recordCreate, recordUpdate } from "@/lib/auditService";
 
 type SetupSubTab = "classes" | "subjects" | "batches" | "faculty";
 
@@ -84,16 +85,48 @@ export function AcademicSetupModule() {
 
   // --- CLASS & BOARD ACTIONS ---
   const handleToggleClassStatus = (clsId: string) => {
+    const targetCls = classes.find((c) => c.id === clsId);
+    const newStatus = !targetCls?.isActive;
     setClasses((prev) =>
       prev.map((c) => (c.id === clsId ? { ...c, isActive: !c.isActive } : c))
     );
+    recordUpdate({
+      action: "Toggle Class Status",
+      type: "system",
+      target: targetCls ? targetCls.name : clsId,
+      details: `Updated class active status to: ${newStatus ? "Active" : "Inactive"}.`,
+      performedBy: "Academy Administrator",
+      actorRole: "academy-admin",
+      entityType: "setting",
+      entityId: clsId,
+      outcome: "SUCCESS",
+      changedFields: ["isActive"],
+      diff: [{ fieldName: "isActive", before: String(targetCls?.isActive), after: String(newStatus) }],
+      sourcePortal: "academy-admin",
+    });
     showNotice("Class status updated.");
   };
 
   const handleToggleBoardStatus = (boardId: string) => {
+    const targetBoard = boards.find((b) => b.id === boardId);
+    const newStatus = !targetBoard?.isActive;
     setBoards((prev) =>
       prev.map((b) => (b.id === boardId ? { ...b, isActive: !b.isActive } : b))
     );
+    recordUpdate({
+      action: "Toggle Board Status",
+      type: "system",
+      target: targetBoard ? targetBoard.name : boardId,
+      details: `Updated educational board active status to: ${newStatus ? "Active" : "Inactive"}.`,
+      performedBy: "Academy Administrator",
+      actorRole: "academy-admin",
+      entityType: "setting",
+      entityId: boardId,
+      outcome: "SUCCESS",
+      changedFields: ["isActive"],
+      diff: [{ fieldName: "isActive", before: String(targetBoard?.isActive), after: String(newStatus) }],
+      sourcePortal: "academy-admin",
+    });
     showNotice("Board status updated.");
   };
 
@@ -113,6 +146,19 @@ export function AcademicSetupModule() {
       isActive: true,
     };
     setClasses((prev) => [...prev, newRecord]);
+    recordCreate({
+      action: "Create Academic Class",
+      type: "system",
+      target: cleanName,
+      details: `Created new academic grade tier "${cleanName}" with boards: ${newRecord.supportedBoards.join(", ")}.`,
+      performedBy: "Academy Administrator",
+      actorRole: "academy-admin",
+      entityType: "setting",
+      entityId: cleanId,
+      outcome: "SUCCESS",
+      changedFields: ["name", "supportedBoards", "isActive"],
+      sourcePortal: "academy-admin",
+    });
     setIsAddClassModalOpen(false);
     setNewClassName("");
     showNotice(`Added master record for "${cleanName}".`);
@@ -120,9 +166,25 @@ export function AcademicSetupModule() {
 
   // --- SUBJECT ACTIONS ---
   const handleToggleSubjectStatus = (subId: string) => {
+    const targetSub = subjects.find((s) => s.id === subId);
+    const newStatus = !targetSub?.isActive;
     setSubjects((prev) =>
       prev.map((s) => (s.id === subId ? { ...s, isActive: !s.isActive } : s))
     );
+    recordUpdate({
+      action: "Toggle Subject Status",
+      type: "system",
+      target: targetSub ? targetSub.name : subId,
+      details: `Updated curriculum subject active status to: ${newStatus ? "Active" : "Inactive"}.`,
+      performedBy: "Academy Administrator",
+      actorRole: "academy-admin",
+      entityType: "setting",
+      entityId: subId,
+      outcome: "SUCCESS",
+      changedFields: ["isActive"],
+      diff: [{ fieldName: "isActive", before: String(targetSub?.isActive), after: String(newStatus) }],
+      sourcePortal: "academy-admin",
+    });
     showNotice("Subject status updated.");
   };
 
@@ -145,6 +207,19 @@ export function AcademicSetupModule() {
       description: newSubDesc.trim(),
     };
     setSubjects((prev) => [...prev, newSub]);
+    recordCreate({
+      action: "Create Curriculum Subject",
+      type: "system",
+      target: `${cleanName} (${newSub.code})`,
+      details: `Added curriculum catalog subject ${cleanName} (${newSub.code}). Default Fee: ₹${newSub.defaultMonthlyFee}/mo.`,
+      performedBy: "Academy Administrator",
+      actorRole: "academy-admin",
+      entityType: "setting",
+      entityId: cleanId,
+      outcome: "SUCCESS",
+      changedFields: ["name", "code", "defaultMonthlyFee", "isActive"],
+      sourcePortal: "academy-admin",
+    });
     setIsAddSubjectModalOpen(false);
     setNewSubName("");
     setNewSubCode("");
@@ -154,9 +229,25 @@ export function AcademicSetupModule() {
 
   // --- BATCH ACTIONS ---
   const handleToggleBatchStatus = (batchId: string) => {
+    const targetBatch = batches.find((b) => b.id === batchId);
+    const newStatus = targetBatch?.status === "active" ? "upcoming" : "active";
     setBatches((prev) =>
       prev.map((b) => (b.id === batchId ? { ...b, status: b.status === "active" ? "upcoming" : "active" } : b))
     );
+    recordUpdate({
+      action: "Toggle Batch Status",
+      type: "system",
+      target: targetBatch ? targetBatch.name : batchId,
+      details: `Updated batch operational status to: ${newStatus}.`,
+      performedBy: "Academy Administrator",
+      actorRole: "academy-admin",
+      entityType: "batch",
+      entityId: batchId,
+      outcome: "SUCCESS",
+      changedFields: ["status"],
+      diff: [{ fieldName: "status", before: targetBatch?.status || "active", after: newStatus }],
+      sourcePortal: "academy-admin",
+    });
     showNotice("Batch status updated.");
   };
 
@@ -178,6 +269,19 @@ export function AcademicSetupModule() {
       status: "active",
     };
     setBatches((prev) => [newBatch, ...prev]);
+    recordCreate({
+      action: "Create Batch",
+      type: "enrollment",
+      target: `${newBatch.name} · ${newBatch.subject}`,
+      details: `Created batch ${newBatch.name} (${newBatch.classGrade}). Teacher: ${newBatch.teacherName}, Fee: ₹${newBatch.monthlyFee}/mo.`,
+      performedBy: "Academy Administrator",
+      actorRole: "academy-admin",
+      entityType: "batch",
+      entityId: newBatch.id,
+      outcome: "SUCCESS",
+      changedFields: ["name", "subject", "classGrade", "teacherName", "capacity", "monthlyFee"],
+      sourcePortal: "academy-admin",
+    });
     setIsAddBatchModalOpen(false);
     setBatchNameInput("");
     showNotice(`Created batch "${newBatch.name}" assigned to ${newBatch.teacherName}.`);
@@ -185,6 +289,8 @@ export function AcademicSetupModule() {
 
   // --- TEACHER ACTIONS ---
   const handleToggleTeacherStatus = (teacherId: string) => {
+    const targetTeacher = faculty.find((t) => t.id === teacherId);
+    const newStatus = (targetTeacher?.status || "active") === "active" ? "inactive" : "active";
     setFaculty((prev) =>
       prev.map((t) =>
         t.id === teacherId
@@ -192,6 +298,20 @@ export function AcademicSetupModule() {
           : t
       )
     );
+    recordUpdate({
+      action: "Toggle Faculty Status",
+      type: "system",
+      target: targetTeacher ? targetTeacher.name : teacherId,
+      details: `Updated faculty member status to: ${newStatus}.`,
+      performedBy: "Academy Administrator",
+      actorRole: "academy-admin",
+      entityType: "faculty",
+      entityId: teacherId,
+      outcome: "SUCCESS",
+      changedFields: ["status"],
+      diff: [{ fieldName: "status", before: targetTeacher?.status || "active", after: newStatus }],
+      sourcePortal: "academy-admin",
+    });
     showNotice("Faculty member status updated.");
   };
 
@@ -211,6 +331,19 @@ export function AcademicSetupModule() {
       status: "active",
     };
     setFaculty((prev) => [...prev, newProf]);
+    recordCreate({
+      action: "Register Faculty Member",
+      type: "system",
+      target: `${newProf.name} (${newProf.assignedSubjects.join(", ")})`,
+      details: `Registered faculty member ${newProf.name} with assigned subjects: ${newProf.assignedSubjects.join(", ")}.`,
+      performedBy: "Academy Administrator",
+      actorRole: "academy-admin",
+      entityType: "faculty",
+      entityId: cleanId,
+      outcome: "SUCCESS",
+      changedFields: ["name", "assignedSubjects", "batches", "status"],
+      sourcePortal: "academy-admin",
+    });
     setIsAddTeacherModalOpen(false);
     setNewTeacherName("");
     setNewTeacherEmail("");
