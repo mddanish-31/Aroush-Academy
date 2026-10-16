@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { PaymentTransaction, MonthlyFeeObligation, StudentProfile, SubjectEnrollment } from "@/types";
+import { PaymentTransaction, MonthlyFeeObligation, StudentProfile, SubjectEnrollment, VerifiedFeeReceipt } from "@/types";
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
 
@@ -13,6 +13,7 @@ export interface FeeReceiptModalProps {
   student: StudentProfile;
   enrollment: SubjectEnrollment;
   remainingBalanceAfterPayment: number;
+  receipt?: VerifiedFeeReceipt;
 }
 
 export function FeeReceiptModal({
@@ -23,6 +24,7 @@ export function FeeReceiptModal({
   student,
   enrollment,
   remainingBalanceAfterPayment,
+  receipt,
 }: FeeReceiptModalProps) {
   React.useEffect(() => {
     if (!isOpen) return;
@@ -138,7 +140,7 @@ export function FeeReceiptModal({
               Fee Receipt Voucher
             </span>
             <div style={{ fontSize: "11px", color: "var(--color-neutral)", marginTop: "4px" }}>
-              Receipt No: <strong style={{ color: "#FFFFFF" }}>{transaction.referenceId}</strong>
+              Receipt No: <strong style={{ color: "#FFFFFF" }}>{receipt?.receiptNumber || transaction.referenceId}</strong>
             </div>
           </div>
         </div>
