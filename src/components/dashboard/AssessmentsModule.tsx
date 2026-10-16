@@ -256,10 +256,26 @@ export function AssessmentsModule({
           return false;
         }
       } else if (role === "student" || role === "parent") {
-        // Students and parents only see published assessments for their class grade
+        // Students and parents only see published or completed assessments for their class grade
         if (!targetStudent) return false;
         if (exam.classGrade !== targetStudent.classGrade) return false;
         if (exam.status !== "published" && exam.status !== "completed") return false;
+
+        // Scoped strictly to student's enrolled subjects or exams where they have recorded results
+        const studentEnrollments = enrollments.filter(
+          (e) => e.studentId === targetStudent.id && (e.status || "active") === "active"
+        );
+        if (studentEnrollments.length > 0) {
+          const isEnrolledInSubject = studentEnrollments.some((e) => {
+            const sName = e.subjectName.toLowerCase().trim();
+            const exSub = exam.subject.toLowerCase().trim();
+            return sName === exSub || exSub.includes(sName) || sName.includes(exSub);
+          });
+          const hasScoreRecorded = exam.studentScores.some(
+            (s) => s.studentId === targetStudent.id
+          );
+          if (!isEnrolledInSubject && !hasScoreRecorded) return false;
+        }
       }
 
       // Filter by subject
@@ -285,7 +301,7 @@ export function AssessmentsModule({
 
       return true;
     });
-  }, [assessments, role, currentTeacherId, currentTeacher, targetStudent, filterSubject, filterBatch, filterType, filterStatus, searchQuery]);
+  }, [assessments, role, currentTeacherId, currentTeacher, targetStudent, enrollments, filterSubject, filterBatch, filterType, filterStatus, searchQuery]);
 
   // --------------------------------------------------------------------------
   // OVERVIEW METRICS (Strictly derived from actual assessment records)
@@ -355,7 +371,7 @@ export function AssessmentsModule({
     assessments.forEach((exam) => {
       // Role scoping for results
       if (role === "student" || role === "parent") {
-        if (exam.status !== "published") return; // Students/parents can view ONLY published results
+        if (exam.status !== "published" && exam.status !== "completed") return; // Students/parents can view published or completed results
       } else if (role === "teacher") {
         if (exam.teacherId !== currentTeacherId && !currentTeacher?.assignedSubjects.includes(exam.subject)) {
           return;
@@ -638,6 +654,34 @@ export function AssessmentsModule({
   const handlePreviewCertificateModal = (cert: IssuedCertificateRecord | AcademicCertificateData, isIssued = true) => {
     setActiveCertificate(cert);
     setActiveCertIsIssued(isIssued);
+  };
+
+  // --------------------------------------------------------------------------
+  // QUICK STATUS TOGGLE (Publish / Unpublish)
+  // --------------------------------------------------------------------------
+  const handleTogglePublishStatus = (exam: AssessmentRecord, newStatus: AssessmentStatus) => {
+    setAssessments((prev) =>
+      prev.map((a) => (a.id === exam.id ? { ...a, status: newStatus } : a))
+    );
+    recordUpdate({
+      action: newStatus === "published" ? "Publish Assessment" : "Unpublish Assessment",
+      type: "enrollment",
+      target: `${exam.title} · ${exam.subject}`,
+      details: `${newStatus === "published" ? "Published" : "Unpublished"} assessment "${exam.title}" (${exam.subject}). Status changed to ${newStatus}.`,
+      performedBy: role === "academy-admin" ? "Academy Administrator" : (currentTeacher?.name || "Teacher"),
+      actorRole: role,
+      entityType: "assessment",
+      entityId: exam.id,
+      outcome: "SUCCESS",
+      changedFields: ["status"],
+      diff: [{ fieldName: "status", before: exam.status || "draft", after: newStatus }],
+      sourcePortal: role,
+    });
+    showToast(
+      newStatus === "published"
+        ? `Published assessment "${exam.title}". Now visible to enrolled students.`
+        : `Unpublished assessment "${exam.title}". Reverted to draft.`
+    );
   };
 
   // --------------------------------------------------------------------------
@@ -2270,23 +2314,60 @@ export function AssessmentsModule({
                         flexWrap: "wrap",
                       }}
                     >
-                      <div style={{ display: "flex", gap: "6px" }}>
+                      <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                         {canEdit && (
-                          <button
-                            type="button"
-                            onClick={() => handleOpenCreateAssessmentModal(exam)}
-                            style={{
-                              fontSize: "11px",
-                              color: "var(--color-neutral-dark)",
-                              background: "none",
-                              border: "none",
-                              cursor: "pointer",
-                              fontWeight: 600,
-                              padding: "4px",
-                            }}
-                          >
-                            Edit Settings
-                          </button>
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenCreateAssessmentModal(exam)}
+                              style={{
+                                fontSize: "11px",
+                                color: "var(--color-neutral-dark)",
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                fontWeight: 600,
+                                padding: "4px",
+                              }}
+                            >
+                              Edit Settings
+                            </button>
+                            {exam.status === "published" ? (
+                              <button
+                                type="button"
+                                onClick={() => handleTogglePublishStatus(exam, "draft")}
+                                style={{
+                                  fontSize: "11px",
+                                  color: "var(--color-warning, #FF9500)",
+                                  background: "none",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  fontWeight: 600,
+                                  padding: "4px",
+                                }}
+                                title="Unpublish this assessment to make it a draft (hidden from students)"
+                              >
+                                Unpublish
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleTogglePublishStatus(exam, "published")}
+                                style={{
+                                  fontSize: "11px",
+                                  color: "var(--color-success, #34C759)",
+                                  background: "none",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  fontWeight: 600,
+                                  padding: "4px",
+                                }}
+                                title="Publish this assessment to make it visible to enrolled students"
+                              >
+                                Publish →
+                              </button>
+                            )}
+                          </>
                         )}
                       </div>
 
