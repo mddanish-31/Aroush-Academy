@@ -2974,7 +2974,7 @@ export function DashboardShell({
                             </thead>
                             <tbody>
                               {studentPayments.map((tx) => {
-                                const enr = SAMPLE_ENROLLMENTS.find(
+                                const enr = enrollments.find(
                                   (e) => e.id === tx.enrollmentId,
                                 );
                                 return (
@@ -3699,7 +3699,7 @@ export function DashboardShell({
                           </thead>
                           <tbody>
                             {parentPayments.map((tx) => {
-                              const enr = SAMPLE_ENROLLMENTS.find(
+                              const enr = enrollments.find(
                                 (e) => e.id === tx.enrollmentId,
                               );
                               return (
