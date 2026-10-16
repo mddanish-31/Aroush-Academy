@@ -29,6 +29,11 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ExamCertificateModal } from "./ExamCertificateModal";
 import { useDemoStorage, DEMO_STORAGE_KEYS } from "@/lib/demoStorage";
+import {
+  recordCreate,
+  recordUpdate,
+  recordAuditEvent,
+} from "@/lib/auditService";
 
 interface AssessmentsModuleProps {
   role: UserRole;
@@ -567,6 +572,21 @@ export function AssessmentsModule({
     };
 
     setIssuedCertificates((prev) => [newCert, ...prev]);
+
+    recordCreate({
+      action: "Issue Examination Certificate",
+      type: "enrollment",
+      target: `${student.name} · ${certNum}`,
+      details: `Issued academic certificate #${certNum} to ${student.name} for ${assessment.title} (Score: ${percentage}%). Issued by: ${newCert.issuedBy}.`,
+      performedBy: role === "academy-admin" ? "Academy Administrator" : currentTeacher.name,
+      actorRole: role,
+      entityType: "certificate",
+      entityId: newCert.id,
+      outcome: "SUCCESS",
+      changedFields: ["status", "certificateNumber", "percentage"],
+      sourcePortal: role,
+    });
+
     setIsConfirmIssueOpen(false);
     setPendingIssueCandidate(null);
     showToast(`Issued Certificate ${certNum} to ${student.name}!`);
@@ -593,6 +613,23 @@ export function AssessmentsModule({
           : c
       )
     );
+
+    recordAuditEvent({
+      action: "Revoke Examination Certificate",
+      actionType: "CANCEL",
+      type: "enrollment",
+      target: `${pendingRevokeCert.studentName} · ${pendingRevokeCert.certificateNumber}`,
+      details: `Revoked certificate #${pendingRevokeCert.certificateNumber} for ${pendingRevokeCert.studentName}. Reason: ${revokeReasonInput.trim() || "Policy correction"}.`,
+      performedBy: role === "academy-admin" ? "Academy Administrator" : (currentTeacher ? currentTeacher.name : "Teacher"),
+      actorRole: role,
+      entityType: "certificate",
+      entityId: pendingRevokeCert.id,
+      outcome: "SUCCESS",
+      changedFields: ["status", "revocationReason"],
+      diff: [{ fieldName: "status", before: "issued", after: "revoked" }],
+      sourcePortal: role,
+    });
+
     setIsConfirmRevokeOpen(false);
     showToast(`Revoked certificate ${pendingRevokeCert.certificateNumber}. Status updated to Revoked.`);
     setPendingRevokeCert(null);
@@ -695,6 +732,19 @@ export function AssessmentsModule({
           return a;
         })
       );
+      recordUpdate({
+        action: "Update Assessment",
+        type: "enrollment",
+        target: `${formTitle.trim()} · ${formSubject}`,
+        details: `Updated assessment definition for ${formSubject} (${formBatch}). Total Marks: ${formTotalMarks}, Status: ${formStatus}.`,
+        performedBy: role === "academy-admin" ? "Academy Administrator" : (currentTeacher?.name || "Teacher"),
+        actorRole: role,
+        entityType: "assessment",
+        entityId: editingAssessmentId,
+        outcome: "SUCCESS",
+        changedFields: ["title", "subject", "batch", "totalMarks", "status", "certificatePolicy"],
+        sourcePortal: role,
+      });
       showToast(`Updated assessment "${formTitle.trim()}".`);
     } else {
       const newAssessment: AssessmentRecord = {
@@ -712,6 +762,19 @@ export function AssessmentsModule({
         studentScores: [],
       };
       setAssessments((prev) => [newAssessment, ...prev]);
+      recordCreate({
+        action: "Create Assessment",
+        type: "enrollment",
+        target: `${formTitle.trim()} · ${formSubject}`,
+        details: `Created new assessment for ${formSubject} (${formBatch}). Max Marks: ${formTotalMarks}, Grade: ${formClassGrade}.`,
+        performedBy: role === "academy-admin" ? "Academy Administrator" : (currentTeacher?.name || "Teacher"),
+        actorRole: role,
+        entityType: "assessment",
+        entityId: newAssessment.id,
+        outcome: "SUCCESS",
+        changedFields: ["title", "subject", "batch", "totalMarks", "type", "status"],
+        sourcePortal: role,
+      });
       showToast(`Created new assessment "${formTitle.trim()}".`);
     }
 
@@ -780,6 +843,20 @@ export function AssessmentsModule({
     );
 
     setIsRecordModalOpen(false);
+    recordUpdate({
+      action: "Record Student Marks",
+      type: "enrollment",
+      target: `${student.name} · ${targetExam.title}`,
+      details: `Recorded marks ${marksNum}/${targetExam.totalMarks} (${recordStatusInput}) for ${student.name} in ${targetExam.title}.`,
+      performedBy: role === "academy-admin" ? "Academy Administrator" : (currentTeacher?.name || "Teacher"),
+      actorRole: role,
+      entityType: "marks",
+      entityId: `marks-${targetExam.id}-${student.id}`,
+      outcome: "SUCCESS",
+      changedFields: ["marksObtained", "status", "feedback"],
+      diff: [{ fieldName: "marksObtained", before: "unrecorded", after: String(marksNum) }],
+      sourcePortal: role,
+    });
     showToast(`Recorded score of ${marksNum}/${targetExam.totalMarks} for ${student.name}.`);
   };
 
@@ -865,6 +942,20 @@ export function AssessmentsModule({
           return exam;
         })
       );
+
+      recordCreate({
+        action: "Submit Mock Examination",
+        type: "enrollment",
+        target: `${stdName} · ${selectedExam.title}`,
+        details: `Online examination attempt submitted. Score: ${result.scoreObtained}/${selectedExam.totalMarks} (${result.percentage}%), Correct: ${result.correctCount}/${result.totalQuestions}, Type: ${submissionType}.`,
+        performedBy: stdName,
+        actorRole: "student",
+        entityType: "mock-attempt",
+        entityId: `attempt-${selectedExam.id}-${stdId}`,
+        outcome: "SUCCESS",
+        changedFields: ["scoreObtained", "percentage", "correctCount", "submissionType"],
+        sourcePortal: "student",
+      });
 
       showToast(
         submissionType === "timeout"
@@ -999,6 +1090,19 @@ export function AssessmentsModule({
 
     if (authoringExamId) {
       setMockExams((prev) => prev.map((ex) => (ex.id === authoringExamId ? examData : ex)));
+      recordUpdate({
+        action: "Update Mock Exam",
+        type: "enrollment",
+        target: `${examData.title} · ${examData.subject}`,
+        details: `Updated mock exam questions and timing (${examData.durationMinutes}m, ${examData.questions.length} questions, ${examData.totalMarks} marks).`,
+        performedBy: role === "academy-admin" ? "Academy Administrator" : (currentTeacher?.name || "Teacher"),
+        actorRole: role,
+        entityType: "mock-exam",
+        entityId: examData.id,
+        outcome: "SUCCESS",
+        changedFields: ["title", "durationMinutes", "totalMarks", "questions"],
+        sourcePortal: role,
+      });
       showToast(`Updated mock exam "${examData.title}".`);
     } else {
       setMockExams((prev) => [examData, ...prev]);
@@ -1023,6 +1127,19 @@ export function AssessmentsModule({
         studentScores: [],
       };
       setAssessments((prev) => [linkedRecord, ...prev]);
+      recordCreate({
+        action: "Author Mock Exam",
+        type: "enrollment",
+        target: `${examData.title} · ${examData.subject}`,
+        details: `Published new online mock exam for ${examData.subject} (${examData.classGrade}). Duration: ${examData.durationMinutes}m, Total Marks: ${examData.totalMarks}.`,
+        performedBy: role === "academy-admin" ? "Academy Administrator" : (currentTeacher?.name || "Teacher"),
+        actorRole: role,
+        entityType: "mock-exam",
+        entityId: examData.id,
+        outcome: "SUCCESS",
+        changedFields: ["title", "subject", "durationMinutes", "totalMarks", "status"],
+        sourcePortal: role,
+      });
       showToast(`Published mock exam "${examData.title}" and integrated into assessments.`);
     }
 
@@ -1887,8 +2004,22 @@ export function AssessmentsModule({
                     variant="secondary"
                     size="sm"
                     onClick={() => {
-                      setAllowTeacherCertControl((prev) => !prev);
-                      showToast(`Teacher certificate configuration is now ${!allowTeacherCertControl ? "Permitted" : "Restricted to Admin"}.`);
+                      const nextState = !allowTeacherCertControl;
+                      setAllowTeacherCertControl(nextState);
+                      recordUpdate({
+                        action: "Update Certificate Policy Permission",
+                        type: "system",
+                        target: "Teacher Certificate Permission",
+                        details: `Changed teacher certificate configuration permission to: ${nextState ? "Permitted" : "Restricted to Admin"}.`,
+                        performedBy: "Academy Administrator",
+                        actorRole: "academy-admin",
+                        entityType: "setting",
+                        entityId: "setting-teacher-cert-control",
+                        outcome: "SUCCESS",
+                        diff: [{ fieldName: "allowTeacherCertControl", before: String(allowTeacherCertControl), after: String(nextState) }],
+                        sourcePortal: "academy-admin",
+                      });
+                      showToast(`Teacher certificate configuration is now ${nextState ? "Permitted" : "Restricted to Admin"}.`);
                     }}
                   >
                     {allowTeacherCertControl ? "Restrict to Admin" : "Allow Teachers"}
