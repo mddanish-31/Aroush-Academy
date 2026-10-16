@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
-import { UserRole, NoticeItem, AuditLogEntry } from "@/types";
-import { SAMPLE_NOTICES, SAMPLE_AUDIT_LOGS } from "@/data/dashboardModulesData";
+import { UserRole, NoticeItem } from "@/types";
+import { SAMPLE_NOTICES } from "@/data/dashboardModulesData";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useDemoStorage, DEMO_STORAGE_KEYS } from "@/lib/demoStorage";
+import { recordCreate } from "@/lib/auditService";
 
 interface NoticesModuleProps {
   role: UserRole;
@@ -55,10 +56,6 @@ export function NoticesModule({ role }: NoticesModuleProps) {
   const [notices, setNotices] = useDemoStorage<NoticeItem[]>(
     DEMO_STORAGE_KEYS.NOTICES,
     SAMPLE_NOTICES
-  );
-  const [, setAuditLogs] = useDemoStorage<AuditLogEntry[]>(
-    DEMO_STORAGE_KEYS.AUDIT_LOGS,
-    SAMPLE_AUDIT_LOGS
   );
 
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -119,17 +116,20 @@ export function NoticesModule({ role }: NoticesModuleProps) {
 
     setNotices((prev) => [newNotice, ...prev]);
 
-    // Record activity event in shared audit trail
-    const auditEntry: AuditLogEntry = {
-      id: `log-not-${Date.now()}`,
-      timestamp: new Date().toISOString().replace("T", " ").substring(0, 19),
-      performedBy: authorName,
-      action: "Notice Published",
-      target: "All Roles",
-      details: `Published ${priorityInput === "urgent" ? "urgent " : ""}circular: "${newNotice.title}" (${categoryInput}).`,
+    // Record activity event in centralized audit trail
+    recordCreate({
+      action: "Publish Notice",
       type: "system",
-    };
-    setAuditLogs((prev) => [auditEntry, ...prev]);
+      target: `Notice: "${newNotice.title}" (${categoryInput})`,
+      details: `Published ${priorityInput === "urgent" ? "urgent " : ""}circular: "${newNotice.title}" (${categoryInput}) targeted to all academic roles.`,
+      performedBy: authorName,
+      actorRole: role,
+      entityType: "notice",
+      entityId: newNotice.id,
+      outcome: "SUCCESS",
+      changedFields: ["title", "category", "priority", "content"],
+      sourcePortal: role,
+    });
 
     setIsPublishModalOpen(false);
     setTitleInput("");
