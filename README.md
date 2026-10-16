@@ -115,18 +115,27 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 Run the full verification suite:
 
 ```bash
-# 1. Typecheck with TypeScript
-npm run typecheck
+# Core static quality checks
+npm run typecheck            # TypeScript compilation check
+npm run lint                 # ESLint checks
+npm run build                # Next.js Turbopack production build
 
-# 2. Linting with ESLint
-npm run lint
-
-# 3. Production Build with Next.js Turbopack
-npm run build
+# Domain & Verification Test Suites
+npm run test:browser-qa      # Browser QA Workflow & UI Simulation Suite (15 checks)
+npm run test:audit-logs      # Central Audit Log & Sanitization Suite (15 checks)
+npm run test:fees            # Subject-Wise Fee Management Suite (17 checks)
+npm run test:cross-portal    # Cross-Portal Integration & Scoping Suite (12 scenarios)
+npm run test:attendance      # Attendance Roster & Calculation Suite (16 checks)
+npm run test:timetable       # Timetable & Routine Conflict Suite (20 checks)
+npm run test:online-classes  # Virtual Classroom Management Suite (10 checks)
+npm run test:examinations    # Exam & Certificate Governance Suite (6 checks)
+npm run test:digital-id      # Student Digital ID & QR Security Suite (10 checks)
 ```
 
 ---
 
-## 5. Next Recommended Step
+## 5. Architecture & Security Notice
 
-- **Task 04:** Authentication & Role Gateway (Implement dedicated, accessible Login and Registration interfaces supporting credentials validation, role selector tabs, magic link readiness, and session protection—maintaining the strict frontend-first rule).
+- **Frontend-First Demo Architecture**: All authentication, session storage, and fee tracking operate strictly within client-side demo adapters and browser storage (`sessionStorage`, `localStorage`, `IndexedDB`).
+- **Demo Boundary**: Client-side storage and demonstration credentials are non-authoritative and intentionally distinguished from production infrastructure (which requires backend services, server-side JWT verification, and encrypted database persistence).
+
