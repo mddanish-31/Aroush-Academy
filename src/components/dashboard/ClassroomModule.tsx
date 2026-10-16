@@ -25,6 +25,11 @@ import {
   validateOnlineClassPayload,
   getTeacherRecentMeetingUrls,
 } from "@/lib/onlineClassUtils";
+import {
+  recordCreate,
+  recordUpdate,
+  recordCancel,
+} from "@/lib/auditService";
 
 interface ClassroomModuleProps {
   role: UserRole;
@@ -240,6 +245,20 @@ export function ClassroomModule({
         )
       );
       showNotification(`Updated online class for ${formSubject} (${formBatch}).`);
+
+      recordUpdate({
+        action: "Update Online Classroom Session",
+        type: "enrollment",
+        target: `${formTopic.trim()} · ${formSubject} (${formBatch})`,
+        details: `Updated online classroom session: "${formTopic.trim()}" (${formSubject}, ${formBatch}) on ${formDate} (${formStartTime} - ${formEndTime}). Provider: ${finalProvider}.`,
+        performedBy: role === "academy-admin" ? "Academy Administrator" : teacherName,
+        actorRole: role,
+        entityType: "classroom-session",
+        entityId: editingSessionId,
+        outcome: "SUCCESS",
+        changedFields: ["topic", "subject", "batch", "date", "time", "meetingProvider", "status"],
+        sourcePortal: role,
+      });
     } else {
       // Create new online class session
       const newSession: ClassroomSession = {
@@ -264,6 +283,20 @@ export function ClassroomModule({
       };
       setSessions((prev) => [newSession, ...prev]);
       showNotification(`Scheduled new online class: ${formTopic.trim()}`);
+
+      recordCreate({
+        action: "Schedule Online Classroom Session",
+        type: "enrollment",
+        target: `${newSession.topic} · ${newSession.subject} (${newSession.batchName})`,
+        details: `Scheduled live classroom: "${newSession.topic}" for ${newSession.batchName} on ${newSession.date} (${newSession.startTime} - ${newSession.endTime}). Instructor: ${teacherName}.`,
+        performedBy: role === "academy-admin" ? "Academy Administrator" : teacherName,
+        actorRole: role,
+        entityType: "classroom-session",
+        entityId: newSession.id,
+        outcome: "SUCCESS",
+        changedFields: ["topic", "subject", "batchName", "date", "startTime", "endTime", "meetingProvider"],
+        sourcePortal: role,
+      });
     }
 
     setIsFormModalOpen(false);
@@ -278,6 +311,21 @@ export function ClassroomModule({
     if (detailsSession?.id === session.id) {
       setDetailsSession({ ...detailsSession, status: "cancelled" });
     }
+
+    recordCancel({
+      action: "Cancel Online Classroom Session",
+      type: "enrollment",
+      target: `${session.topic} (${session.batchName})`,
+      details: `Cancelled online classroom session: "${session.topic}" (${session.subject}) scheduled for ${session.date}.`,
+      performedBy: role === "academy-admin" ? "Academy Administrator" : "Faculty Teacher",
+      actorRole: role,
+      entityType: "classroom-session",
+      entityId: session.id,
+      outcome: "SUCCESS",
+      changedFields: ["status"],
+      diff: [{ fieldName: "status", before: session.status, after: "cancelled" }],
+      sourcePortal: role,
+    });
   };
 
   const handleCompleteSession = (session: ClassroomSession) => {
@@ -288,6 +336,21 @@ export function ClassroomModule({
     if (detailsSession?.id === session.id) {
       setDetailsSession({ ...detailsSession, status: "completed" });
     }
+
+    recordUpdate({
+      action: "Complete Online Classroom Session",
+      type: "enrollment",
+      target: `${session.topic} (${session.batchName})`,
+      details: `Concluded online classroom session: "${session.topic}" (${session.subject}). Marked as completed.`,
+      performedBy: role === "academy-admin" ? "Academy Administrator" : "Faculty Teacher",
+      actorRole: role,
+      entityType: "classroom-session",
+      entityId: session.id,
+      outcome: "SUCCESS",
+      changedFields: ["status"],
+      diff: [{ fieldName: "status", before: session.status, after: "completed" }],
+      sourcePortal: role,
+    });
   };
 
   const handleReactivateSession = (session: ClassroomSession) => {
@@ -298,6 +361,21 @@ export function ClassroomModule({
     if (detailsSession?.id === session.id) {
       setDetailsSession({ ...detailsSession, status: "scheduled" });
     }
+
+    recordUpdate({
+      action: "Reactivate Online Classroom Session",
+      type: "enrollment",
+      target: `${session.topic} (${session.batchName})`,
+      details: `Reactivated online classroom session: "${session.topic}" (${session.subject}) back to scheduled status.`,
+      performedBy: role === "academy-admin" ? "Academy Administrator" : "Faculty Teacher",
+      actorRole: role,
+      entityType: "classroom-session",
+      entityId: session.id,
+      outcome: "SUCCESS",
+      changedFields: ["status"],
+      diff: [{ fieldName: "status", before: session.status, after: "scheduled" }],
+      sourcePortal: role,
+    });
   };
 
   // Join Meeting Handler (Opens external URL in new browser tab)
