@@ -68,14 +68,18 @@ export function sanitizeAuditText(input: string): string {
   let text = input;
 
   // Redact potential passwords or tokens
-  text = text.replace(/(?:password|token|secret|key)\s*[:=]\s*["']?[^"'\s,;]+["']?/gi, "$1=[REDACTED]");
+  text = text.replace(
+    /\b(password|token|secret|key|apikey|bearer)\b\s*[:=]\s*(?:["'][^"']*["']|[^\s,;]+)/gi,
+    "$1=[REDACTED]"
+  );
 
-  // Mask guardian phone numbers (e.g. 10-digit Indian mobile numbers)
-  text = text.replace(/(\+?91[\s-]?)?[6-9]\d{9}/g, (match) => {
+  // Mask guardian phone numbers (e.g. 10-digit Indian mobile numbers with optional prefix)
+  text = text.replace(/(?<!\d)(?:(?:\+?91|0)[\s-]?)?[6-9](?:[\s-]?\d){9}(?!\d)/g, (match) => {
     // Keep first 2 and last 2 digits, mask the rest
     const digits = match.replace(/\D/g, "");
-    if (digits.length >= 10) {
-      return `+91 ${digits.slice(0, 2)}••••••${digits.slice(-2)}`;
+    const last10 = digits.slice(-10);
+    if (last10.length === 10) {
+      return `+91 ${last10.slice(0, 2)}••••••${last10.slice(-2)}`;
     }
     return "[PHONE REDACTED]";
   });
@@ -91,12 +95,14 @@ export function sanitizeDiff(diff?: AuditFieldChange[]): AuditFieldChange[] | un
 
   const forbiddenFields = [
     "password",
-    "passwordhash",
     "token",
     "secret",
-    "guardianphone",
+    "phone",
+    "contactnumber",
     "emergencycontact",
-    "phonenumber",
+    "pin",
+    "credential",
+    "apikey",
   ];
 
   return diff.map((change) => {
