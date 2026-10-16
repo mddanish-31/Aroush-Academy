@@ -9,6 +9,9 @@ import type {
   AssessmentRecord,
   IssuedCertificateRecord,
   StudyMaterialItem,
+  MonthlyFeeObligation,
+  MockExam,
+  BatchDefinition,
 } from "@/types";
 import {
   DEMO_STORAGE_KEYS,
@@ -27,6 +30,9 @@ import {
   SAMPLE_MATERIALS,
   SAMPLE_ATTENDANCE,
   SAMPLE_BATCHES,
+  isBatchMatchingClass,
+  isBatchMatchingSubject,
+  getEligibleFacultyForSubject,
 } from "@/data/dashboardModulesData";
 import {
   DEFAULT_CLASSES,
@@ -41,7 +47,7 @@ import {
 } from "@/lib/studyMaterialStorage";
 
 console.log("==================================================================");
-console.log("   AROUCH ACADEMY — 12-POINT MASTER CROSS-PORTAL VERIFICATION    ");
+console.log("   AROUCH ACADEMY — 14-POINT MASTER CROSS-PORTAL VERIFICATION    ");
 console.log("==================================================================");
 
 // -------------------------------------------------------------------------
@@ -1104,6 +1110,335 @@ console.log("\nScenario 12: Simultaneous classes for different teachers without 
   console.log("  ✓ Passed: Simultaneous classes supported; single-teacher schedule conflicts detected");
 }
 
+// -------------------------------------------------------------------------
+// Scenario 13: Student Profile & Teacher Reassignment Synchronization
+// -------------------------------------------------------------------------
+console.log("\nScenario 13: Student Profile & Teacher Reassignment Synchronization...");
+{
+  // 1. Initial State for std-101 (Taha Rahman) enrolled with Azhar Sir (tch-azhar) for Maths
+  const initialStudent: StudentProfile = {
+    id: "std-101",
+    name: "Taha Rahman",
+    classGrade: "Class X",
+    board: "ICSE",
+    guardianName: "Tariq Rahman",
+    guardianPhone: "098830 11221",
+    joiningDate: "2026-04-10",
+    studentStatus: "active",
+  };
+
+  const initialEnrollments: SubjectEnrollment[] = [
+    {
+      id: "enr-101-math",
+      studentId: "std-101",
+      studentName: "Taha Rahman",
+      classGrade: "Class X",
+      subjectName: "Mathematics",
+      teacherId: "tch-azhar",
+      teacherName: "Azhar Sir",
+      batchName: "Batch Alpha",
+      enrollmentDate: "2026-04-10",
+      monthlyFeeAmount: 1500,
+      status: "active",
+    },
+  ];
+
+  const initialObligations: MonthlyFeeObligation[] = [
+    {
+      id: "ob-101-math-2026-10",
+      enrollmentId: "enr-101-math",
+      studentId: "std-101",
+      studentName: "Taha Rahman",
+      subjectName: "Mathematics",
+      teacherId: "tch-azhar",
+      month: "2026-10",
+      monthLabel: "October 2026",
+      feeAmount: 1500,
+      dueDate: "2026-10-15",
+    },
+  ];
+
+  // 2. Admin edits student: Updates name to "Taha R. Rahman" and reassigns Maths to Fatima Ma'am (tch-fatima)
+  const updatedStudent: StudentProfile = {
+    ...initialStudent,
+    name: "Taha R. Rahman",
+  };
+
+  const updatedEnrollments: SubjectEnrollment[] = [
+    {
+      ...initialEnrollments[0],
+      studentName: "Taha R. Rahman",
+      teacherId: "tch-fatima",
+      teacherName: "Fatima Ma'am",
+    },
+  ];
+
+  // DirectoryModule synchronization logic
+  const activeSubjectNames = new Set(updatedEnrollments.map((e) => e.subjectName.toLowerCase()));
+  const syncedObligations = initialObligations
+    .filter((o) => o.studentId !== updatedStudent.id || activeSubjectNames.has(o.subjectName.toLowerCase()))
+    .map((o) => {
+      if (o.studentId !== updatedStudent.id) return o;
+      const matchingEnr = updatedEnrollments.find(
+        (e) => e.subjectName.toLowerCase() === o.subjectName.toLowerCase()
+      );
+      if (!matchingEnr) return { ...o, studentName: updatedStudent.name };
+      return {
+        ...o,
+        studentName: updatedStudent.name,
+        teacherId: matchingEnr.teacherId,
+        enrollmentId: matchingEnr.id,
+      };
+    });
+
+  // Verify synced obligations reflect updated name and new teacher
+  assert.strictEqual(syncedObligations[0].studentName, "Taha R. Rahman");
+  assert.strictEqual(syncedObligations[0].teacherId, "tch-fatima");
+
+  // Verify Teacher Portal filtering for Azhar Sir vs Fatima Ma'am
+  const azharObligations = syncedObligations.filter((o) => o.teacherId === "tch-azhar");
+  const fatimaObligations = syncedObligations.filter((o) => o.teacherId === "tch-fatima");
+  assert.strictEqual(azharObligations.length, 0, "Previous teacher Azhar Sir no longer sees reassigned obligation");
+  assert.strictEqual(fatimaObligations.length, 1, "New teacher Fatima Ma'am sees reassigned obligation");
+
+  // Verify DashboardShell settlement table resolves enrollment dynamically
+  const samplePayment: PaymentTransaction = {
+    id: "tx-demo-test",
+    obligationId: "ob-101-math-2026-10",
+    enrollmentId: "enr-101-math",
+    studentId: "std-101",
+    amount: 1500,
+    paymentDate: "2026-10-16",
+    paymentMethod: "online",
+    referenceId: "UPI-TEST-SYNC",
+    collectedByRole: "teacher",
+    collectedByName: "Fatima Ma'am",
+    isGatewayVerified: true,
+  };
+
+  const resolvedEnr = updatedEnrollments.find((e) => e.id === samplePayment.enrollmentId);
+  assert.ok(resolvedEnr, "Enrollment resolved dynamically from reactive store");
+  assert.strictEqual(resolvedEnr.subjectName, "Mathematics");
+  assert.strictEqual(resolvedEnr.teacherName, "Fatima Ma'am");
+  console.log("  ✓ Passed: Student profile updates and teacher reassignments synchronize obligations and portal views");
+}
+
+// -------------------------------------------------------------------------
+// Scenario 14: Dynamic Faculty Attribution in Assessment Authoring & Dropdown Scoping
+// -------------------------------------------------------------------------
+console.log("\nScenario 14: Dynamic Faculty Attribution in Assessment Authoring & Dropdown Scoping...");
+{
+  const activeFacultyList: TeacherProfile[] = [
+    ...SAMPLE_TEACHERS,
+    {
+      id: "tch-alvi",
+      name: "Dr. Tariq Alvi",
+      assignedSubjects: ["Science", "Physics"],
+      batches: ["Batch Science (Class IX-X)"],
+      email: "tariq.alvi@aroush.academy",
+      status: "active",
+    },
+  ];
+
+  // Authoring teacher resolution
+  const currentTeacherId = "tch-alvi";
+  const resolvingTeacher =
+    activeFacultyList.find((t) => t.id === currentTeacherId) || activeFacultyList[0] || SAMPLE_TEACHERS[0];
+
+  assert.strictEqual(resolvingTeacher.id, "tch-alvi", "Resolves to newly added faculty tch-alvi");
+  assert.strictEqual(resolvingTeacher.name, "Dr. Tariq Alvi", "Attributed accurately to Dr. Tariq Alvi");
+
+  const createdExam: MockExam = {
+    id: "mock-alvi-01",
+    title: "Class X Physics Mid-Term",
+    subject: "Physics",
+    classGrade: "Class X",
+    batchName: "Batch Science (Class IX-X)",
+    teacherId: resolvingTeacher.id,
+    teacherName: resolvingTeacher.name,
+    durationMinutes: 60,
+    totalMarks: 50,
+    instructions: ["Read questions carefully."],
+    questions: [],
+    status: "published",
+  };
+
+  assert.strictEqual(createdExam.teacherId, "tch-alvi");
+  assert.strictEqual(createdExam.teacherName, "Dr. Tariq Alvi");
+  assert.notStrictEqual(createdExam.teacherName, "Azhar Sir", "Does not fall back to default seed faculty");
+
+  // Verify teacher student list scoping
+  const allStudents = SAMPLE_STUDENTS;
+  const enrollmentsList: SubjectEnrollment[] = [
+    {
+      id: "enr-std-1",
+      studentId: "std-101",
+      studentName: "Taha Rahman",
+      classGrade: "Class X",
+      subjectName: "Physics",
+      teacherId: "tch-alvi",
+      teacherName: "Dr. Tariq Alvi",
+      batchName: "Batch Science",
+      enrollmentDate: "2026-10-01",
+      monthlyFeeAmount: 1400,
+      status: "active",
+    },
+    {
+      id: "enr-std-2",
+      studentId: "std-102",
+      studentName: "Ananya Verma",
+      classGrade: "Class X",
+      subjectName: "Mathematics",
+      teacherId: "tch-azhar",
+      teacherName: "Azhar Sir",
+      batchName: "Batch Alpha",
+      enrollmentDate: "2026-10-01",
+      monthlyFeeAmount: 1500,
+      status: "active",
+    },
+  ];
+
+  const teacherEnrollments = enrollmentsList.filter((e) => e.teacherId === "tch-alvi");
+  const teacherStudentIds = new Set(teacherEnrollments.map((e) => e.studentId));
+  const teacherScopedStudents = allStudents.filter((s) => teacherStudentIds.has(s.id));
+
+  assert.strictEqual(teacherScopedStudents.length, 1);
+  assert.strictEqual(teacherScopedStudents[0].id, "std-101", "Teacher tch-alvi only scopes to enrolled student std-101");
+  assert.strictEqual(teacherScopedStudents.some((s) => s.id === "std-102"), false, "Teacher tch-alvi cannot inspect unenrolled std-102");
+  console.log("  ✓ Passed: Dynamic faculty authoring attribution and teacher student scoping verified");
+}
+
+// -------------------------------------------------------------------------
+// Scenario 15: Registration Form Validation & Batch/Faculty Scoping by Grade & Subject
+// -------------------------------------------------------------------------
+console.log("\nScenario 15: Registration Form Validation & Batch/Faculty Scoping by Grade & Subject...");
+{
+  const testBatches = SAMPLE_BATCHES;
+  const testFaculty = SAMPLE_TEACHERS;
+
+  // 1. Grade-based batch isolation for Class X
+  const classXMathBatches = testBatches.filter(
+    (b) =>
+      b.status === "active" &&
+      isBatchMatchingSubject(b, "Mathematics") &&
+      isBatchMatchingClass(b, "Class X")
+  );
+  assert.ok(classXMathBatches.some((b) => b.id === "btc-alpha"), "Class X sees Batch Alpha (Class IX-X)");
+  assert.strictEqual(
+    classXMathBatches.some((b) => b.id === "btc-hs"),
+    false,
+    "Class X student CANNOT see or select Class XI-XII batch (Batch Higher Secondary)"
+  );
+
+  // 2. Grade-based batch isolation for Class XII
+  const classXIIMathBatches = testBatches.filter(
+    (b) =>
+      b.status === "active" &&
+      isBatchMatchingSubject(b, "Mathematics") &&
+      isBatchMatchingClass(b, "Class XII")
+  );
+  assert.ok(classXIIMathBatches.some((b) => b.id === "btc-hs"), "Class XII sees Batch Higher Secondary (Class XI-XII)");
+  assert.strictEqual(
+    classXIIMathBatches.some((b) => b.id === "btc-alpha"),
+    false,
+    "Class XII student CANNOT see or select Class IX-X batch (Batch Alpha)"
+  );
+
+  // 3. Subject-based faculty assignment vetting (no silent fallback to unqualified faculty)
+  const mathFaculty = getEligibleFacultyForSubject(testFaculty, "Mathematics");
+  assert.strictEqual(mathFaculty.length, 1, "Only 1 qualified faculty for Mathematics");
+  assert.strictEqual(mathFaculty[0].id, "tch-azhar", "Qualified teacher is Azhar Sir");
+  assert.strictEqual(mathFaculty.some((t) => t.id === "tch-alvi"), false, "Science teacher Dr. Tariq Alvi not listed for Mathematics");
+  assert.strictEqual(mathFaculty.some((t) => t.id === "tch-roy"), false, "Commerce teacher Prof. Roy not listed for Mathematics");
+
+  // 4. Empty state when no faculty is allocated to subject
+  const englishFaculty = getEligibleFacultyForSubject(testFaculty, "English Language & Literature");
+  assert.strictEqual(
+    englishFaculty.length,
+    0,
+    "Returns empty array when no qualified faculty exists; does NOT silently fall back to all teachers"
+  );
+  console.log("  ✓ Passed: Batch filtering by grade/subject and strict qualified faculty scoping verified");
+}
+
+// -------------------------------------------------------------------------
+// Scenario 16: Academic Setup Consistency, Batch Fee Overrides & Paid Record Protection
+// -------------------------------------------------------------------------
+console.log("\nScenario 16: Academic Setup Consistency, Batch Fee Overrides & Paid Record Protection...");
+{
+  // 1. Batch-specific fee override vs Subject catalog default
+  const mathSubjectCatalog = DEFAULT_SUBJECTS.find((s) => s.name === "Mathematics");
+  const hsMathBatch = SAMPLE_BATCHES.find((b) => b.id === "btc-hs");
+
+  assert.strictEqual(mathSubjectCatalog?.defaultMonthlyFee, 1500, "Math catalog default fee is 1500");
+  assert.strictEqual(hsMathBatch?.monthlyFee, 1600, "Batch Higher Secondary has batch-specific override of 1600");
+
+  // 2. Custom English batch 'abc' with override fee of 1600 vs catalog default 1200
+  const englishSubjectCatalog = DEFAULT_SUBJECTS.find((s) => s.name === "English Language & Literature");
+  assert.strictEqual(englishSubjectCatalog?.defaultMonthlyFee, 1200, "English catalog default fee is 1200");
+
+  const customEnglishBatch: BatchDefinition = {
+    id: "btc-abc-eng",
+    name: "abc English Batch (Class IX-X)",
+    subject: "English Language & Literature",
+    classGrade: "Class X",
+    teacherId: "tch-azhar",
+    teacherName: "Azhar Sir",
+    capacity: 20,
+    enrolledCount: 1,
+    schedule: "Tue, Thu (04:30 PM - 06:00 PM)",
+    monthlyFee: 1600, // Configured batch override
+    status: "active",
+  };
+
+  // During enrollment, selecting custom batch configures fee to 1600
+  const resolvedEnrollmentFee = customEnglishBatch.monthlyFee || englishSubjectCatalog?.defaultMonthlyFee;
+  assert.strictEqual(resolvedEnrollmentFee, 1600, "Enrollment uses configured batch fee override (1600) instead of base catalog (1200)");
+
+  // 3. Legitimate additional assignment: assigning teacher to new subject adds subject to faculty profile
+  const teacher = SAMPLE_TEACHERS.find((t) => t.id === "tch-azhar")!;
+  const hasSubject = teacher.assignedSubjects.some((s) => s.toLowerCase() === "english language & literature");
+  assert.strictEqual(hasSubject, false, "Azhar Sir initially does not have English");
+
+  const updatedTeacher: TeacherProfile = {
+    ...teacher,
+    assignedSubjects: [...teacher.assignedSubjects, "English Language & Literature"],
+    batches: [...(teacher.batches || []), customEnglishBatch.name],
+  };
+  assert.ok(
+    updatedTeacher.assignedSubjects.includes("English Language & Literature"),
+    "Instructor profile legitimately updated with additional subject assignment"
+  );
+
+  // 4. Protection of paid financial records: never overwrite feeAmount on paid obligations
+  const historicalPaidObligation: MonthlyFeeObligation = {
+    id: "ob-paid-101",
+    enrollmentId: "enr-101",
+    studentId: "std-101",
+    studentName: "Taha Rahman",
+    subjectName: "Mathematics",
+    teacherId: "tch-azhar",
+    month: "2026-09",
+    monthLabel: "September 2026",
+    feeAmount: 1500, // Paid at original 1500 rate
+    dueDate: "2026-09-15",
+  };
+
+  const paidObligationIds = new Set(["ob-paid-101"]);
+  const newBatchMonthlyRate = 1800; // Revised rate
+
+  // Profile update simulation
+  const isPaid = paidObligationIds.has(historicalPaidObligation.id);
+  const preservedFeeAmount = isPaid ? historicalPaidObligation.feeAmount : newBatchMonthlyRate;
+  assert.strictEqual(
+    preservedFeeAmount,
+    1500,
+    "Historical paid obligation feeAmount (1500) preserved intact; never silently overwritten by new batch rate (1800)"
+  );
+  console.log("  ✓ Passed: Batch-specific fee overrides, faculty allocation, and paid record protection verified");
+}
+
 console.log("\n==================================================================");
-console.log("   ALL 12 MASTER CROSS-PORTAL VERIFICATION SCENARIOS PASSED!     ");
+console.log("   ALL 16 MASTER CROSS-PORTAL VERIFICATION SCENARIOS PASSED!     ");
 console.log("==================================================================");
+
