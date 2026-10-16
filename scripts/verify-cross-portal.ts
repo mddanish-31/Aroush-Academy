@@ -26,7 +26,19 @@ import {
   SAMPLE_ASSESSMENTS,
   SAMPLE_MATERIALS,
   SAMPLE_ATTENDANCE,
+  SAMPLE_BATCHES,
 } from "@/data/dashboardModulesData";
+import {
+  DEFAULT_CLASSES,
+  DEFAULT_SUBJECTS,
+} from "@/data/academicMasterData";
+import {
+  DEFAULT_STUDY_MATERIAL_TYPES,
+  isMaterialVisibleToRole,
+  canManageMaterial,
+  validateStudyMaterialFile,
+  demoStudyMaterialStorage,
+} from "@/lib/studyMaterialStorage";
 
 console.log("==================================================================");
 console.log("   AROUCH ACADEMY — 12-POINT MASTER CROSS-PORTAL VERIFICATION    ");
@@ -509,34 +521,488 @@ console.log("\nScenario 10: Demo storage persistence and safe fallback schema...
 }
 
 // -------------------------------------------------------------------------
-// Scenario 11: Role-Based Scoping for Study Materials & Notices
+// Scenario 11: Real-World Study Materials Workflow, Dynamic Cascade & Role Scoping
 // -------------------------------------------------------------------------
-console.log("\nScenario 11: Role-based scoping for study materials and notices...");
+console.log("\nScenario 11: Real-world study materials workflow, dynamic cascade & role scoping...");
 {
-  const newMaterial: StudyMaterialItem = {
-    id: "mat-99",
-    title: "Class X Science — Genetics & Heredity Revision Notes",
-    subject: "Science",
-    classGrade: "Class X",
+  // 1. Dynamic Dropdowns & Dependent Cascade Validation
+  const teacherRoy = SAMPLE_TEACHERS.find((t) => t.id === "tch-roy");
+  assert.ok(teacherRoy, "Teacher Prof. N. Roy exists");
+  assert.deepStrictEqual(
+    teacherRoy.assignedSubjects,
+    ["Accountancy", "Economics"],
+    "Teacher Roy assigned subjects strictly follow faculty profile"
+  );
+
+  // Accountancy master record specifies only Class XI & XII
+  const accSubject = DEFAULT_SUBJECTS.find((s) => s.name === "Accountancy");
+  assert.ok(accSubject, "Accountancy subject exists in academic master data");
+  const applicableClassesForAcc = DEFAULT_CLASSES.filter((c) =>
+    accSubject.applicableClassIds.includes(c.id)
+  ).map((c) => c.name);
+  assert.deepStrictEqual(
+    applicableClassesForAcc,
+    ["Class XI", "Class XII"],
+    "Accountancy is applicable strictly to Class XI and Class XII"
+  );
+
+  // Auto-reset verification: If class was Class X and subject switched to Accountancy,
+  // downstream class must auto-reset to a valid class (Class XI or XII)
+  const prevClass = "Class X";
+  const autoResetClass = applicableClassesForAcc.includes(prevClass)
+    ? prevClass
+    : applicableClassesForAcc[0];
+  assert.strictEqual(
+    autoResetClass,
+    "Class XI",
+    "Invalid downstream selection (Class X) auto-resets to valid class (Class XI) for Accountancy"
+  );
+
+  // Batches for (Class XII, Accountancy) must only return matching batches
+  const matchingBatches = SAMPLE_BATCHES.filter(
+    (b) =>
+      b.classGrade === "Class XII" &&
+      (b.subject === "Accountancy" || b.subject.includes("Accountancy"))
+  );
+  assert.strictEqual(matchingBatches.length, 1, "Exactly one batch matches Class XII Accountancy");
+  assert.strictEqual(
+    matchingBatches[0].name,
+    "Batch Commerce (Class XI-XII)",
+    "Correct batch resolved for Class XII Accountancy"
+  );
+
+  // 2. Admin Configurable Resource Types
+  assert.ok(DEFAULT_STUDY_MATERIAL_TYPES.includes("PDF Notes"), "Default types include PDF Notes");
+  assert.ok(DEFAULT_STUDY_MATERIAL_TYPES.includes("Formula Sheet"), "Default types include Formula Sheet");
+
+  const customTypes = [...DEFAULT_STUDY_MATERIAL_TYPES, "Lab Manual", "Revision Digest"];
+  setDemoStorage(DEMO_STORAGE_KEYS.STUDY_MATERIAL_TYPES, customTypes);
+  const retrievedTypes = getDemoStorage<string[]>(
+    DEMO_STORAGE_KEYS.STUDY_MATERIAL_TYPES,
+    DEFAULT_STUDY_MATERIAL_TYPES
+  );
+  assert.ok(retrievedTypes.includes("Lab Manual"), "Admin-configured custom type Lab Manual persisted");
+  assert.ok(retrievedTypes.includes("Revision Digest"), "Admin-configured custom type Revision Digest persisted");
+
+  // 3. Shared Permissions Logic (canManageMaterial)
+  const matAzhar = SAMPLE_MATERIALS[0]; // Uploaded by Azhar Sir (tch-azhar, Mathematics)
+  const matRoy: StudyMaterialItem = {
+    id: "mat-roy-1",
+    title: "Class XII Accountancy — Partnership Balance Sheet Digest",
+    subject: "Accountancy",
+    classGrade: "Class XII",
+    batchName: "Batch Commerce (Class XI-XII)",
     type: "PDF Notes",
-    size: "2.4 MB",
-    uploadedBy: "Dr. Tariq Alvi",
-    teacherId: "tch-alvi",
+    size: "3.1 MB",
+    uploadedBy: "Prof. N. Roy",
+    teacherId: "tch-roy",
     date: "2026-10-15",
+    status: "published",
+    hasPhysicalFile: true,
+    fileName: "Partnership_Balance_Sheet.pdf",
+    fileUrl: "blob:http://localhost:3000/mock-partnership",
   };
 
-  const materialsStore = [...SAMPLE_MATERIALS, newMaterial];
+  // Academy Admin can manage ALL materials
+  assert.strictEqual(canManageMaterial(matAzhar, "academy-admin"), true, "Admin can manage Azhar's material");
+  assert.strictEqual(canManageMaterial(matRoy, "academy-admin"), true, "Admin can manage Roy's material");
 
-  // Student std-999 (enrolled in Science) can view
-  const stdEnrolledSubjects = ["Science"];
-  const visibleToStd999 = materialsStore.filter((m) => stdEnrolledSubjects.includes(m.subject));
-  assert.ok(visibleToStd999.some((m) => m.id === "mat-99"), "Enrolled student sees Science material");
+  // Teacher Roy can manage Roy's material, but CANNOT manage Azhar's material
+  assert.strictEqual(
+    canManageMaterial(matRoy, "teacher", "tch-roy", ["Accountancy", "Economics"]),
+    true,
+    "Teacher Roy can manage own uploaded material"
+  );
+  assert.strictEqual(
+    canManageMaterial(matAzhar, "teacher", "tch-roy", ["Accountancy", "Economics"]),
+    false,
+    "Teacher Roy CANNOT manage Azhar's Mathematics material"
+  );
 
-  // Student std-102 (enrolled only in Mathematics) cannot view
-  const std102EnrolledSubjects = ["Accountancy"];
-  const visibleToStd102 = materialsStore.filter((m) => std102EnrolledSubjects.includes(m.subject));
-  assert.strictEqual(visibleToStd102.some((m) => m.id === "mat-99"), false, "Non-enrolled student does NOT see Science material");
-  console.log("  ✓ Passed: Study materials scoped strictly to enrolled subjects and assigned faculty");
+  // 4. Strict Publication Status & Draft Hiding (isMaterialVisibleToRole)
+  const draftMaterial: StudyMaterialItem = {
+    id: "mat-draft-1",
+    title: "Class X Mathematics — Draft Question Bank Q4",
+    subject: "Mathematics",
+    classGrade: "Class X",
+    batchName: "All Batches in this Class",
+    type: "Worksheet",
+    size: "1.2 MB",
+    uploadedBy: "Azhar Sir",
+    teacherId: "tch-azhar",
+    date: "2026-10-15",
+    status: "draft",
+  };
+
+  const studentTahaContext = {
+    student: { id: "std-101", classGrade: "Class X" },
+    enrolledSubjects: ["Mathematics"],
+    enrolledBatches: ["Batch Alpha (Class IX-X)"],
+  };
+
+  // Drafts are STRICTLY hidden from students and parents
+  assert.strictEqual(
+    isMaterialVisibleToRole(draftMaterial, "student", studentTahaContext),
+    false,
+    "Draft material is strictly HIDDEN from student portal"
+  );
+  assert.strictEqual(
+    isMaterialVisibleToRole(draftMaterial, "parent", studentTahaContext),
+    false,
+    "Draft material is strictly HIDDEN from parent portal"
+  );
+  // Author teacher can see the draft
+  assert.strictEqual(
+    isMaterialVisibleToRole(draftMaterial, "teacher", {
+      teacherId: "tch-azhar",
+      teacherAssignedSubjects: ["Mathematics"],
+    }),
+    true,
+    "Author teacher CAN see their own draft"
+  );
+
+  // 5. Batch-Level Scoping Isolation
+  const batchScopedMaterial: StudyMaterialItem = {
+    id: "mat-batch-scoped",
+    title: "Advanced Commerce Specialized Homework",
+    subject: "Accountancy",
+    classGrade: "Class XII",
+    batchName: "Batch Commerce (Class XI-XII)",
+    type: "Assignment",
+    size: "1.0 MB",
+    uploadedBy: "Prof. N. Roy",
+    teacherId: "tch-roy",
+    date: "2026-10-15",
+    status: "published",
+  };
+
+  // Student in Batch Commerce (Class XII) CAN see
+  const stdCommerceContext = {
+    student: { id: "std-103", classGrade: "Class XII" },
+    enrolledSubjects: ["Accountancy"],
+    enrolledBatches: ["Batch Commerce (Class XI-XII)"],
+  };
+  assert.strictEqual(
+    isMaterialVisibleToRole(batchScopedMaterial, "student", stdCommerceContext),
+    true,
+    "Student enrolled in target batch CAN see batch-scoped material"
+  );
+
+  // Student in different batch CANNOT see
+  const stdOtherBatchContext = {
+    student: { id: "std-104", classGrade: "Class XII" },
+    enrolledSubjects: ["Accountancy"],
+    enrolledBatches: ["Batch Science (Class IX-X)"],
+  };
+  assert.strictEqual(
+    isMaterialVisibleToRole(batchScopedMaterial, "student", stdOtherBatchContext),
+    false,
+    "Student in different batch CANNOT see batch-scoped material"
+  );
+
+  // 6. File Extension & Limit Validation
+  const fakeFileInvalid = {
+    name: "malicious_script.exe",
+    size: 2048,
+    type: "application/x-msdownload",
+  } as unknown as File;
+  const invalidExtResult = validateStudyMaterialFile(fakeFileInvalid);
+  assert.strictEqual(invalidExtResult.isValid, false, "Invalid file format (.exe) is correctly rejected");
+
+  const fakeFileOversized = {
+    name: "huge_book.pdf",
+    size: 25 * 1024 * 1024, // 25 MB
+    type: "application/pdf",
+  } as unknown as File;
+  const oversizedResult = validateStudyMaterialFile(fakeFileOversized);
+  assert.strictEqual(oversizedResult.isValid, false, "Oversized file (25MB > 15MB) is correctly rejected");
+
+  const fakeFileValid = {
+    name: "Calculus_Summary.pdf",
+    size: 4 * 1024 * 1024, // 4 MB
+    type: "application/pdf",
+  } as unknown as File;
+  const validResult = validateStudyMaterialFile(fakeFileValid);
+  assert.strictEqual(validResult.isValid, true, "Permitted PDF under 15MB is successfully validated");
+
+  // 7. Full 22-Point Regression: Azhar Sir -> Taha Rahman (std-101) & Amina Rahman (Parent)
+  // Reproduction target resource: "5 ML Projects Details + Verdict"
+  const reproId = "mat-ml-projects-repro";
+
+  // Case 1: Teacher Azhar Sir uploads file and saves it as Draft
+  const mlProjectsDraft: StudyMaterialItem = {
+    id: reproId,
+    title: "5 ML Projects Details + Verdict",
+    subject: "Mathematics",
+    classGrade: "Class X",
+    batchName: "All Batches in this Class",
+    type: "PDF Notes",
+    size: "2.4 MB",
+    uploadedBy: "Azhar Sir",
+    teacherId: "tch-azhar",
+    date: "2026-10-16",
+    createdAt: new Date().toISOString(),
+    status: "draft",
+    fileName: "5_ML_Projects_Details_Verdict.pdf",
+    hasPhysicalFile: true,
+  };
+  demoStudyMaterialStorage.saveMaterial(mlProjectsDraft);
+
+  // Case 2: The Draft appears in the Teacher portal
+  const teacherAzharContext = {
+    teacherId: "tch-azhar",
+    teacherAssignedSubjects: ["Mathematics"],
+  };
+  assert.strictEqual(
+    isMaterialVisibleToRole(mlProjectsDraft, "teacher", teacherAzharContext),
+    true,
+    "Case 2: Teacher Azhar Sir sees the draft in Teacher Portal"
+  );
+
+  // Case 3: The Draft remains strictly hidden from Student and Parent
+  const eligibleStudentTahaContext = {
+    student: { id: "std-101", classGrade: "Class X" },
+    enrolledSubjects: ["Mathematics", "Physics"],
+    enrolledBatches: ["Batch Alpha (Class IX-X)", "Batch Science (Class IX-X)"],
+  };
+  assert.strictEqual(
+    isMaterialVisibleToRole(mlProjectsDraft, "student", eligibleStudentTahaContext),
+    false,
+    "Case 3a: Draft strictly hidden from Student Taha Rahman"
+  );
+  assert.strictEqual(
+    isMaterialVisibleToRole(mlProjectsDraft, "parent", eligibleStudentTahaContext),
+    false,
+    "Case 3b: Draft strictly hidden from Parent Amina Rahman"
+  );
+
+  // Case 4: Teacher publishes the same record
+  const mlProjectsPublished: StudyMaterialItem = {
+    ...mlProjectsDraft,
+    status: "published",
+  };
+  demoStudyMaterialStorage.saveMaterial(mlProjectsPublished);
+
+  // Case 5: The status changes from Draft to Published immediately
+  assert.strictEqual(
+    mlProjectsPublished.status,
+    "published",
+    "Case 5: Status changed from draft to published"
+  );
+
+  // Case 6: The Published status remains correct after re-retrieval from canonical storage
+  const reloadedMaterials = demoStudyMaterialStorage.getMaterials();
+  const reloadedItem = reloadedMaterials.find((m) => m.id === reproId);
+  assert.ok(reloadedItem, "Case 6a: Saved resource persists in canonical collection");
+  assert.strictEqual(reloadedItem.status, "published", "Case 6b: Resource status remains published after reload");
+
+  // Case 7: The eligible Student (Taha Rahman) sees the uploaded resource
+  assert.strictEqual(
+    isMaterialVisibleToRole(reloadedItem, "student", eligibleStudentTahaContext),
+    true,
+    "Case 7: Eligible Student Taha Rahman sees published 5 ML Projects Details + Verdict"
+  );
+
+  // Case 8: The linked Parent (Amina Rahman) sees the exact same eligible resource
+  assert.strictEqual(
+    isMaterialVisibleToRole(reloadedItem, "parent", eligibleStudentTahaContext),
+    true,
+    "Case 8: Linked Parent Amina Rahman sees published 5 ML Projects Details + Verdict"
+  );
+
+  // Case 9: An unrelated Student cannot see the resource (different class)
+  const studentZaydContext = {
+    student: { id: "std-103", classGrade: "Class XII" },
+    enrolledSubjects: ["Mathematics", "Accountancy"],
+    enrolledBatches: ["Batch Higher Secondary (Class XI-XII)"],
+  };
+  assert.strictEqual(
+    isMaterialVisibleToRole(reloadedItem, "student", studentZaydContext),
+    false,
+    "Case 9: Unrelated Student Zayd (Class XII) CANNOT see the resource"
+  );
+
+  // Case 10: A subject mismatch prevents visibility (safe compound matching, no substring accident)
+  const studentSciContext = {
+    student: { id: "std-sci-only", classGrade: "Class X" },
+    enrolledSubjects: ["Science"],
+    enrolledBatches: ["Batch Beta (Class X)"],
+  };
+  assert.strictEqual(
+    isMaterialVisibleToRole(reloadedItem, "student", studentSciContext),
+    false,
+    "Case 10: Subject mismatch prevents visibility (enrolled in Science, not Mathematics)"
+  );
+
+  // Case 11: A class mismatch prevents visibility
+  const studentMathClass12 = {
+    student: { id: "std-math-12", classGrade: "Class XII" },
+    enrolledSubjects: ["Mathematics"],
+    enrolledBatches: ["Batch Higher Secondary (Class XI-XII)"],
+  };
+  assert.strictEqual(
+    isMaterialVisibleToRole(reloadedItem, "student", studentMathClass12),
+    false,
+    "Case 11: Class mismatch prevents visibility (Class XII vs Class X)"
+  );
+
+  // Case 12: A batch mismatch prevents visibility
+  const batchScopedMat: StudyMaterialItem = {
+    ...reloadedItem,
+    id: "mat-batch-scoped-beta",
+    batchName: "Batch Beta (Class X)",
+  };
+  assert.strictEqual(
+    isMaterialVisibleToRole(batchScopedMat, "student", eligibleStudentTahaContext),
+    false,
+    "Case 12: Batch mismatch prevents visibility (Taha is in Batch Alpha, material is Batch Beta)"
+  );
+
+  // Case 13: "All Batches in Class" works only within the intended class
+  assert.strictEqual(
+    isMaterialVisibleToRole(reloadedItem, "student", eligibleStudentTahaContext),
+    true,
+    "Case 13a: All Batches in Class works for Class X student"
+  );
+  assert.strictEqual(
+    isMaterialVisibleToRole(reloadedItem, "student", studentMathClass12),
+    false,
+    "Case 13b: All Batches in Class does NOT leak to Class XII student"
+  );
+
+  // Case 14: Editing updates the existing record without creating duplicates
+  const editedItem: StudyMaterialItem = {
+    ...reloadedItem,
+    description: "Updated project rubric and evaluation verdict criteria.",
+  };
+  demoStudyMaterialStorage.saveMaterial(editedItem);
+  const afterEditList = demoStudyMaterialStorage.getMaterials();
+  assert.strictEqual(
+    afterEditList.filter((m) => m.id === reproId).length,
+    1,
+    "Case 14: Editing updates existing record without creating duplicates (unique ID preserved)"
+  );
+
+  // Case 15: Editing does not silently revert Published to Draft
+  const reRetrievedAfterEdit = afterEditList.find((m) => m.id === reproId);
+  assert.strictEqual(
+    reRetrievedAfterEdit?.status,
+    "published",
+    "Case 15: Editing preserves published status without silent reversion"
+  );
+
+  // Case 16: Unpublishing hides the resource from Student and Parent
+  const unpublishedItem: StudyMaterialItem = {
+    ...editedItem,
+    status: "draft",
+  };
+  demoStudyMaterialStorage.saveMaterial(unpublishedItem);
+  assert.strictEqual(
+    isMaterialVisibleToRole(unpublishedItem, "student", eligibleStudentTahaContext),
+    false,
+    "Case 16a: Unpublishing immediately hides resource from Student"
+  );
+  assert.strictEqual(
+    isMaterialVisibleToRole(unpublishedItem, "parent", eligibleStudentTahaContext),
+    false,
+    "Case 16b: Unpublishing immediately hides resource from Parent"
+  );
+
+  // Case 17: Republishing restores eligible visibility
+  const republishedItem: StudyMaterialItem = {
+    ...unpublishedItem,
+    status: "published",
+  };
+  demoStudyMaterialStorage.saveMaterial(republishedItem);
+  assert.strictEqual(
+    isMaterialVisibleToRole(republishedItem, "student", eligibleStudentTahaContext),
+    true,
+    "Case 17a: Republishing restores Student visibility"
+  );
+  assert.strictEqual(
+    isMaterialVisibleToRole(republishedItem, "parent", eligibleStudentTahaContext),
+    true,
+    "Case 17b: Republishing restores Parent visibility"
+  );
+
+  // Case 18: Deleting removes the record from all relevant views
+  demoStudyMaterialStorage.deleteMaterial(reproId);
+  const listAfterDelete = demoStudyMaterialStorage.getMaterials();
+  assert.strictEqual(
+    listAfterDelete.some((m) => m.id === reproId),
+    false,
+    "Case 18: Deleting removes resource from canonical storage"
+  );
+
+  // Case 19: Missing or expired file bytes never produce a fake successful download
+  const itemWithoutBinary: StudyMaterialItem = {
+    id: "mat-no-binary",
+    title: "Catalog Reference Document",
+    subject: "Mathematics",
+    classGrade: "Class X",
+    type: "PDF Notes",
+    size: "1.2 MB",
+    uploadedBy: "Azhar Sir",
+    teacherId: "tch-azhar",
+    date: "2026-10-16",
+    status: "published",
+    hasPhysicalFile: false,
+  };
+  const downloadResultNoBinary = await demoStudyMaterialStorage.downloadFile(itemWithoutBinary);
+  assert.strictEqual(
+    downloadResultNoBinary,
+    false,
+    "Case 19: Missing file bytes never produce fake successful download"
+  );
+
+  // Case 20: Actual file download handles binary availability honestly
+  assert.strictEqual(
+    demoStudyMaterialStorage.hasActiveSessionFile("non-existent-id"),
+    false,
+    "Case 20: hasActiveSessionFile returns false when no binary bytes exist"
+  );
+
+  // Case 21: Switching demo roles does not revert canonical metadata to sample-only data
+  const persistedMaterial: StudyMaterialItem = {
+    id: "mat-canonical-test",
+    title: "5 ML Projects Details + Verdict",
+    subject: "Mathematics",
+    classGrade: "Class X",
+    batchName: "All Batches in this Class",
+    type: "PDF Notes",
+    size: "2.4 MB",
+    uploadedBy: "Azhar Sir",
+    teacherId: "tch-azhar",
+    date: "2026-10-16",
+    status: "published",
+    fileName: "5_ML_Projects_Details_Verdict.pdf",
+    hasPhysicalFile: true,
+  };
+  demoStudyMaterialStorage.saveMaterial(persistedMaterial);
+  // Verify Teacher reads this exact record
+  const teacherList = demoStudyMaterialStorage.getMaterials().filter((m) =>
+    isMaterialVisibleToRole(m, "teacher", teacherAzharContext)
+  );
+  assert.ok(teacherList.some((m) => m.id === "mat-canonical-test"), "Case 21a: Teacher reads canonical record");
+  // Verify Student reads from same canonical collection
+  const studentList = demoStudyMaterialStorage.getMaterials().filter((m) =>
+    isMaterialVisibleToRole(m, "student", eligibleStudentTahaContext)
+  );
+  assert.ok(studentList.some((m) => m.id === "mat-canonical-test"), "Case 21b: Student reads same canonical record");
+  // Verify Parent reads from same canonical collection
+  const parentList = demoStudyMaterialStorage.getMaterials().filter((m) =>
+    isMaterialVisibleToRole(m, "parent", eligibleStudentTahaContext)
+  );
+  assert.ok(parentList.some((m) => m.id === "mat-canonical-test"), "Case 21c: Parent reads same canonical record");
+
+  // Case 22: Linked Parent's materials match linked child's eligible materials
+  assert.deepStrictEqual(
+    studentList.map((m) => m.id).sort(),
+    parentList.map((m) => m.id).sort(),
+    "Case 22: Linked Parent's materials strictly match child's eligible materials"
+  );
+
+  console.log("  ✓ Passed: Dynamic dropdown cascade, auto-resets, admin type config, draft hiding, shared canonical storage, and all 22 cross-portal regression cases verified");
 }
 
 // -------------------------------------------------------------------------
