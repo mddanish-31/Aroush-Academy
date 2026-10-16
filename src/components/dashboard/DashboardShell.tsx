@@ -19,6 +19,9 @@ import { Badge } from "../ui/Badge";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { DigitalIdCard } from "./DigitalIdCard";
+import { IdCardManagementModule } from "./IdCardManagementModule";
+import { SAMPLE_ID_CARDS } from "@/data/studentIdCardsData";
+import { StudentIdCardRecord } from "@/types";
 import { FeeReceiptModal } from "./FeeReceiptModal";
 import { AttendanceModule } from "./AttendanceModule";
 import { TimetableModule } from "./TimetableModule";
@@ -30,7 +33,9 @@ import { AcademicSetupModule } from "./AcademicSetupModule";
 import { AuditLogsModule } from "./AuditLogsModule";
 import { ClassroomModule } from "./ClassroomModule";
 import { RegistrationApprovalsModule } from "./RegistrationApprovalsModule";
+import { FeesModule } from "./FeesModule";
 import { useDemoStorage, DEMO_STORAGE_KEYS } from "@/lib/demoStorage";
+import { recordCreate } from "@/lib/auditService";
 import {
   SAMPLE_TEACHERS,
   SAMPLE_STUDENTS,
@@ -293,7 +298,7 @@ export function DashboardShell({
       setActiveTab("Overview & Fee Ledger");
     } else if (
       resolvedRole !== "academy-admin" &&
-      activeTab === "Overview & Fee Ledger"
+      (activeTab === "Overview & Fee Ledger" || activeTab === "Audit Logs")
     ) {
       setActiveTab("Overview");
     }
@@ -320,7 +325,10 @@ export function DashboardShell({
   ) {
     setActiveTab("Overview & Fee Ledger");
   }
-  if (activeRole !== "academy-admin" && activeTab === "Overview & Fee Ledger") {
+  if (
+    activeRole !== "academy-admin" &&
+    (activeTab === "Overview & Fee Ledger" || activeTab === "Audit Logs")
+  ) {
     setActiveTab("Overview");
   }
 
@@ -351,11 +359,11 @@ export function DashboardShell({
     DEMO_STORAGE_KEYS.FACULTY,
     SAMPLE_TEACHERS,
   );
+  const [idCardRecords, setIdCardRecords] = useDemoStorage<StudentIdCardRecord[]>(
+    DEMO_STORAGE_KEYS.STUDENT_ID_CARDS,
+    SAMPLE_ID_CARDS,
+  );
 
-  // Admin filter state
-  const [adminTeacherFilter, setAdminTeacherFilter] = useState<string>("all");
-  const [adminSubjectFilter, setAdminSubjectFilter] = useState<string>("all");
-  const [adminStatusFilter, setAdminStatusFilter] = useState<string>("all");
 
   // Payment Recording Modal State
   const [recordingModal, setRecordingModal] = useState<{
@@ -368,7 +376,7 @@ export function DashboardShell({
     balance: number;
   } | null>(null);
 
-  const [cashAmountInput, setCashAmountInput] = useState<string>("");
+  const [cashAmountInput, setCashAmountInput] = useState<string>(" ");
   const [receiptNumberInput, setReceiptNumberInput] = useState<string>("");
   const [notesInput, setNotesInput] = useState<string>("");
 
@@ -401,12 +409,22 @@ export function DashboardShell({
   // Digital ID Card Modal State
   const [idCardModalStudent, setIdCardModalStudent] =
     useState<StudentProfile | null>(null);
+  const [idCardModalRecord, setIdCardModalRecord] =
+    useState<StudentIdCardRecord | null>(null);
   const [autoPrintIdCard, setAutoPrintIdCard] = useState<boolean>(false);
 
-  const openIdCardModal = (student: StudentProfile, autoPrint = false) => {
+  const openIdCardModal = (
+    student: StudentProfile,
+    autoPrint = false,
+    cardRecord?: StudentIdCardRecord,
+  ) => {
     setIdCardModalStudent(student);
+    setIdCardModalRecord(
+      cardRecord || idCardRecords.find((c) => c.studentId === student.id) || null,
+    );
     setAutoPrintIdCard(autoPrint);
   };
+
 
   // Escape key handler for dashboard payment modals
   useEffect(() => {
@@ -474,27 +492,7 @@ export function DashboardShell({
     return { studentCount, target, realized, balance };
   }, [teacherSummaries]);
 
-  // Admin filtered summaries
-  const adminSummaries = useMemo(() => {
-    return allSummaries.filter((s) => {
-      if (
-        adminTeacherFilter !== "all" &&
-        s.enrollment.teacherId !== adminTeacherFilter
-      )
-        return false;
-      if (
-        adminSubjectFilter !== "all" &&
-        s.enrollment.subjectName !== adminSubjectFilter
-      )
-        return false;
-      if (
-        adminStatusFilter !== "all" &&
-        s.currentMonthStatus !== adminStatusFilter
-      )
-        return false;
-      return true;
-    });
-  }, [allSummaries, adminTeacherFilter, adminSubjectFilter, adminStatusFilter]);
+
 
   // Active Student Profile (Strict isolation: only this student's records)
   const currentStudent = useMemo<StudentProfile | null>(() => {
@@ -693,6 +691,30 @@ export function DashboardShell({
     };
 
     setPayments((prev) => [newTx, ...prev]);
+
+    // Record Central Audit Entry
+    recordCreate({
+      action: "Record Cash Fee Payment",
+      type: "financial",
+      target: `Obligation #${recordingModal.obligationId} (${resolvedStudentId})`,
+      details: `Recorded cash fee collection of ₹${parsedAmount.toLocaleString("en-IN")} against ${recordingModal.obligationId}. Receipt ref: ${newTx.referenceId}.`,
+      performedBy:
+        activeRole === "academy-admin"
+          ? "Academy Admin Office"
+          : currentTeacher.name,
+      actorRole: activeRole,
+      entityType: "payment",
+      entityId: newTx.id,
+      outcome: "SUCCESS",
+      changedFields: ["amount", "paymentMethod", "referenceId"],
+      diff: [
+        { fieldName: "amount", before: 0, after: parsedAmount },
+        { fieldName: "paymentMethod", after: "cash" },
+        { fieldName: "referenceId", after: newTx.referenceId },
+      ],
+      sourcePortal: activeRole,
+    });
+
     setRecordingModal(null);
   };
 
@@ -2028,8 +2050,7 @@ export function DashboardShell({
                     )}
 
                     {/* TAB 2: SUBJECT FEE TRACKING TABLE */}
-                    {(activeTab === "Subject Fee Tracking" ||
-                      activeTab === "Overview") && (
+                    {activeTab === "Overview" && (
                       <div style={{ overflowX: "auto" }}>
                         <table
                           style={{
@@ -2237,6 +2258,12 @@ export function DashboardShell({
                 )}
 
                 {/* TEACHER ADDITIONAL MODULES */}
+                {activeTab === "Subject Fee Tracking" && (
+                  <FeesModule
+                    role="teacher"
+                    currentTeacherId={currentTeacher.id}
+                  />
+                )}
                 {activeTab === "Attendance" && (
                   <AttendanceModule
                     role="teacher"
@@ -2342,250 +2369,7 @@ export function DashboardShell({
                 )}
 
                 {isAcademyOverviewOrLedger && (
-                  <Card padding="lg" style={{ marginBottom: "var(--space-8)" }}>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "flex-start",
-                        marginBottom: "var(--space-4)",
-                        flexWrap: "wrap",
-                        gap: "var(--space-3)",
-                      }}
-                    >
-                      <div>
-                        <h2 style={{ fontSize: "var(--text-lg)" }}>
-                          Academy-Wide Subject Enrollments &amp; Collections
-                        </h2>
-                        <p
-                          style={{
-                            fontSize: "var(--text-xs)",
-                            color: "var(--color-neutral-dark)",
-                            margin: "2px 0 0",
-                          }}
-                        >
-                          Administrative oversight across all students, assigned
-                          instructors, and subject fee obligations.
-                        </p>
-                      </div>
-
-                      {/* Admin Filters */}
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "var(--space-2)",
-                          flexWrap: "wrap",
-                        }}
-                      >
-                        <select
-                          value={adminTeacherFilter}
-                          onChange={(e) =>
-                            setAdminTeacherFilter(e.target.value)
-                          }
-                          style={{
-                            padding: "6px 10px",
-                            fontSize: "var(--text-xs)",
-                            borderRadius: "var(--radius-sm)",
-                            border: "1px solid var(--color-border)",
-                            backgroundColor: "var(--color-surface)",
-                          }}
-                        >
-                          <option value="all">All Faculty</option>
-                          {faculty.map((t) => (
-                            <option key={t.id} value={t.id}>
-                              {t.name}
-                            </option>
-                          ))}
-                        </select>
-
-                        <select
-                          value={adminSubjectFilter}
-                          onChange={(e) =>
-                            setAdminSubjectFilter(e.target.value)
-                          }
-                          style={{
-                            padding: "6px 10px",
-                            fontSize: "var(--text-xs)",
-                            borderRadius: "var(--radius-sm)",
-                            border: "1px solid var(--color-border)",
-                            backgroundColor: "var(--color-surface)",
-                          }}
-                        >
-                          <option value="all">All Subjects</option>
-                          <option value="Mathematics">Mathematics</option>
-                          <option value="Physics">Physics</option>
-                          <option value="Chemistry">Chemistry</option>
-                          <option value="Accountancy">Accountancy</option>
-                          <option value="Economics">Economics</option>
-                        </select>
-
-                        <select
-                          value={adminStatusFilter}
-                          onChange={(e) => setAdminStatusFilter(e.target.value)}
-                          style={{
-                            padding: "6px 10px",
-                            fontSize: "var(--text-xs)",
-                            borderRadius: "var(--radius-sm)",
-                            border: "1px solid var(--color-border)",
-                            backgroundColor: "var(--color-surface)",
-                          }}
-                        >
-                          <option value="all">All Statuses</option>
-                          <option value="paid">Paid</option>
-                          <option value="partially-paid">Partially Paid</option>
-                          <option value="unpaid">Unpaid</option>
-                          <option value="overdue">Overdue</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div style={{ overflowX: "auto" }}>
-                      <table
-                        style={{
-                          width: "100%",
-                          borderCollapse: "collapse",
-                          fontSize: "var(--text-sm)",
-                          textAlign: "left",
-                        }}
-                      >
-                        <thead>
-                          <tr
-                            style={{
-                              borderBottom: "1px solid var(--color-border)",
-                              color: "var(--color-neutral-dark)",
-                              fontSize: "11px",
-                              textTransform: "uppercase",
-                            }}
-                          >
-                            <th style={{ padding: "10px 12px" }}>Student</th>
-                            <th style={{ padding: "10px 12px" }}>Subject</th>
-                            <th style={{ padding: "10px 12px" }}>
-                              Assigned Faculty
-                            </th>
-                            <th style={{ padding: "10px 12px" }}>
-                              Fee Obligation
-                            </th>
-                            <th style={{ padding: "10px 12px" }}>Oct Status</th>
-                            <th style={{ padding: "10px 12px" }}>
-                              Oct Realized
-                            </th>
-                            <th style={{ padding: "10px 12px" }}>
-                              Oct Balance
-                            </th>
-                            <th
-                              style={{
-                                padding: "10px 12px",
-                                textAlign: "right",
-                              }}
-                            >
-                              Admin Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {adminSummaries.map((summary) => {
-                            const {
-                              enrollment,
-                              currentMonthObligation,
-                              currentMonthPaid,
-                              currentMonthBalance,
-                              currentMonthStatus,
-                            } = summary;
-                            return (
-                              <tr
-                                key={enrollment.id}
-                                style={{
-                                  borderBottom:
-                                    "1px solid var(--color-border-subtle)",
-                                }}
-                              >
-                                <td
-                                  style={{ padding: "12px", fontWeight: 600 }}
-                                >
-                                  {enrollment.studentName}
-                                </td>
-                                <td
-                                  style={{
-                                    padding: "12px",
-                                    color: "var(--color-accent)",
-                                    fontWeight: 500,
-                                  }}
-                                >
-                                  {enrollment.subjectName}
-                                </td>
-                                <td
-                                  style={{
-                                    padding: "12px",
-                                    color: "var(--color-neutral-dark)",
-                                  }}
-                                >
-                                  {enrollment.teacherName}
-                                </td>
-                                <td
-                                  style={{ padding: "12px", fontWeight: 600 }}
-                                >
-                                  ₹
-                                  {currentMonthObligation.feeAmount.toLocaleString()}
-                                </td>
-                                <td style={{ padding: "12px" }}>
-                                  {getStatusBadge(currentMonthStatus)}
-                                </td>
-                                <td
-                                  style={{
-                                    padding: "12px",
-                                    color: "var(--color-success)",
-                                    fontWeight: 600,
-                                  }}
-                                >
-                                  ₹{currentMonthPaid.toLocaleString()}
-                                </td>
-                                <td
-                                  style={{
-                                    padding: "12px",
-                                    color:
-                                      currentMonthBalance > 0
-                                        ? "var(--color-warning)"
-                                        : "var(--color-neutral-dark)",
-                                    fontWeight: 600,
-                                  }}
-                                >
-                                  ₹{currentMonthBalance.toLocaleString()}
-                                </td>
-                                <td
-                                  style={{
-                                    padding: "12px",
-                                    textAlign: "right",
-                                  }}
-                                >
-                                  <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={() =>
-                                      setHistoryModal({
-                                        isOpen: true,
-                                        studentName: enrollment.studentName,
-                                        subjectName: enrollment.subjectName,
-                                        monthLabel:
-                                          currentMonthObligation.monthLabel,
-                                        feeAmount:
-                                          currentMonthObligation.feeAmount,
-                                        paidAmount: currentMonthPaid,
-                                        balance: currentMonthBalance,
-                                        status: currentMonthStatus,
-                                        payments: summary.currentMonthPayments,
-                                      })
-                                    }
-                                  >
-                                    Audit Ledger
-                                  </Button>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </Card>
+                  <FeesModule role="academy-admin" />
                 )}
 
                 {/* ACADEMY ADMIN ADDITIONAL MODULES */}
@@ -2631,102 +2415,21 @@ export function DashboardShell({
                 {activeTab === "Notices & Circulars" && (
                   <NoticesModule role="academy-admin" />
                 )}
-                {activeTab === "Audit Logs" && <AuditLogsModule />}
+                {activeTab === "Audit Logs" && <AuditLogsModule role={activeRole} />}
                 {(activeTab === "Digital Student IDs" ||
                   activeTab === "Digital IDs") && (
-                  <Card padding="lg" style={{ marginBottom: "var(--space-8)" }}>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: "var(--space-4)",
-                        flexWrap: "wrap",
-                        gap: "var(--space-2)",
-                      }}
-                    >
-                      <div>
-                        <h3
-                          style={{
-                            fontSize: "var(--text-base)",
-                            fontWeight: 700,
-                            margin: 0,
-                          }}
-                        >
-                          Digital Student ID Card Provisioning
-                        </h3>
-                        <p
-                          style={{
-                            fontSize: "var(--text-xs)",
-                            color: "var(--color-neutral-dark)",
-                            margin: "2px 0 0",
-                          }}
-                        >
-                          Inspect and print certified offline student identity
-                          cards for any active enrollment.
-                        </p>
-                      </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "var(--space-2)",
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: "var(--text-xs)",
-                            color: "var(--color-neutral-dark)",
-                          }}
-                        >
-                          Select Student:
-                        </span>
-                        <select
-                          value={selectedStudentId}
-                          onChange={(e) => setSelectedStudentId(e.target.value)}
-                          style={{
-                            fontSize: "var(--text-xs)",
-                            padding: "6px 10px",
-                            borderRadius: "var(--radius-sm)",
-                            border: "1px solid var(--color-border)",
-                            backgroundColor: "var(--color-surface)",
-                          }}
-                        >
-                          {students.map((s) => (
-                            <option key={s.id} value={s.id}>
-                              {s.name} ({s.classGrade})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    {(() => {
-                      const adminSelectedStudent =
-                        students.find((s) => s.id === selectedStudentId) ||
-                        students[0];
-                      if (!adminSelectedStudent) return null;
-                      return (
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            padding: "var(--space-4) 0",
-                          }}
-                        >
-                          <DigitalIdCard
-                            student={adminSelectedStudent}
-                            enrollments={enrollments.filter(
-                              (e) => e.studentId === adminSelectedStudent.id,
-                            )}
-                            onPrint={() =>
-                              openIdCardModal(adminSelectedStudent, true)
-                            }
-                          />
-                        </div>
-                      );
-                    })()}
-                  </Card>
+                  <IdCardManagementModule
+                    students={students}
+                    enrollments={enrollments}
+                    idCardRecords={idCardRecords}
+                    onUpdateIdCards={setIdCardRecords}
+                    onOpenPrintModal={(student, card) =>
+                      openIdCardModal(student, true, card)
+                    }
+                    actorName="Academy Administrator"
+                  />
                 )}
+
               </>
             )}
 
@@ -3106,30 +2809,67 @@ export function DashboardShell({
                                     style={{
                                       padding: "12px",
                                       textAlign: "right",
+                                      whiteSpace: "nowrap",
                                     }}
                                   >
-                                    <Button
-                                      variant="secondary"
-                                      size="sm"
-                                      onClick={() =>
-                                        setHistoryModal({
-                                          isOpen: true,
-                                          studentName: enrollment.studentName,
-                                          subjectName: enrollment.subjectName,
-                                          monthLabel:
-                                            currentMonthObligation.monthLabel,
-                                          feeAmount:
-                                            currentMonthObligation.feeAmount,
-                                          paidAmount: currentMonthPaid,
-                                          balance: currentMonthBalance,
-                                          status: currentMonthStatus,
-                                          payments:
-                                            summary.currentMonthPayments,
-                                        })
-                                      }
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        justifyContent: "flex-end",
+                                        gap: "6px",
+                                        alignItems: "center",
+                                      }}
                                     >
-                                      Fee History
-                                    </Button>
+                                      {currentMonthBalance > 0 && (
+                                        <Button
+                                          variant="primary"
+                                          size="sm"
+                                          onClick={() =>
+                                            setActiveTab("Fee Receipts & History")
+                                          }
+                                          style={{
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                            gap: "5px",
+                                            padding: "5px 12px",
+                                            fontSize: "11px",
+                                            fontWeight: 600,
+                                            borderRadius: "var(--radius-sm)",
+                                            backgroundColor:
+                                              "var(--color-accent)",
+                                            borderColor: "var(--color-accent)",
+                                          }}
+                                        >
+                                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                            <rect x="2" y="5" width="20" height="14" rx="2" />
+                                            <line x1="2" y1="10" x2="22" y2="10" />
+                                          </svg>
+                                          <span>Pay Now · ₹{currentMonthBalance.toLocaleString("en-IN")}</span>
+                                        </Button>
+                                      )}
+                                      <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={() =>
+                                          setHistoryModal({
+                                            isOpen: true,
+                                            studentName: enrollment.studentName,
+                                            subjectName: enrollment.subjectName,
+                                            monthLabel:
+                                              currentMonthObligation.monthLabel,
+                                            feeAmount:
+                                              currentMonthObligation.feeAmount,
+                                            paidAmount: currentMonthPaid,
+                                            balance: currentMonthBalance,
+                                            status: currentMonthStatus,
+                                            payments:
+                                              summary.currentMonthPayments,
+                                          })
+                                        }
+                                      >
+                                        Fee History
+                                      </Button>
+                                    </div>
                                   </td>
                                 </tr>
                               );
@@ -3140,9 +2880,8 @@ export function DashboardShell({
                     </Card>
                   )}
 
-                  {/* Section 2: Fee Receipts & Payment History (Strict Isolation) */}
-                  {(activeTab === "Overview" ||
-                    activeTab === "Fee Receipts & History") && (
+                  {/* Section 2: Fee Receipts & Payment History (Overview Preview) */}
+                  {activeTab === "Overview" && (
                     <Card padding="lg">
                       <div
                         style={{
@@ -3356,45 +3095,125 @@ export function DashboardShell({
 
                   {/* Section 3: Digital ID Card Inline Preview */}
                   {(activeTab === "Overview" ||
-                    activeTab === "Digital Student ID") && (
-                    <Card padding="lg">
-                      <div style={{ marginBottom: "var(--space-4)" }}>
-                        <h3
-                          style={{
-                            fontSize: "var(--text-base)",
-                            fontWeight: 700,
-                            margin: 0,
-                          }}
-                        >
-                          Digital Student ID Card Preview
-                        </h3>
-                        <p
-                          style={{
-                            fontSize: "var(--text-xs)",
-                            color: "var(--color-neutral-dark)",
-                            margin: "2px 0 0",
-                          }}
-                        >
-                          Official Academy ID card layout with standard ISO
-                          dimensions. Use browser print to save as PDF.
-                        </p>
-                      </div>
+                    activeTab === "Digital Student ID") &&
+                    (() => {
+                      const studentCardRecord = idCardRecords.find(
+                        (c) => c.studentId === currentStudent.id,
+                      );
+                      const isCardApproved =
+                        studentCardRecord?.status === "approved";
 
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "center",
-                          padding: "var(--space-2) 0",
-                        }}
-                      >
-                        <DigitalIdCard
-                          student={currentStudent}
-                          enrollments={studentEnrollments}
-                          onPrint={() => openIdCardModal(currentStudent, true)}
-                        />
-                      </div>
-                    </Card>
-                  )}
+                      if (!isCardApproved) {
+                        return (
+                          <Card padding="lg">
+                            <div
+                              style={{
+                                textAlign: "center",
+                                padding: "40px 20px",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: "40px",
+                                  marginBottom: "12px",
+                                }}
+                              >
+                                🪪
+                              </div>
+                              <h3
+                                style={{
+                                  fontSize: "var(--text-lg)",
+                                  fontWeight: 700,
+                                  margin: "0 0 6px",
+                                  color: "var(--color-primary)",
+                                }}
+                              >
+                                Your student ID card has not been issued yet.
+                              </h3>
+                              <p
+                                style={{
+                                  fontSize: "var(--text-xs)",
+                                  color: "var(--color-neutral-dark)",
+                                  maxWidth: "480px",
+                                  margin: "0 auto 16px",
+                                  lineHeight: 1.5,
+                                }}
+                              >
+                                {studentCardRecord?.status === "pending-approval"
+                                  ? "Your official academy identity card has been submitted and is currently pending administrative approval. Once verified by the registry, your credential will appear here."
+                                  : studentCardRecord?.status === "draft"
+                                  ? "Your identity credentials are currently being prepared by the administration. You will be able to preview and print your verified ID once issued."
+                                  : studentCardRecord?.status === "inactive"
+                                  ? "Your student ID card is currently inactive or has been revoked. Please contact the administrative office at Park Circus for reissue."
+                                  : "No ID card record has been authored for your enrollment yet. Please request digital credential issuance from the academy office."}
+                              </p>
+                              <Badge
+                                variant={
+                                  studentCardRecord?.status === "pending-approval"
+                                    ? "warning"
+                                    : studentCardRecord?.status === "draft"
+                                    ? "accent"
+                                    : "neutral"
+                                }
+                              >
+                                Status:{" "}
+                                {studentCardRecord?.status
+                                  ? studentCardRecord.status.toUpperCase()
+                                  : "NOT CREATED"}
+                              </Badge>
+                            </div>
+                          </Card>
+                        );
+                      }
+
+                      return (
+                        <Card padding="lg">
+                          <div style={{ marginBottom: "var(--space-4)" }}>
+                            <h3
+                              style={{
+                                fontSize: "var(--text-base)",
+                                fontWeight: 700,
+                                margin: 0,
+                              }}
+                            >
+                              Official Digital Student Identity Card
+                            </h3>
+                            <p
+                              style={{
+                                fontSize: "var(--text-xs)",
+                                color: "var(--color-neutral-dark)",
+                                margin: "2px 0 0",
+                              }}
+                            >
+                              Certified AROUSH Academy credential. Valid for campus
+                              entry, laboratory access, and examination sessions.
+                            </p>
+                          </div>
+
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "center",
+                              padding: "var(--space-2) 0",
+                            }}
+                          >
+                            <DigitalIdCard
+                              student={currentStudent}
+                              enrollments={studentEnrollments}
+                              cardRecord={studentCardRecord}
+                              onPrint={() =>
+                                openIdCardModal(
+                                  currentStudent,
+                                  true,
+                                  studentCardRecord,
+                                )
+                              }
+                            />
+                          </div>
+                        </Card>
+                      );
+                    })()}
+
 
                   {/* STUDENT ADDITIONAL MODULES */}
                   {activeTab === "Online Classroom" && (
@@ -3429,6 +3248,12 @@ export function DashboardShell({
                   )}
                   {activeTab === "Notices & Circulars" && (
                     <NoticesModule role="student" />
+                  )}
+                  {activeTab === "Fee Receipts & History" && (
+                    <FeesModule
+                      role="student"
+                      studentId={currentStudent.id}
+                    />
                   )}
                 </div>
               ))}
@@ -3641,6 +3466,14 @@ export function DashboardShell({
                               <th style={{ padding: "10px 12px" }}>
                                 Sep 2026 Status
                               </th>
+                              <th
+                                style={{
+                                  padding: "10px 12px",
+                                  textAlign: "right",
+                                }}
+                              >
+                                Actions
+                              </th>
                             </tr>
                           </thead>
                           <tbody>
@@ -3741,6 +3574,45 @@ export function DashboardShell({
                                       </span>
                                     </div>
                                   </td>
+                                  <td
+                                    style={{
+                                      padding: "12px",
+                                      textAlign: "right",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {currentMonthBalance > 0 ? (
+                                      <Button
+                                        variant="primary"
+                                        size="sm"
+                                        onClick={() =>
+                                          setActiveTab("Fee Receipts & Ledger")
+                                        }
+                                        style={{
+                                          display: "inline-flex",
+                                          alignItems: "center",
+                                          gap: "5px",
+                                          padding: "5px 12px",
+                                          fontSize: "11px",
+                                          fontWeight: 600,
+                                          borderRadius: "var(--radius-sm)",
+                                          backgroundColor:
+                                            "var(--color-accent)",
+                                          borderColor: "var(--color-accent)",
+                                        }}
+                                      >
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                          <rect x="2" y="5" width="20" height="14" rx="2" />
+                                          <line x1="2" y1="10" x2="22" y2="10" />
+                                        </svg>
+                                        <span>Pay Now · ₹{currentMonthBalance.toLocaleString("en-IN")}</span>
+                                      </Button>
+                                    ) : (
+                                      <Badge variant="success" size="sm">
+                                        ✓ Paid
+                                      </Badge>
+                                    )}
+                                  </td>
                                 </tr>
                               );
                             })}
@@ -3750,9 +3622,8 @@ export function DashboardShell({
                     </Card>
                   )}
 
-                  {/* Section 2: Fee Receipts & Payment Ledger */}
-                  {(activeTab === "Overview" ||
-                    activeTab === "Fee Receipts & Ledger") && (
+                  {/* Section 2: Fee Receipts & Payment Ledger (Overview Preview) */}
+                  {activeTab === "Overview" && (
                     <Card padding="lg">
                       <div
                         style={{
@@ -3934,45 +3805,129 @@ export function DashboardShell({
 
                   {/* Section 3: Digital ID Card Preview for Guardian */}
                   {(activeTab === "Overview" ||
-                    activeTab === "Digital Student ID") && (
-                    <Card padding="lg">
-                      <div style={{ marginBottom: "var(--space-4)" }}>
-                        <h3
-                          style={{
-                            fontSize: "var(--text-base)",
-                            fontWeight: 700,
-                            margin: 0,
-                          }}
-                        >
-                          {parentStudent.name}&apos;s Digital Student ID Card
-                        </h3>
-                        <p
-                          style={{
-                            fontSize: "var(--text-xs)",
-                            color: "var(--color-neutral-dark)",
-                            margin: "2px 0 0",
-                          }}
-                        >
-                          Guardians may print or save the student&apos;s digital
-                          ID card for verification during academy sessions.
-                        </p>
-                      </div>
+                    activeTab === "Digital Student ID") &&
+                    (() => {
+                      const wardCardRecord = idCardRecords.find(
+                        (c) => c.studentId === parentStudent.id,
+                      );
+                      const isCardApproved =
+                        wardCardRecord?.status === "approved";
 
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "center",
-                          padding: "var(--space-2) 0",
-                        }}
-                      >
-                        <DigitalIdCard
-                          student={parentStudent}
-                          enrollments={parentEnrollments}
-                          onPrint={() => openIdCardModal(parentStudent, true)}
-                        />
-                      </div>
-                    </Card>
-                  )}
+                      if (!isCardApproved) {
+                        return (
+                          <Card padding="lg">
+                            <div
+                              style={{
+                                textAlign: "center",
+                                padding: "40px 20px",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: "40px",
+                                  marginBottom: "12px",
+                                }}
+                              >
+                                🪪
+                              </div>
+                              <h3
+                                style={{
+                                  fontSize: "var(--text-lg)",
+                                  fontWeight: 700,
+                                  margin: "0 0 6px",
+                                  color: "var(--color-primary)",
+                                }}
+                              >
+                                No official student ID card has been issued for{" "}
+                                {parentStudent.name} yet.
+                              </h3>
+                              <p
+                                style={{
+                                  fontSize: "var(--text-xs)",
+                                  color: "var(--color-neutral-dark)",
+                                  maxWidth: "480px",
+                                  margin: "0 auto 16px",
+                                  lineHeight: 1.5,
+                                }}
+                              >
+                                {wardCardRecord?.status === "pending-approval"
+                                  ? "The student ID card for your ward is awaiting final administrative verification. It will become accessible here as soon as it is approved."
+                                  : wardCardRecord?.status === "draft"
+                                  ? "Identity card information for your ward is currently being processed by the administrative office."
+                                  : wardCardRecord?.status === "inactive"
+                                  ? "The student ID card for this student is currently marked inactive or revoked."
+                                  : "The academy has not yet created an identity card record for this student. Please contact the administrative office to request issuance."}
+                              </p>
+                              <Badge
+                                variant={
+                                  wardCardRecord?.status === "pending-approval"
+                                    ? "warning"
+                                    : wardCardRecord?.status === "draft"
+                                    ? "accent"
+                                    : "neutral"
+                                }
+                              >
+                                Status:{" "}
+                                {wardCardRecord?.status
+                                  ? wardCardRecord.status.toUpperCase()
+                                  : "NOT CREATED"}
+                              </Badge>
+                            </div>
+                          </Card>
+                        );
+                      }
+
+                      return (
+                        <Card padding="lg">
+                          <div style={{ marginBottom: "var(--space-4)" }}>
+                            <h3
+                              style={{
+                                fontSize: "var(--text-base)",
+                                fontWeight: 700,
+                                margin: 0,
+                              }}
+                            >
+                              {parentStudent.name}&apos;s Digital Student ID
+                              Card
+                            </h3>
+                            <p
+                              style={{
+                                fontSize: "var(--text-xs)",
+                                color: "var(--color-neutral-dark)",
+                                margin: "2px 0 0",
+                              }}
+                            >
+                              Official verified credential for{" "}
+                              {parentStudent.name} ({parentStudent.classGrade} ·{" "}
+                              {parentStudent.board}). Use browser print to save
+                              as PDF.
+                            </p>
+                          </div>
+
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "center",
+                              padding: "var(--space-2) 0",
+                            }}
+                          >
+                            <DigitalIdCard
+                              student={parentStudent}
+                              enrollments={parentEnrollments}
+                              cardRecord={wardCardRecord}
+                              onPrint={() =>
+                                openIdCardModal(
+                                  parentStudent,
+                                  true,
+                                  wardCardRecord,
+                                )
+                              }
+                            />
+                          </div>
+                        </Card>
+                      );
+                    })()}
+
 
                   {/* PARENT ADDITIONAL MODULES */}
                   {activeTab === "Online Classroom" && (
@@ -4007,6 +3962,12 @@ export function DashboardShell({
                   )}
                   {activeTab === "Notices & Circulars" && (
                     <NoticesModule role="parent" />
+                  )}
+                  {activeTab === "Fee Receipts & Ledger" && (
+                    <FeesModule
+                      role="parent"
+                      parentStudent={parentStudent}
+                    />
                   )}
                 </div>
               ))}
@@ -4549,8 +4510,13 @@ export function DashboardShell({
           enrollments={enrollments.filter(
             (e) => e.studentId === idCardModalStudent.id,
           )}
+          cardRecord={
+            idCardModalRecord ||
+            idCardRecords.find((c) => c.studentId === idCardModalStudent.id)
+          }
           onClose={() => {
             setIdCardModalStudent(null);
+            setIdCardModalRecord(null);
             setAutoPrintIdCard(false);
           }}
           isModal={true}
@@ -4558,6 +4524,7 @@ export function DashboardShell({
           onAutoPrintComplete={() => setAutoPrintIdCard(false)}
         />
       )}
+
 
       <style jsx>{`
         .mobile-nav-scroll-strip::-webkit-scrollbar {
