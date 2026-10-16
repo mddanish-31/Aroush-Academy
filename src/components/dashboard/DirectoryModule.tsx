@@ -26,6 +26,9 @@ import {
   SAMPLE_ATTENDANCE,
   SAMPLE_ASSESSMENTS,
   SAMPLE_BATCHES,
+  isBatchMatchingClass,
+  isBatchMatchingSubject,
+  getEligibleFacultyForSubject,
 } from "@/data/dashboardModulesData";
 import { SAMPLE_EXAM_RESULTS } from "@/data/mockExamData";
 import {
@@ -530,15 +533,18 @@ export function DirectoryModule({
 
     setEnrollments([...otherEnrollments, ...updatedEnrollments]);
 
-    // Ensure obligations exist for any newly added subject
+    // Synchronize obligations: update studentName, teacher assignments, and remove unpaid obligations for dropped subjects
     const existingObligations = obligations.filter(
       (o) => o.studentId === editingStudent.id,
     );
     const newObligations: MonthlyFeeObligation[] = [];
+    const activeSubjectNames = new Set(
+      updatedEnrollments.map((e) => e.subjectName.toLowerCase()),
+    );
 
     updatedEnrollments.forEach((enr) => {
       const hasOb = existingObligations.some(
-        (o) => o.subjectName === enr.subjectName && o.month === "2026-10",
+        (o) => o.subjectName.toLowerCase() === enr.subjectName.toLowerCase() && o.month === "2026-10",
       );
       if (!hasOb) {
         newObligations.push({
@@ -556,9 +562,39 @@ export function DirectoryModule({
       }
     });
 
-    if (newObligations.length > 0) {
-      setObligations((prev) => [...prev, ...newObligations]);
-    }
+    const paidObligationIds = new Set(
+      payments.filter((p) => p.studentId === editingStudent.id).map((p) => p.obligationId),
+    );
+
+    setObligations((prev) => {
+      const updatedExisting = prev
+        .filter((o) => {
+          if (o.studentId !== editingStudent.id) return true;
+          return (
+            activeSubjectNames.has(o.subjectName.toLowerCase()) ||
+            paidObligationIds.has(o.id)
+          );
+        })
+        .map((o) => {
+          if (o.studentId !== editingStudent.id) return o;
+          const matchingEnr = updatedEnrollments.find(
+            (e) => e.subjectName.toLowerCase() === o.subjectName.toLowerCase(),
+          );
+          if (!matchingEnr) {
+            return { ...o, studentName: updatedProfile.name };
+          }
+          const isPaid = paidObligationIds.has(o.id);
+          return {
+            ...o,
+            studentName: updatedProfile.name,
+            teacherId: matchingEnr.teacherId,
+            enrollmentId: matchingEnr.id,
+            feeAmount: isPaid ? o.feeAmount : (matchingEnr.monthlyFeeAmount || o.feeAmount),
+          };
+        });
+
+      return [...updatedExisting, ...newObligations];
+    });
 
     // Keep selectedStudent state in sync if inspected
     if (selectedStudent && selectedStudent.id === editingStudent.id) {
@@ -746,6 +782,17 @@ export function DirectoryModule({
     if (addFormSubjects.length === 0) {
       setAddFormError("Please enroll the student in at least one subject.");
       return;
+    }
+
+    for (const sub of addFormSubjects) {
+      if (!sub.teacherId) {
+        setAddFormError(`Cannot enroll in "${sub.subjectName}": No qualified faculty member is assigned.`);
+        return;
+      }
+      if (!sub.batchName) {
+        setAddFormError(`Cannot enroll in "${sub.subjectName}": No active batch is available for ${addFormClass}.`);
+        return;
+      }
     }
 
     // Generate collision-safe student ID (e.g. std-106)
@@ -4037,7 +4084,47 @@ export function DirectoryModule({
                   </label>
                   <select
                     value={addFormClass}
-                    onChange={(e) => setAddFormClass(e.target.value)}
+                    onChange={(e) => {
+                      const newClass = e.target.value;
+                      setAddFormClass(newClass);
+                      setAddFormSubjects((prev) =>
+                        prev
+                          .filter((s) => {
+                            const subObj = academicSubjects.find(
+                              (as) => as.name === s.subjectName,
+                            );
+                            const clsObj = academicClasses.find(
+                              (ac) => ac.name === newClass,
+                            );
+                            return (
+                              !subObj?.applicableClassIds ||
+                              subObj.applicableClassIds.length === 0 ||
+                              (clsObj &&
+                                subObj.applicableClassIds.includes(clsObj.id))
+                            );
+                          })
+                          .map((s) => {
+                            const compatibleBatches = batches.filter(
+                              (b) =>
+                                b.status === "active" &&
+                                isBatchMatchingSubject(b, s.subjectName) &&
+                                isBatchMatchingClass(b, newClass),
+                            );
+                            const firstBatch = compatibleBatches[0];
+                            const subObj = academicSubjects.find(
+                              (as) => as.name === s.subjectName,
+                            );
+                            return {
+                              ...s,
+                              batchName: firstBatch?.name || "",
+                              feeAmount:
+                                firstBatch?.monthlyFee ||
+                                subObj?.defaultMonthlyFee ||
+                                s.feeAmount,
+                            };
+                          }),
+                      );
+                    }}
                     style={{
                       width: "100%",
                       padding: "8px 10px",
@@ -4251,21 +4338,15 @@ export function DirectoryModule({
                     const currentEntry = addFormSubjects.find(
                       (s) => s.subjectName === subOpt.name,
                     );
-                    const activeFaculty = faculty.filter(
-                      (f) => (f.status || "active") === "active",
+                    const teachersList = getEligibleFacultyForSubject(
+                      faculty,
+                      subOpt.name,
                     );
-                    const eligibleTeachers = activeFaculty.filter(
-                      (f) =>
-                        !f.assignedSubjects ||
-                        f.assignedSubjects.length === 0 ||
-                        f.assignedSubjects.includes(subOpt.name),
-                    );
-                    const teachersList =
-                      eligibleTeachers.length > 0 ? eligibleTeachers : activeFaculty;
                     const matchingBatches = batches.filter(
                       (b) =>
                         b.status === "active" &&
-                        (!b.subject || b.subject === subOpt.name),
+                        isBatchMatchingSubject(b, subOpt.name) &&
+                        isBatchMatchingClass(b, addFormClass),
                     );
 
                     return (
@@ -4305,18 +4386,24 @@ export function DirectoryModule({
                               checked={isChecked}
                               onChange={(e) => {
                                 if (e.target.checked) {
-                                  const teacher = teachersList[0] || faculty[0];
+                                  const initialBatch = matchingBatches[0];
+                                  const initialFee =
+                                    initialBatch?.monthlyFee ||
+                                    subOpt.defaultMonthlyFee;
+                                  const initialTeacher =
+                                    (initialBatch?.teacherId &&
+                                      teachersList.find(
+                                        (t) =>
+                                          t.id === initialBatch.teacherId,
+                                      )) ||
+                                    teachersList[0];
                                   setAddFormSubjects((prev) => [
                                     ...prev,
                                     {
                                       subjectName: subOpt.name,
-                                      teacherId: teacher?.id || "tch-azhar",
-                                      batchName:
-                                        (teacher?.batches &&
-                                          teacher.batches[0]) ||
-                                        matchingBatches[0]?.name ||
-                                        "General Batch",
-                                      feeAmount: subOpt.defaultMonthlyFee,
+                                      teacherId: initialTeacher?.id || "",
+                                      batchName: initialBatch?.name || "",
+                                      feeAmount: initialFee,
                                     },
                                   ]);
                                 } else {
@@ -4336,148 +4423,205 @@ export function DirectoryModule({
                               color: "var(--color-neutral-dark)",
                             }}
                           >
-                            Default Fee: ₹{subOpt.defaultMonthlyFee}/mo
+                            Catalog Fee: ₹{subOpt.defaultMonthlyFee}/mo
                           </span>
                         </div>
 
-                        {isChecked && currentEntry && (
-                          <div
-                            style={{
-                              display: "grid",
-                              gridTemplateColumns: "1.2fr 1fr 1fr",
-                              gap: "var(--space-2)",
-                              marginTop: "4px",
-                            }}
-                          >
-                            <div>
-                              <span
+                        {isChecked && (
+                          <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)", marginTop: "4px" }}>
+                            {currentEntry && (
+                              <div
                                 style={{
-                                  fontSize: "10px",
-                                  color: "var(--color-neutral-dark)",
-                                  display: "block",
+                                  display: "grid",
+                                  gridTemplateColumns: "1.2fr 1fr 1fr",
+                                  gap: "var(--space-2)",
                                 }}
                               >
-                                Faculty
-                              </span>
-                              <select
-                                value={currentEntry.teacherId}
-                                onChange={(e) => {
-                                  const tId = e.target.value;
-                                  const teacher =
-                                    faculty.find((t) => t.id === tId) ||
-                                    faculty[0];
-                                  setAddFormSubjects((prev) =>
-                                    prev.map((s) =>
-                                      s.subjectName === subOpt.name
-                                        ? {
-                                            ...s,
-                                            teacherId: tId,
-                                            batchName:
-                                              (teacher?.batches &&
-                                                teacher.batches[0]) ||
-                                              matchingBatches[0]?.name ||
-                                              "Standard Batch",
-                                          }
-                                        : s,
-                                    ),
-                                  );
-                                }}
-                                style={{
-                                  width: "100%",
-                                  fontSize: "11px",
-                                  padding: "4px 6px",
-                                  borderRadius: "var(--radius-sm)",
-                                  border: "1px solid var(--color-border)",
-                                }}
-                              >
-                                {teachersList.map((t) => (
-                                  <option key={t.id} value={t.id}>
-                                    {t.name}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
+                                <div>
+                                  <span
+                                    style={{
+                                      fontSize: "10px",
+                                      color: "var(--color-neutral-dark)",
+                                      display: "block",
+                                    }}
+                                  >
+                                    Faculty
+                                  </span>
+                                  <select
+                                    value={currentEntry.teacherId}
+                                    onChange={(e) => {
+                                      const tId = e.target.value;
+                                      setAddFormSubjects((prev) =>
+                                        prev.map((s) =>
+                                          s.subjectName === subOpt.name
+                                            ? { ...s, teacherId: tId }
+                                            : s,
+                                        ),
+                                      );
+                                    }}
+                                    style={{
+                                      width: "100%",
+                                      fontSize: "11px",
+                                      padding: "4px 6px",
+                                      borderRadius: "var(--radius-sm)",
+                                      border: "1px solid var(--color-border)",
+                                    }}
+                                  >
+                                    {teachersList.length > 0 ? (
+                                      teachersList.map((t) => (
+                                        <option key={t.id} value={t.id}>
+                                          {t.name}
+                                        </option>
+                                      ))
+                                    ) : (
+                                      <option value="" disabled>
+                                        No active faculty for {subOpt.name}
+                                      </option>
+                                    )}
+                                  </select>
+                                </div>
 
-                            <div>
-                              <span
+                                <div>
+                                  <span
+                                    style={{
+                                      fontSize: "10px",
+                                      color: "var(--color-neutral-dark)",
+                                      display: "block",
+                                    }}
+                                  >
+                                    Batch
+                                  </span>
+                                  <select
+                                    value={currentEntry.batchName}
+                                    onChange={(e) => {
+                                      const bVal = e.target.value;
+                                      const selectedBatch = matchingBatches.find(
+                                        (b) => b.name === bVal,
+                                      );
+                                      const newFee =
+                                        selectedBatch?.monthlyFee ||
+                                        subOpt.defaultMonthlyFee;
+                                      const batchTeacher =
+                                        selectedBatch?.teacherId
+                                          ? teachersList.find(
+                                              (t) =>
+                                                t.id === selectedBatch.teacherId,
+                                            )
+                                          : null;
+
+                                      setAddFormSubjects((prev) =>
+                                        prev.map((s) =>
+                                          s.subjectName === subOpt.name
+                                            ? {
+                                                ...s,
+                                                batchName: bVal,
+                                                feeAmount: newFee,
+                                                teacherId:
+                                                  batchTeacher?.id ||
+                                                  s.teacherId,
+                                              }
+                                            : s,
+                                        ),
+                                      );
+                                    }}
+                                    style={{
+                                      width: "100%",
+                                      fontSize: "11px",
+                                      padding: "4px 6px",
+                                      borderRadius: "var(--radius-sm)",
+                                      border: "1px solid var(--color-border)",
+                                      boxSizing: "border-box",
+                                    }}
+                                  >
+                                    {matchingBatches.length > 0 ? (
+                                      matchingBatches.map((b) => {
+                                        const bFee =
+                                          b.monthlyFee ||
+                                          subOpt.defaultMonthlyFee;
+                                        const hasOverride =
+                                          b.monthlyFee &&
+                                          b.monthlyFee !==
+                                            subOpt.defaultMonthlyFee;
+                                        return (
+                                          <option key={b.id} value={b.name}>
+                                            {b.name} — ₹{bFee}/mo
+                                            {hasOverride
+                                              ? " (Batch Override)"
+                                              : ""}
+                                          </option>
+                                        );
+                                      })
+                                    ) : (
+                                      <option value="" disabled>
+                                        No batch for {addFormClass}
+                                      </option>
+                                    )}
+                                  </select>
+                                </div>
+
+                                <div>
+                                  <span
+                                    style={{
+                                      fontSize: "10px",
+                                      color: "var(--color-neutral-dark)",
+                                      display: "block",
+                                    }}
+                                  >
+                                    Monthly Fee (₹)
+                                  </span>
+                                  <input
+                                    type="number"
+                                    min={500}
+                                    step={100}
+                                    value={currentEntry.feeAmount}
+                                    onChange={(e) => {
+                                      const val =
+                                        parseInt(e.target.value, 10) || 0;
+                                      setAddFormSubjects((prev) =>
+                                        prev.map((s) =>
+                                          s.subjectName === subOpt.name
+                                            ? { ...s, feeAmount: val }
+                                            : s,
+                                        ),
+                                      );
+                                    }}
+                                    style={{
+                                      width: "100%",
+                                      fontSize: "11px",
+                                      padding: "4px 6px",
+                                      borderRadius: "var(--radius-sm)",
+                                      border: "1px solid var(--color-border)",
+                                      boxSizing: "border-box",
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {(teachersList.length === 0 || matchingBatches.length === 0) && (
+                              <div
                                 style={{
-                                  fontSize: "10px",
-                                  color: "var(--color-neutral-dark)",
-                                  display: "block",
-                                }}
-                              >
-                                Batch
-                              </span>
-                              <select
-                                value={currentEntry.batchName}
-                                onChange={(e) => {
-                                  const bVal = e.target.value;
-                                  setAddFormSubjects((prev) =>
-                                    prev.map((s) =>
-                                      s.subjectName === subOpt.name
-                                        ? { ...s, batchName: bVal }
-                                        : s,
-                                    ),
-                                  );
-                                }}
-                                style={{
-                                  width: "100%",
-                                  fontSize: "11px",
-                                  padding: "4px 6px",
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  gap: "2px",
+                                  padding: "4px 8px",
                                   borderRadius: "var(--radius-sm)",
-                                  border: "1px solid var(--color-border)",
-                                  boxSizing: "border-box",
+                                  backgroundColor: "rgba(255, 59, 48, 0.08)",
+                                  border: "1px solid rgba(255, 59, 48, 0.2)",
                                 }}
                               >
-                                {matchingBatches.length > 0 ? (
-                                  matchingBatches.map((b) => (
-                                    <option key={b.id} value={b.name}>
-                                      {b.name}
-                                    </option>
-                                  ))
-                                ) : (
-                                  <option value={currentEntry.batchName}>
-                                    {currentEntry.batchName || "Standard Batch"}
-                                  </option>
+                                {teachersList.length === 0 && (
+                                  <span style={{ fontSize: "10px", color: "#D32F2F" }}>
+                                    ⚠️ No active faculty allocated to {subOpt.name}. Please allocate an instructor in Academic Setup.
+                                  </span>
                                 )}
-                              </select>
-                            </div>
-
-                            <div>
-                              <span
-                                style={{
-                                  fontSize: "10px",
-                                  color: "var(--color-neutral-dark)",
-                                  display: "block",
-                                }}
-                              >
-                                Monthly Fee (₹)
-                              </span>
-                              <input
-                                type="number"
-                                min={500}
-                                step={100}
-                                value={currentEntry.feeAmount}
-                                onChange={(e) => {
-                                  const val = parseInt(e.target.value, 10) || 0;
-                                  setAddFormSubjects((prev) =>
-                                    prev.map((s) =>
-                                      s.subjectName === subOpt.name
-                                        ? { ...s, feeAmount: val }
-                                        : s,
-                                    ),
-                                  );
-                                }}
-                                style={{
-                                  width: "100%",
-                                  fontSize: "11px",
-                                  padding: "4px 6px",
-                                  borderRadius: "var(--radius-sm)",
-                                  border: "1px solid var(--color-border)",
-                                  boxSizing: "border-box",
-                                }}
-                              />
-                            </div>
+                                {matchingBatches.length === 0 && (
+                                  <span style={{ fontSize: "10px", color: "#D32F2F" }}>
+                                    ⚠️ No active batch configured for {addFormClass} {subOpt.name}.
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -4488,11 +4632,17 @@ export function DirectoryModule({
 
               <div
                 style={{
+                  position: "sticky",
+                  bottom: 0,
+                  backgroundColor: "var(--color-surface)",
+                  borderTop: "1px solid var(--color-border)",
+                  paddingTop: "var(--space-3)",
+                  paddingBottom: "var(--space-2)",
                   display: "flex",
                   justifyContent: "flex-end",
                   gap: "var(--space-2)",
-                  borderTop: "1px solid var(--color-border)",
-                  paddingTop: "var(--space-3)",
+                  zIndex: 10,
+                  boxShadow: "0 -4px 10px rgba(0, 0, 0, 0.04)",
                 }}
               >
                 <Button
@@ -4897,146 +5047,206 @@ export function DirectoryModule({
                     gap: "var(--space-2)",
                   }}
                 >
-                  {editFormSubjects.map((sub, idx) => (
-                    <div
-                      key={sub.subjectName}
-                      style={{
-                        padding: "8px 12px",
-                        borderRadius: "var(--radius-md)",
-                        border: "1px solid var(--color-border)",
-                        backgroundColor: "var(--color-surface-muted)",
-                        display: "grid",
-                        gridTemplateColumns: "1.2fr 1fr 1fr 1fr auto",
-                        gap: "var(--space-2)",
-                        alignItems: "center",
-                      }}
-                    >
-                      <strong style={{ fontSize: "var(--text-xs)" }}>
-                        {sub.subjectName}
-                      </strong>
+                  {editFormSubjects.map((sub, idx) => {
+                    const eligibleTeachers = getEligibleFacultyForSubject(
+                      faculty,
+                      sub.subjectName,
+                    );
+                    const matchingBatches = batches.filter(
+                      (b) =>
+                        b.status === "active" &&
+                        isBatchMatchingSubject(b, sub.subjectName) &&
+                        isBatchMatchingClass(b, editFormClass),
+                    );
 
-                      <select
-                        value={sub.teacherId}
-                        onChange={(e) => {
-                          const tId = e.target.value;
-                          setEditFormSubjects((prev) =>
-                            prev.map((s, i) =>
-                              i === idx ? { ...s, teacherId: tId } : s,
-                            ),
-                          );
-                        }}
-                        style={{
-                          fontSize: "11px",
-                          padding: "4px 6px",
-                          borderRadius: "var(--radius-sm)",
-                          border: "1px solid var(--color-border)",
-                        }}
-                      >
-                        {faculty
-                          .filter((t) => (t.status || "active") === "active" || t.id === sub.teacherId)
-                          .map((t) => (
-                            <option key={t.id} value={t.id}>
-                              {t.name} {(t.status || "active") === "inactive" ? "(Inactive)" : ""}
-                            </option>
-                          ))}
-                      </select>
-
-                      <input
-                        type="text"
-                        value={sub.batchName}
-                        onChange={(e) => {
-                          const bVal = e.target.value;
-                          setEditFormSubjects((prev) =>
-                            prev.map((s, i) =>
-                              i === idx ? { ...s, batchName: bVal } : s,
-                            ),
-                          );
-                        }}
-                        placeholder="Batch name"
-                        style={{
-                          fontSize: "11px",
-                          padding: "4px 6px",
-                          borderRadius: "var(--radius-sm)",
-                          border: "1px solid var(--color-border)",
-                          boxSizing: "border-box",
-                        }}
-                      />
-
+                    return (
                       <div
+                        key={sub.subjectName}
                         style={{
-                          display: "flex",
+                          padding: "8px 12px",
+                          borderRadius: "var(--radius-md)",
+                          border: "1px solid var(--color-border)",
+                          backgroundColor: "var(--color-surface-muted)",
+                          display: "grid",
+                          gridTemplateColumns: "1.2fr 1fr 1fr 1fr auto",
+                          gap: "var(--space-2)",
                           alignItems: "center",
-                          gap: "2px",
                         }}
                       >
-                        <span
-                          style={{
-                            fontSize: "11px",
-                            color: "var(--color-neutral-dark)",
-                          }}
-                        >
-                          ₹
-                        </span>
-                        <input
-                          type="number"
-                          step={100}
-                          value={sub.feeAmount}
+                        <strong style={{ fontSize: "var(--text-xs)" }}>
+                          {sub.subjectName}
+                        </strong>
+
+                        <select
+                          value={sub.teacherId}
                           onChange={(e) => {
-                            const val = parseInt(e.target.value, 10) || 0;
+                            const tId = e.target.value;
                             setEditFormSubjects((prev) =>
                               prev.map((s, i) =>
-                                i === idx ? { ...s, feeAmount: val } : s,
+                                i === idx ? { ...s, teacherId: tId } : s,
                               ),
                             );
                           }}
                           style={{
-                            width: "100%",
+                            fontSize: "11px",
+                            padding: "4px 6px",
+                            borderRadius: "var(--radius-sm)",
+                            border: "1px solid var(--color-border)",
+                          }}
+                        >
+                          {eligibleTeachers.length > 0 ? (
+                            eligibleTeachers.map((t) => (
+                              <option key={t.id} value={t.id}>
+                                {t.name}
+                              </option>
+                            ))
+                          ) : (
+                            <option value={sub.teacherId}>
+                              {faculty.find((t) => t.id === sub.teacherId)?.name || sub.teacherId}
+                            </option>
+                          )}
+                        </select>
+
+                        <select
+                          value={sub.batchName}
+                          onChange={(e) => {
+                            const bVal = e.target.value;
+                            const selectedBatch = matchingBatches.find(
+                              (b) => b.name === bVal,
+                            );
+                            const subObj = academicSubjects.find(
+                              (as) => as.name === sub.subjectName,
+                            );
+                            const newFee =
+                              selectedBatch?.monthlyFee ||
+                              subObj?.defaultMonthlyFee ||
+                              sub.feeAmount;
+                            setEditFormSubjects((prev) =>
+                              prev.map((s, i) =>
+                                i === idx
+                                  ? {
+                                      ...s,
+                                      batchName: bVal,
+                                      feeAmount: newFee,
+                                    }
+                                  : s,
+                              ),
+                            );
+                          }}
+                          style={{
                             fontSize: "11px",
                             padding: "4px 6px",
                             borderRadius: "var(--radius-sm)",
                             border: "1px solid var(--color-border)",
                             boxSizing: "border-box",
                           }}
-                        />
-                      </div>
+                        >
+                          {matchingBatches.length > 0 ? (
+                            matchingBatches.map((b) => {
+                              const subObj = academicSubjects.find(
+                                (as) => as.name === sub.subjectName,
+                              );
+                              const defaultFee =
+                                subObj?.defaultMonthlyFee || 1500;
+                              const bFee = b.monthlyFee || defaultFee;
+                              const hasOverride =
+                                b.monthlyFee && b.monthlyFee !== defaultFee;
+                              return (
+                                <option key={b.id} value={b.name}>
+                                  {b.name} — ₹{bFee}/mo
+                                  {hasOverride ? " (Batch Override)" : ""}
+                                </option>
+                              );
+                            })
+                          ) : (
+                            <option value={sub.batchName}>
+                              {sub.batchName || "Standard Batch"}
+                            </option>
+                          )}
+                        </select>
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (editFormSubjects.length <= 1) {
-                            alert(
-                              "A student must remain enrolled in at least one subject.",
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "2px",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              color: "var(--color-neutral-dark)",
+                            }}
+                          >
+                            ₹
+                          </span>
+                          <input
+                            type="number"
+                            step={100}
+                            value={sub.feeAmount}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value, 10) || 0;
+                              setEditFormSubjects((prev) =>
+                                prev.map((s, i) =>
+                                  i === idx ? { ...s, feeAmount: val } : s,
+                                ),
+                              );
+                            }}
+                            style={{
+                              width: "100%",
+                              fontSize: "11px",
+                              padding: "4px 6px",
+                              borderRadius: "var(--radius-sm)",
+                              border: "1px solid var(--color-border)",
+                              boxSizing: "border-box",
+                            }}
+                          />
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (editFormSubjects.length <= 1) {
+                              alert(
+                                "A student must remain enrolled in at least one subject.",
+                              );
+                              return;
+                            }
+                            setEditFormSubjects((prev) =>
+                              prev.filter((_, i) => i !== idx),
                             );
-                            return;
-                          }
-                          setEditFormSubjects((prev) =>
-                            prev.filter((_, i) => i !== idx),
-                          );
-                        }}
-                        style={{
-                          background: "none",
-                          border: "none",
-                          color: "#D32F2F",
-                          cursor: "pointer",
-                          fontSize: "14px",
-                          padding: "2px",
-                        }}
-                        title="Remove subject enrollment"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
+                          }}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "#D32F2F",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            padding: "2px",
+                          }}
+                          title="Remove subject enrollment"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
               <div
                 style={{
+                  position: "sticky",
+                  bottom: 0,
+                  backgroundColor: "var(--color-surface)",
+                  borderTop: "1px solid var(--color-border)",
+                  paddingTop: "var(--space-3)",
+                  paddingBottom: "var(--space-2)",
                   display: "flex",
                   justifyContent: "flex-end",
                   gap: "var(--space-2)",
-                  borderTop: "1px solid var(--color-border)",
-                  paddingTop: "var(--space-3)",
+                  zIndex: 10,
+                  boxShadow: "0 -4px 10px rgba(0, 0, 0, 0.04)",
                 }}
               >
                 <Button
