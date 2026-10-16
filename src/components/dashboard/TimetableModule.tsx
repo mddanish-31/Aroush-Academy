@@ -28,6 +28,13 @@ import {
   formatDateToISO,
   getDayOfWeekFromDate,
 } from "@/lib/timetableUtils";
+import {
+  recordCreate,
+  recordUpdate,
+  recordDelete,
+  recordAuditEvent,
+} from "@/lib/auditService";
+import { TimetableEventCard } from "./TimetableEventCard";
 
 interface TimetableModuleProps {
   role: UserRole;
@@ -35,10 +42,9 @@ interface TimetableModuleProps {
   currentStudentId?: string;
 }
 
-// Grid hours: 08:00 AM to 08:00 PM (12 hour span)
+// Grid hours: 08:00 AM to 08:00 PM (12 hour span, 60px per hour = 720px total)
 const GRID_START_HOUR = 8;
 const GRID_END_HOUR = 20;
-const GRID_TOTAL_MINUTES = (GRID_END_HOUR - GRID_START_HOUR) * 60; // 720 minutes
 
 export function TimetableModule({
   role,
@@ -65,7 +71,6 @@ export function TimetableModule({
   // View Controls
   const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
   const [selectedDayFilter, setSelectedDayFilter] = useState<DayOfWeek | "all">("all");
-  const [mobileSelectedDayIndex, setMobileSelectedDayIndex] = useState<number>(0);
 
   // Admin / General Filters (Room filter completely removed)
   const [filterTeacher, setFilterTeacher] = useState<string>("all");
@@ -88,6 +93,7 @@ export function TimetableModule({
   const [detailsSlot, setDetailsSlot] = useState<TimetableSlot | null>(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [editingSlotId, setEditingSlotId] = useState<string | null>(null);
+  const [deletingSlot, setDeletingSlot] = useState<TimetableSlot | null>(null);
 
   // Routine Form State
   const [formScheduleType, setFormScheduleType] = useState<"recurring" | "specific_date">("recurring");
@@ -107,6 +113,7 @@ export function TimetableModule({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        setDeletingSlot(null);
         setDetailsSlot(null);
         setIsFormModalOpen(false);
       }
@@ -142,9 +149,6 @@ export function TimetableModule({
   const handleTodayWeek = () => {
     const todayMonday = getMondayOfWeek(new Date());
     setCurrentWeekMonday(todayMonday);
-    const day = new Date().getDay();
-    const dayIdx = day === 0 ? 6 : day - 1;
-    setMobileSelectedDayIndex(dayIdx);
   };
 
   // Current active teacher object
@@ -252,7 +256,11 @@ export function TimetableModule({
       return;
     }
 
-    const timeRangeStr = `${formatMinutesTo12Hour(parseTimeToMinutes(formStartTime))} - ${formatMinutesTo12Hour(parseTimeToMinutes(formEndTime))}`;
+    const startMins = parseTimeToMinutes(formStartTime);
+    const endMins = parseTimeToMinutes(formEndTime);
+    const normalizedStartTime = formatMinutesTo24Hour(startMins);
+    const normalizedEndTime = formatMinutesTo24Hour(endMins);
+    const timeRangeStr = `${formatMinutesTo12Hour(startMins)} - ${formatMinutesTo12Hour(endMins)}`;
 
     if (editingSlotId) {
       // Update existing record in place
@@ -262,8 +270,8 @@ export function TimetableModule({
             ? {
                 ...slot,
                 dayOfWeek: resolvedDay,
-                startTime: formStartTime,
-                endTime: formEndTime,
+                startTime: normalizedStartTime,
+                endTime: normalizedEndTime,
                 time: timeRangeStr,
                 teacherId: formTeacherId,
                 teacherName,
@@ -280,13 +288,33 @@ export function TimetableModule({
         )
       );
       showNotification(`Updated routine for ${formSubject} (${formBatch}) on ${resolvedDay}.`);
+
+      recordUpdate({
+        action: "Update Timetable Routine",
+        type: "enrollment",
+        target: `${formSubject} · ${formBatch} (${resolvedDay} ${timeRangeStr})`,
+        details: `Updated routine schedule for ${formSubject} (${formBatch}) on ${resolvedDay} to ${timeRangeStr}. Assigned Faculty: ${teacherName}.`,
+        performedBy: role === "academy-admin" ? "Academy Administrator" : activeTeacher?.name || "Teacher",
+        actorRole: role,
+        entityType: "timetable",
+        entityId: editingSlotId,
+        outcome: "SUCCESS",
+        changedFields: ["dayOfWeek", "time", "subject", "batch", "teacher"],
+        diff: [
+          { fieldName: "dayOfWeek", after: resolvedDay },
+          { fieldName: "time", after: timeRangeStr },
+          { fieldName: "teacher", after: teacherName },
+          { fieldName: "subject", after: formSubject },
+        ],
+        sourcePortal: role,
+      });
     } else {
-      // Create new schedule record
+      // Create new schedule record normalized to standard schema
       const newSlot: TimetableSlot = {
         id: `time-custom-${Date.now()}`,
         dayOfWeek: resolvedDay,
-        startTime: formStartTime,
-        endTime: formEndTime,
+        startTime: normalizedStartTime,
+        endTime: normalizedEndTime,
         time: timeRangeStr,
         teacherId: formTeacherId,
         teacherName,
@@ -301,6 +329,20 @@ export function TimetableModule({
       };
       setSlots((prev) => [...prev, newSlot]);
       showNotification(`Added new ${formSubject} schedule on ${resolvedDay} (${timeRangeStr}).`);
+
+      recordCreate({
+        action: "Create Timetable Routine",
+        type: "enrollment",
+        target: `${formSubject} · ${formBatch} (${resolvedDay} ${timeRangeStr})`,
+        details: `Created new timetable schedule for ${formSubject} (${formBatch}) on ${resolvedDay} (${timeRangeStr}). Assigned Faculty: ${teacherName}.`,
+        performedBy: role === "academy-admin" ? "Academy Administrator" : activeTeacher?.name || "Teacher",
+        actorRole: role,
+        entityType: "timetable",
+        entityId: newSlot.id,
+        outcome: "SUCCESS",
+        changedFields: ["dayOfWeek", "time", "subject", "batch", "teacher", "status"],
+        sourcePortal: role,
+      });
     }
 
     setIsFormModalOpen(false);
@@ -320,6 +362,63 @@ export function TimetableModule({
     if (detailsSlot && detailsSlot.id === slot.id) {
       setDetailsSlot({ ...detailsSlot, status: newStatus });
     }
+
+    recordAuditEvent({
+      action: newStatus === "cancelled" ? "Cancel Timetable Session" : "Reactivate Timetable Session",
+      actionType: newStatus === "cancelled" ? "CANCEL" : "UPDATE",
+      type: "enrollment",
+      target: `${slot.subject} (${slot.dayOfWeek}, ${slot.time})`,
+      details: `${newStatus === "cancelled" ? "Cancelled" : "Reactivated"} timetable lecture for ${slot.subject} (${slot.batch}) on ${slot.dayOfWeek}.`,
+      performedBy: role === "academy-admin" ? "Academy Administrator" : activeTeacher?.name || "Teacher",
+      actorRole: role,
+      entityType: "timetable",
+      entityId: slot.id,
+      outcome: "SUCCESS",
+      changedFields: ["status"],
+      diff: [{ fieldName: "status", before: slot.status || "active", after: newStatus }],
+      sourcePortal: role,
+    });
+  };
+
+  // Permanently Delete Schedule Routine or Date-Specific Occurrence
+  const handleConfirmDelete = () => {
+    if (!deletingSlot) return;
+    const targetId = deletingSlot.id;
+    const isDateSpecific =
+      deletingSlot.scheduleType === "specific_date" || Boolean(deletingSlot.specificDate);
+    const label = `${deletingSlot.subject} (${deletingSlot.dayOfWeek}, ${deletingSlot.time})`;
+
+    // Remove the target record from demo state (syncs to demo storage)
+    setSlots((prev) => prev.filter((s) => s.id !== targetId));
+
+    // Record Central Audit Entry
+    recordDelete({
+      action: isDateSpecific ? "Delete Special Session" : "Delete Recurring Routine",
+      type: "enrollment",
+      target: `${deletingSlot.subject} (${deletingSlot.dayOfWeek}, ${deletingSlot.time})`,
+      details: `Permanently removed ${isDateSpecific ? "date-specific session" : "recurring routine"} for ${label} (${deletingSlot.batch}). Faculty: ${deletingSlot.teacherName}.`,
+      performedBy: role === "academy-admin" ? "Academy Administrator" : activeTeacher?.name || "Teacher",
+      actorRole: role,
+      entityType: "timetable",
+      entityId: targetId,
+      outcome: "SUCCESS",
+      changedFields: ["isDeleted"],
+      sourcePortal: role,
+    });
+
+    // Reset modals
+    setDeletingSlot(null);
+    setDetailsSlot(null);
+    if (editingSlotId === targetId) {
+      setIsFormModalOpen(false);
+      setEditingSlotId(null);
+    }
+
+    showNotification(
+      isDateSpecific
+        ? `Deleted date-specific session: ${label}.`
+        : `Deleted recurring routine: ${label}.`
+    );
   };
 
   // Role-Isolated Base Schedule Set (Derived from actual enrollments & assignments)
@@ -359,6 +458,23 @@ export function TimetableModule({
       weekDays.some((dayInfo) => isSlotOnDate(slot, dayInfo.dateString, dayInfo.dayOfWeek))
     );
   }, [visibleSlots, weekDays]);
+
+  // Dynamic grid hours: Defaults to 08:00 AM - 08:00 PM (12h), expands dynamically if classes exist outside
+  const { gridStartHour, gridEndHour } = useMemo(() => {
+    let minH = GRID_START_HOUR;
+    let maxH = GRID_END_HOUR;
+    for (const slot of currentWeekVisibleSlots) {
+      const { start, end } = getSlotTimeMinutes(slot);
+      const startH = Math.floor(start / 60);
+      const endH = Math.ceil(end / 60);
+      if (startH < minH) minH = Math.max(0, startH);
+      if (endH > maxH) maxH = Math.min(24, endH);
+    }
+    return { gridStartHour: minH, gridEndHour: maxH };
+  }, [currentWeekVisibleSlots]);
+
+  const totalGridHours = gridEndHour - gridStartHour;
+  const totalGridHeightPx = totalGridHours * 60;
 
   // Summary Metrics based on actual schedule records for the selected week
   const totalClasses = currentWeekVisibleSlots.length;
@@ -800,62 +916,6 @@ export function TimetableModule({
       {/* ========================================================================= */}
       {viewMode === "calendar" && (
         <div>
-          {/* Mobile Day Selector Bar (Visible on smaller screens) */}
-          <div
-            style={{
-              display: "flex",
-              gap: "6px",
-              overflowX: "auto",
-              paddingBottom: "8px",
-              marginBottom: "var(--space-3)",
-            }}
-            className="mobile-day-selector"
-          >
-            {weekDays.map((dayInfo, idx) => {
-              const daySlots = visibleSlots.filter((s) =>
-                isSlotOnDate(s, dayInfo.dateString, dayInfo.dayOfWeek)
-              );
-              const isSelected = mobileSelectedDayIndex === idx;
-
-              return (
-                <button
-                  key={dayInfo.dayOfWeek}
-                  type="button"
-                  onClick={() => setMobileSelectedDayIndex(idx)}
-                  style={{
-                    padding: "6px 14px",
-                    borderRadius: "var(--radius-full)",
-                    fontSize: "var(--text-xs)",
-                    fontWeight: isSelected ? 700 : 500,
-                    backgroundColor: isSelected ? "var(--color-primary)" : "var(--color-surface)",
-                    color: isSelected ? "#FFFFFF" : "var(--color-primary)",
-                    border: `1px solid ${isSelected ? "var(--color-primary)" : "var(--color-border)"}`,
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                >
-                  <span>
-                    {dayInfo.dayOfWeek} ({dayInfo.shortDateLabel})
-                  </span>
-                  <span
-                    style={{
-                      fontSize: "10px",
-                      padding: "1px 6px",
-                      borderRadius: "10px",
-                      backgroundColor: isSelected ? "rgba(255,255,255,0.25)" : "var(--color-surface-muted)",
-                      color: isSelected ? "#FFFFFF" : "var(--color-neutral-dark)",
-                    }}
-                  >
-                    {daySlots.length}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
           {/* Desktop & Tablet 7-Day Calendar Grid */}
           <div
             style={{
@@ -965,11 +1025,11 @@ export function TimetableModule({
                     backgroundColor: "var(--color-surface)",
                     display: "flex",
                     flexDirection: "column",
-                    height: "720px", // 60px per hour * 12 hours
+                    height: `${totalGridHeightPx}px`,
                   }}
                 >
-                  {Array.from({ length: GRID_END_HOUR - GRID_START_HOUR }).map((_, i) => {
-                    const hour = GRID_START_HOUR + i;
+                  {Array.from({ length: totalGridHours }).map((_, i) => {
+                    const hour = gridStartHour + i;
                     const label = formatMinutesTo12Hour(hour * 60);
                     return (
                       <div
@@ -1004,7 +1064,7 @@ export function TimetableModule({
                       key={dayInfo.dayOfWeek}
                       style={{
                         position: "relative",
-                        height: "720px",
+                        height: `${totalGridHeightPx}px`,
                         borderRight: dayInfo.dayOfWeek === "Sunday" ? "none" : "1px solid var(--color-border)",
                         backgroundColor: dayInfo.isToday
                           ? "rgba(0, 122, 255, 0.02)"
@@ -1014,8 +1074,8 @@ export function TimetableModule({
                       }}
                     >
                       {/* Background hourly guidelines */}
-                      {Array.from({ length: GRID_END_HOUR - GRID_START_HOUR }).map((_, i) => {
-                        const hour = GRID_START_HOUR + i;
+                      {Array.from({ length: totalGridHours }).map((_, i) => {
+                        const hour = gridStartHour + i;
                         return (
                           <div
                             key={hour}
@@ -1051,156 +1111,20 @@ export function TimetableModule({
                         </div>
                       )}
 
-                      {/* Positioned Class Blocks with Side-by-Side Simultaneous Support */}
-                      {positionedSlots.map(({ slot, startMinutes, endMinutes, colIndex, totalCols }) => {
-                        const theme = getSubjectTheme(slot.subject);
-                        const isCancelled = slot.status === "cancelled";
-                        const isSpecificDate = slot.scheduleType === "specific_date";
-
-                        // Compute vertical placement in minutes
-                        const clampedStart = Math.max(startMinutes, GRID_START_HOUR * 60);
-                        const clampedEnd = Math.min(endMinutes, GRID_END_HOUR * 60);
-                        const topPercent = ((clampedStart - GRID_START_HOUR * 60) / GRID_TOTAL_MINUTES) * 100;
-                        const heightPercent = Math.max(((clampedEnd - clampedStart) / GRID_TOTAL_MINUTES) * 100, 4.5);
-
-                        // Horizontal side-by-side placement for simultaneous classes
-                        const colWidthPercent = 100 / totalCols;
-                        const leftPercent = colIndex * colWidthPercent;
-
-                        return (
-                          <div
-                            key={slot.id}
-                            onClick={() => setDetailsSlot(slot)}
-                            style={{
-                              position: "absolute",
-                              top: `${topPercent}%`,
-                              height: `${heightPercent}%`,
-                              left: `calc(${leftPercent}% + 2px)`,
-                              width: `calc(${colWidthPercent}% - 4px)`,
-                              backgroundColor: isCancelled ? "rgba(255, 59, 48, 0.08)" : theme.bgSubtle,
-                              borderLeft: `4px solid ${isCancelled ? "var(--color-danger, #FF3B30)" : theme.primary}`,
-                              borderTop: `1px solid ${isCancelled ? "rgba(255, 59, 48, 0.2)" : theme.border}`,
-                              borderRight: `1px solid ${isCancelled ? "rgba(255, 59, 48, 0.2)" : theme.border}`,
-                              borderBottom: `1px solid ${isCancelled ? "rgba(255, 59, 48, 0.2)" : theme.border}`,
-                              borderRadius: "var(--radius-sm)",
-                              padding: "6px 8px",
-                              boxSizing: "border-box",
-                              cursor: "pointer",
-                              overflow: "hidden",
-                              display: "flex",
-                              flexDirection: "column",
-                              justifyContent: "space-between",
-                              boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-                              transition: "transform 0.1s ease, box-shadow 0.1s ease",
-                              zIndex: 2,
-                              opacity: isCancelled ? 0.75 : 1,
-                            }}
-                            title={`${slot.subject} • ${slot.batch} • ${slot.time} • ${slot.teacherName} (Click for details)`}
-                          >
-                            <div>
-                              <div
-                                style={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                  alignItems: "center",
-                                  gap: "4px",
-                                  marginBottom: "2px",
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    fontSize: "11px",
-                                    fontWeight: 700,
-                                    color: isCancelled ? "var(--color-danger, #FF3B30)" : theme.primary,
-                                    whiteSpace: "nowrap",
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    textDecoration: isCancelled ? "line-through" : "none",
-                                  }}
-                                >
-                                  {slot.subject}
-                                </span>
-                                {isCancelled ? (
-                                  <span
-                                    style={{
-                                      fontSize: "8px",
-                                      fontWeight: 700,
-                                      backgroundColor: "var(--color-danger, #FF3B30)",
-                                      color: "#FFFFFF",
-                                      padding: "1px 4px",
-                                      borderRadius: "3px",
-                                      textTransform: "uppercase",
-                                    }}
-                                  >
-                                    Cancelled
-                                  </span>
-                                ) : isSpecificDate ? (
-                                  <span
-                                    style={{
-                                      fontSize: "8px",
-                                      fontWeight: 600,
-                                      backgroundColor: theme.badgeBg,
-                                      color: theme.badgeText,
-                                      padding: "1px 4px",
-                                      borderRadius: "3px",
-                                    }}
-                                  >
-                                    Session
-                                  </span>
-                                ) : null}
-                              </div>
-
-                              <div
-                                style={{
-                                  fontSize: "10px",
-                                  fontWeight: 600,
-                                  color: "var(--color-primary)",
-                                  whiteSpace: "nowrap",
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                }}
-                              >
-                                {slot.time}
-                              </div>
-
-                              <div
-                                style={{
-                                  fontSize: "9.5px",
-                                  color: "var(--color-neutral-dark)",
-                                  whiteSpace: "nowrap",
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                  marginTop: "1px",
-                                }}
-                              >
-                                {slot.batch}
-                              </div>
-                            </div>
-
-                            <div
-                              style={{
-                                fontSize: "9px",
-                                color: "var(--color-neutral-dark)",
-                                borderTop: "1px solid rgba(0,0,0,0.06)",
-                                paddingTop: "2px",
-                                marginTop: "2px",
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                              }}
-                            >
-                              <span style={{ overflow: "hidden", textOverflow: "ellipsis", fontWeight: 500 }}>
-                                👤 {slot.teacherName.split(" ")[0]}
-                              </span>
-                              <span style={{ fontSize: "8.5px", color: "var(--color-neutral-dark)" }}>
-                                {slot.classGrade || "Class X"}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
+                      {/* Positioned Class Blocks with Unified TimetableEventCard */}
+                      {positionedSlots.map(({ slot, startMinutes, endMinutes, colIndex, totalCols }) => (
+                        <TimetableEventCard
+                          key={slot.id}
+                          slot={slot}
+                          startMinutes={startMinutes}
+                          endMinutes={endMinutes}
+                          colIndex={colIndex}
+                          totalCols={totalCols}
+                          gridStartHour={gridStartHour}
+                          gridEndHour={gridEndHour}
+                          onClick={setDetailsSlot}
+                        />
+                      ))}
                     </div>
                   );
                 })}
@@ -1368,6 +1292,20 @@ export function TimetableModule({
                           marginTop: "6px",
                         }}
                       >
+                        {role === "academy-admin" && (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setDeletingSlot(slot)}
+                            style={{
+                              backgroundColor: "rgba(255, 59, 48, 0.08)",
+                              color: "var(--color-danger, #FF3B30)",
+                              borderColor: "rgba(255, 59, 48, 0.25)",
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        )}
                         <Button
                           variant="secondary"
                           size="sm"
@@ -1520,6 +1458,21 @@ export function TimetableModule({
                 marginTop: "var(--space-6)",
               }}
             >
+              {role === "academy-admin" && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setDeletingSlot(detailsSlot)}
+                  style={{
+                    backgroundColor: "rgba(255, 59, 48, 0.08)",
+                    color: "var(--color-danger, #FF3B30)",
+                    borderColor: "rgba(255, 59, 48, 0.25)",
+                    marginRight: "auto",
+                  }}
+                >
+                  Delete Session
+                </Button>
+              )}
               {(role === "teacher" || role === "academy-admin") && (
                 <>
                   <Button
@@ -1929,6 +1882,25 @@ export function TimetableModule({
                   gap: "var(--space-2)",
                 }}
               >
+                {editingSlotId && role === "academy-admin" && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      const target = slots.find((s) => s.id === editingSlotId);
+                      if (target) setDeletingSlot(target);
+                    }}
+                    style={{
+                      backgroundColor: "rgba(255, 59, 48, 0.08)",
+                      color: "var(--color-danger, #FF3B30)",
+                      borderColor: "rgba(255, 59, 48, 0.25)",
+                      marginRight: "auto",
+                    }}
+                  >
+                    Delete Session
+                  </Button>
+                )}
                 <Button
                   type="button"
                   variant="secondary"
@@ -1942,6 +1914,203 @@ export function TimetableModule({
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 5. DELETE TIMETABLE SESSION CONFIRMATION MODAL                            */}
+      {/* ========================================================================= */}
+      {deletingSlot && (
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setDeletingSlot(null);
+          }}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 200,
+            padding: "var(--space-4)",
+          }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-session-dialog-title"
+        >
+          <div
+            style={{
+              backgroundColor: "var(--color-surface)",
+              borderRadius: "var(--radius-lg)",
+              maxWidth: "480px",
+              width: "100%",
+              padding: "var(--space-6)",
+              boxShadow: "var(--shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04))",
+              border: "1px solid var(--color-border)",
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: "var(--space-4)",
+              }}
+            >
+              <div>
+                <h3
+                  id="delete-session-dialog-title"
+                  style={{
+                    fontSize: "var(--text-lg)",
+                    fontWeight: 700,
+                    color: "var(--color-danger, #FF3B30)",
+                    marginBottom: "4px",
+                  }}
+                >
+                  {deletingSlot.scheduleType === "specific_date" || Boolean(deletingSlot.specificDate)
+                    ? "Delete Special Session"
+                    : "Delete Recurring Routine"}
+                </h3>
+                <p style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", margin: 0 }}>
+                  {deletingSlot.scheduleType === "specific_date" || Boolean(deletingSlot.specificDate)
+                    ? "Confirm removing this date-specific class occurrence."
+                    : "Confirm removing this weekly recurring routine rule."}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDeletingSlot(null)}
+                aria-label="Close dialog"
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontSize: "var(--text-lg)",
+                  cursor: "pointer",
+                  color: "var(--color-neutral-dark)",
+                  padding: "4px",
+                  lineHeight: 1,
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Session Detail Summary Box */}
+            <div
+              style={{
+                backgroundColor: "var(--color-surface-muted)",
+                borderRadius: "var(--radius-md)",
+                padding: "var(--space-4)",
+                fontSize: "var(--text-xs)",
+                display: "flex",
+                flexDirection: "column",
+                gap: "var(--space-2)",
+                marginBottom: "var(--space-4)",
+                border: "1px solid var(--color-border)",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "var(--color-neutral-dark)" }}>Subject:</span>
+                <strong style={{ color: getSubjectTheme(deletingSlot.subject).primary }}>
+                  {deletingSlot.subject}
+                </strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "var(--color-neutral-dark)" }}>Schedule Type:</span>
+                <strong>
+                  {deletingSlot.scheduleType === "specific_date" || Boolean(deletingSlot.specificDate)
+                    ? "Date-Specific Session (Single Occurrence)"
+                    : "Recurring Weekly Routine (All Weeks)"}
+                </strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "var(--color-neutral-dark)" }}>Day / Date:</span>
+                <strong>
+                  {deletingSlot.specificDate
+                    ? `${deletingSlot.dayOfWeek} (${deletingSlot.specificDate})`
+                    : `Every ${deletingSlot.dayOfWeek}`}
+                </strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "var(--color-neutral-dark)" }}>Scheduled Time:</span>
+                <strong>{deletingSlot.time}</strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "var(--color-neutral-dark)" }}>Batch &amp; Class:</span>
+                <strong>
+                  {deletingSlot.batch} ({deletingSlot.classGrade})
+                </strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "var(--color-neutral-dark)" }}>Faculty Instructor:</span>
+                <strong>{deletingSlot.teacherName}</strong>
+              </div>
+            </div>
+
+            {/* Explanatory Scope Notice */}
+            <div
+              style={{
+                padding: "10px 12px",
+                borderRadius: "var(--radius-sm)",
+                backgroundColor: "rgba(255, 59, 48, 0.08)",
+                border: "1px solid rgba(255, 59, 48, 0.2)",
+                fontSize: "11px",
+                lineHeight: "1.4",
+                color: "var(--color-primary)",
+                marginBottom: "var(--space-6)",
+              }}
+            >
+              {deletingSlot.scheduleType === "specific_date" || Boolean(deletingSlot.specificDate) ? (
+                <>
+                  <strong>Occurrence scope:</strong> Deleting will remove only this special session on{" "}
+                  <strong>{deletingSlot.specificDate}</strong>. Other classes and faculty assignments remain unaffected.
+                </>
+              ) : (
+                <>
+                  <strong>Routine rule scope:</strong> This session is stored as a weekly recurring routine rule. Deleting will remove this class from <strong>all weeks</strong> in the timetable.
+                </>
+              )}
+            </div>
+
+            {/* Modal Actions */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "var(--space-2)",
+              }}
+            >
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => setDeletingSlot(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                onClick={handleConfirmDelete}
+                style={{
+                  backgroundColor: "var(--color-danger, #FF3B30)",
+                  borderColor: "var(--color-danger, #FF3B30)",
+                  color: "#FFFFFF",
+                }}
+              >
+                {deletingSlot.scheduleType === "specific_date" || Boolean(deletingSlot.specificDate)
+                  ? "Delete Special Session"
+                  : "Delete Recurring Routine"}
+              </Button>
+            </div>
           </div>
         </div>
       )}
