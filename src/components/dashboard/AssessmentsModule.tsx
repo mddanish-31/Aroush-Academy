@@ -203,7 +203,7 @@ export function AssessmentsModule({
   // --------------------------------------------------------------------------
   const [isRecordModalOpen, setIsRecordModalOpen] = useState<boolean>(false);
   const [recordExamId, setRecordExamId] = useState<string>(assessments[0]?.id || "exam-1");
-  const [recordStudentId, setRecordStudentId] = useState<string>(SAMPLE_STUDENTS[0].id);
+  const [recordStudentId, setRecordStudentId] = useState<string>(() => students[0]?.id || "std-101");
   const [recordMarksInput, setRecordMarksInput] = useState<string>("45");
   const [recordFeedbackInput, setRecordFeedbackInput] = useState<string>("");
   const [recordStatusInput, setRecordStatusInput] = useState<"evaluated" | "absent" | "pending">("evaluated");
@@ -1066,7 +1066,7 @@ export function AssessmentsModule({
 
     const calculatedTotalMarks = authorQuestions.reduce((acc, q) => acc + q.marks, 0);
     const parsedPassing = authorPassingMarks.trim() !== "" ? parseFloat(authorPassingMarks) : undefined;
-    const teacher = SAMPLE_TEACHERS.find((t) => t.id === currentTeacherId) || SAMPLE_TEACHERS[0];
+    const teacher = faculty.find((t) => t.id === currentTeacherId) || faculty[0] || SAMPLE_TEACHERS[0];
 
     const examData: MockExam = {
       id: authoringExamId || `mock-custom-${Date.now()}`,
@@ -1846,7 +1846,7 @@ export function AssessmentsModule({
                 style={{ fontSize: "11px", padding: "4px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
               >
                 <option value="all">All Batches</option>
-                {SAMPLE_BATCHES.map((b) => (
+                {batches.map((b) => (
                   <option key={b.id} value={b.name}>{b.name}</option>
                 ))}
               </select>
@@ -1919,7 +1919,7 @@ export function AssessmentsModule({
                   fontWeight: 600,
                 }}
               >
-                {SAMPLE_STUDENTS.map((std) => (
+                {(role === "teacher" ? teacherStudents : students).map((std) => (
                   <option key={std.id} value={std.id}>
                     {std.name} ({std.classGrade})
                   </option>
