@@ -9,6 +9,7 @@ import { useDemoStorage, DEMO_STORAGE_KEYS } from "@/lib/demoStorage";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { recordApprove, recordReject, recordAuditEvent } from "@/lib/auditService";
 
 type FilterTab = "all" | "pending" | "approved" | "rejected";
 
@@ -106,6 +107,27 @@ export function RegistrationApprovalsModule() {
 
       if (res.success) {
         const matched = students.find((s) => s.id === matchedStudentId);
+
+        recordApprove({
+          action: "Approve Registration Request",
+          type: "enrollment",
+          target: `${req.name} (${req.identifier})`,
+          details: matched
+            ? `Approved registration application for ${req.name} (${req.role}) and explicitly linked to academic student record ${matched.name} (${matched.id.toUpperCase()}).`
+            : `Approved registration application for ${req.name} (${req.role}) without academic record link.`,
+          performedBy: "Academy Administrator",
+          actorRole: "academy-admin",
+          entityType: "registration",
+          entityId: req.id,
+          outcome: "SUCCESS",
+          changedFields: ["status", "linkedStudentId"],
+          diff: [
+            { fieldName: "status", before: "pending", after: "approved" },
+            { fieldName: "linkedStudentId", after: matchedStudentId || null },
+          ],
+          sourcePortal: "academy-admin",
+        });
+
         setActionNotice({
           type: "success",
           text: matched
@@ -114,6 +136,19 @@ export function RegistrationApprovalsModule() {
         });
         setReviewModalReq(null);
       } else {
+        recordAuditEvent({
+          action: "Approve Registration Request",
+          actionType: "APPROVE",
+          type: "enrollment",
+          target: `${req.name} (${req.identifier})`,
+          details: `Application approval failed: ${res.error || "Operation failed"}`,
+          performedBy: "Academy Administrator",
+          actorRole: "academy-admin",
+          entityType: "registration",
+          entityId: req.id,
+          outcome: "FAILURE",
+          sourcePortal: "academy-admin",
+        });
         setActionNotice({
           type: "error",
           text: res.error || "Failed to approve registration request.",
@@ -142,12 +177,43 @@ export function RegistrationApprovalsModule() {
     try {
       const res = await rejectRegistration(req.id, rejectionReason.trim());
       if (res.success) {
+        recordReject({
+          action: "Reject Registration Request",
+          type: "enrollment",
+          target: `${req.name} (${req.identifier})`,
+          details: `Rejected registration application for ${req.name} (${req.role}). Reason: ${rejectionReason.trim()}`,
+          performedBy: "Academy Administrator",
+          actorRole: "academy-admin",
+          entityType: "registration",
+          entityId: req.id,
+          outcome: "SUCCESS",
+          changedFields: ["status", "rejectionReason"],
+          diff: [
+            { fieldName: "status", before: "pending", after: "rejected" },
+            { fieldName: "rejectionReason", after: rejectionReason.trim() },
+          ],
+          sourcePortal: "academy-admin",
+        });
+
         setActionNotice({
           type: "success",
           text: `Application for "${req.name}" (${req.identifier}) has been rejected. Login access is blocked.`,
         });
         setRejectModalReq(null);
       } else {
+        recordAuditEvent({
+          action: "Reject Registration Request",
+          actionType: "REJECT",
+          type: "enrollment",
+          target: `${req.name} (${req.identifier})`,
+          details: `Application rejection failed: ${res.error || "Operation failed"}`,
+          performedBy: "Academy Administrator",
+          actorRole: "academy-admin",
+          entityType: "registration",
+          entityId: req.id,
+          outcome: "FAILURE",
+          sourcePortal: "academy-admin",
+        });
         setActionNotice({
           type: "error",
           text: res.error || "Failed to reject registration request.",
