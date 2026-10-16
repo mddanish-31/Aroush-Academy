@@ -38,6 +38,7 @@ import {
 } from "@/data/academicMasterData";
 import { useDemoStorage, DEMO_STORAGE_KEYS } from "@/lib/demoStorage";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { recordCreate, recordUpdate } from "@/lib/auditService";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -565,6 +566,19 @@ export function DirectoryModule({
     }
 
     setEditingStudent(null);
+    recordUpdate({
+      action: "Update Student Profile",
+      type: "enrollment",
+      target: `${updatedProfile.name} · ${updatedProfile.id.toUpperCase()}`,
+      details: `Updated student record. Class: ${updatedProfile.classGrade}, Board: ${updatedProfile.board}, Status: ${updatedProfile.studentStatus}, Guardian: ${updatedProfile.guardianName}.`,
+      performedBy: "Academy Administrator",
+      actorRole: "academy-admin",
+      entityType: "student",
+      entityId: updatedProfile.id,
+      outcome: "SUCCESS",
+      changedFields: ["name", "classGrade", "board", "studentStatus", "guardianName"],
+      sourcePortal: "academy-admin",
+    });
     setActionAlert({
       type: "success",
       message: `Profile for ${updatedProfile.name} (${updatedProfile.id.toUpperCase()}) updated successfully.`,
@@ -593,6 +607,22 @@ export function DirectoryModule({
           }
         : prev,
     );
+    const teacher = faculty.find((t) => t.id === teacherId);
+    const newStatus = (teacher?.status || "active") === "active" ? "inactive" : "active";
+    recordUpdate({
+      action: "Toggle Faculty Status",
+      type: "system",
+      target: teacher ? teacher.name : teacherId,
+      details: `Updated faculty status to: ${newStatus}.`,
+      performedBy: "Academy Administrator",
+      actorRole: "academy-admin",
+      entityType: "faculty",
+      entityId: teacherId,
+      outcome: "SUCCESS",
+      changedFields: ["status"],
+      diff: [{ fieldName: "status", before: teacher?.status || "active", after: newStatus }],
+      sourcePortal: "academy-admin",
+    });
     setActionAlert({
       type: "success",
       message: "Faculty member status updated successfully.",
@@ -671,6 +701,19 @@ export function DirectoryModule({
       );
 
       setIsInviteModalOpen(false);
+      recordCreate({
+        action: "Send Portal Account Invitation",
+        type: "security",
+        target: `${selectedStudent.name} (${inviteRole})`,
+        details: `Dispatched portal account invitation for ${selectedStudent.name} with target role ${inviteRole}.`,
+        performedBy: "Academy Administrator",
+        actorRole: "academy-admin",
+        entityType: "invitation",
+        entityId: inv.id,
+        outcome: "SUCCESS",
+        changedFields: ["accountLinkStatus"],
+        sourcePortal: "academy-admin",
+      });
       setActionAlert({
         type: "success",
         message: `Simulated invitation provisioned (Code: ${inv.invitationCode}) for ${selectedStudent.name}. Ready for simulated activation.`,
@@ -777,6 +820,20 @@ export function DirectoryModule({
     setSelectedStudent(newStudent);
     setProfileActiveTab("overview");
 
+    recordCreate({
+      action: "Register Student",
+      type: "enrollment",
+      target: `${newStudent.name} · AA-2026-${nextNum}`,
+      details: `Registered student ${newStudent.name} (${newStudent.classGrade}, ${newStudent.board}) with ${newEnrollments.length} enrolled subjects.`,
+      performedBy: "Academy Administrator",
+      actorRole: "academy-admin",
+      entityType: "student",
+      entityId: newStudent.id,
+      outcome: "SUCCESS",
+      changedFields: ["name", "classGrade", "board", "guardianName", "enrollments"],
+      sourcePortal: "academy-admin",
+    });
+
     setActionAlert({
       type: "success",
       message: `Student ${newStudent.name} (AA-2026-${nextNum}) registered with ${newEnrollments.length} subject enrollments.`,
@@ -807,6 +864,21 @@ export function DirectoryModule({
     if (selectedStudent && selectedStudent.id === student.id) {
       setSelectedStudent(updated);
     }
+
+    recordUpdate({
+      action: "Change Student Status",
+      type: "enrollment",
+      target: `${student.name} · ${student.id.toUpperCase()}`,
+      details: `Changed student status from ${student.studentStatus} to ${targetStatus}.`,
+      performedBy: "Academy Administrator",
+      actorRole: "academy-admin",
+      entityType: "student",
+      entityId: student.id,
+      outcome: "SUCCESS",
+      changedFields: ["studentStatus"],
+      diff: [{ fieldName: "studentStatus", before: student.studentStatus, after: targetStatus }],
+      sourcePortal: "academy-admin",
+    });
 
     setStatusConfirmStudent(null);
     setActionAlert({
@@ -2650,6 +2722,19 @@ export function DirectoryModule({
                                           }
                                         : null,
                                     );
+                                    recordUpdate({
+                                      action: "Activate Portal Account",
+                                      type: "security",
+                                      target: `${selectedStudent.name} (Student)`,
+                                      details: `Activated portal login account for student ${selectedStudent.name}.`,
+                                      performedBy: "Academy Administrator",
+                                      actorRole: "academy-admin",
+                                      entityType: "student",
+                                      entityId: selectedStudent.id,
+                                      outcome: "SUCCESS",
+                                      changedFields: ["accountLinkStatus"],
+                                      sourcePortal: "academy-admin",
+                                    });
                                     setActionAlert({
                                       type: "success",
                                       message: `Student account activated! Log in at /login with "${existingInv.recipientIdentifier}" and password "student2026".`,
