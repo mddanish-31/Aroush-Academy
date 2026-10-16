@@ -334,10 +334,80 @@ section[id] {
     background-color: #FFFFFF !important;
   }
 
+  /* Digital ID Card Print Optimization */
+  .digital-id-card-wrapper {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+  }
+
+  .printable-document.digital-id-card-wrapper {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+  }
+
+  .id-card-lanyard-assembly,
+  .id-card-controls-bar {
+    display: none !important;
+  }
+
+  /* Display dual-side print layout */
+  .digital-id-card-print-sheet {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 12mm !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    margin: 10mm auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .id-card-print-block {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .id-card-cut-label {
+    margin-top: 8px !important;
+    font-size: 9px !important;
+    color: #4B5563 !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    font-weight: 600 !important;
+  }
+
+  .id-card-print-face {
+    width: 320px !important;
+    max-width: 320px !important;
+    min-height: 500px !important;
+    background-color: #FFFFFF !important;
+    color: #111827 !important;
+    border: 1.5px dashed #4B5563 !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   /* When printing from modal, hide the main dashboard background and content */
   body:has(.printable-modal-overlay) .dashboard-content-area {
     display: none !important;
   }
 }
+
 
 
