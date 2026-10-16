@@ -978,10 +978,38 @@ export function calculateAccountBalance(
 }
 
 /**
+ * Formats a billing month key (e.g. "2026-10") into a human-readable label (e.g. "October 2026").
+ */
+export function formatBillingMonthLabel(monthKey: string): string {
+  const [year, month] = (monthKey || "").split("-");
+  if (year && month) {
+    const d = new Date(parseInt(year, 10), parseInt(month, 10) - 1, 1);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleString("en-US", { month: "long", year: "numeric" });
+    }
+  }
+  return monthKey;
+}
+
+/**
  * Generates a collision-resistant unique receipt number.
  */
-export function generateUniqueReceiptNumber(existingReceipts: VerifiedFeeReceipt[]): string {
-  const yearMonth = "2026-10";
+export function generateUniqueReceiptNumber(
+  existingReceipts: VerifiedFeeReceipt[],
+  billingMonth?: string
+): string {
+  let yearMonth = billingMonth;
+  if (!yearMonth) {
+    if (existingReceipts.length > 0) {
+      const match = existingReceipts[0].receiptNumber.match(/REC-(\d{4}-\d{2})-\d+/);
+      if (match) {
+        yearMonth = match[1];
+      }
+    }
+    if (!yearMonth) {
+      yearMonth = "2026-10";
+    }
+  }
   let maxSeq = 0;
   for (const r of existingReceipts) {
     const match = r.receiptNumber.match(/REC-\d{4}-\d{2}-(\d+)/);
