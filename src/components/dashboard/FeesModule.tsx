@@ -40,6 +40,7 @@ import {
   calculateAccountBalance,
   generateUniqueReceiptNumber,
   isBillDuplicate,
+  formatBillingMonthLabel,
 } from "@/data/enrollmentFeeData";
 
 export interface FeesModuleProps {
@@ -96,6 +97,19 @@ export function FeesModule({
     DEMO_STORAGE_KEYS.FEE_CONFIGURATIONS,
     SAMPLE_FEE_CONFIGURATIONS
   );
+
+  // Derived active billing period
+  const currentBillingMonth = useMemo(() => {
+    if (!obligations || obligations.length === 0) return "2026-10";
+    const sorted = Array.from(new Set(obligations.map((o) => o.month))).sort();
+    return sorted[sorted.length - 1] || "2026-10";
+  }, [obligations]);
+
+  const prevBillingMonth = useMemo(() => {
+    if (!obligations || obligations.length === 0) return "2026-09";
+    const sorted = Array.from(new Set(obligations.map((o) => o.month))).sort();
+    return sorted.length > 1 ? sorted[sorted.length - 2] : "2026-09";
+  }, [obligations]);
 
   // Admin Sub-Tab State
   const [adminTab, setAdminTab] = useState<
@@ -242,7 +256,7 @@ export function FeesModule({
     for (const enr of teacherEnrollments) {
       studentSet.add(enr.studentId);
       const currentOb = obligations.find(
-        (o) => o.enrollmentId === enr.id && o.month === "2026-10"
+        (o) => o.enrollmentId === enr.id && o.month === currentBillingMonth
       );
       if (currentOb) {
         const calc = calculateAccountBalance(currentOb, payments, adjustments);
@@ -258,7 +272,7 @@ export function FeesModule({
       realized,
       balance,
     };
-  }, [teacherEnrollments, obligations, payments, adjustments]);
+  }, [teacherEnrollments, obligations, payments, adjustments, currentBillingMonth]);
 
   const studentKPIs = useMemo(() => {
     let target = 0;
@@ -267,7 +281,7 @@ export function FeesModule({
 
     for (const enr of studentEnrollments) {
       const currentOb = obligations.find(
-        (o) => o.enrollmentId === enr.id && o.month === "2026-10"
+        (o) => o.enrollmentId === enr.id && o.month === currentBillingMonth
       );
       if (currentOb) {
         const calc = calculateAccountBalance(currentOb, payments, adjustments);
@@ -283,7 +297,7 @@ export function FeesModule({
       paid,
       balance,
     };
-  }, [studentEnrollments, obligations, payments, adjustments]);
+  }, [studentEnrollments, obligations, payments, adjustments, currentBillingMonth]);
 
   // Status Badge Helper
   const renderStatusBadge = (status: FeePaymentStatus) => {
@@ -312,18 +326,30 @@ export function FeesModule({
   // ADMIN ACTIONS: Payment Approval & Rejection
   // -------------------------------------------------------------
   const handleApproveSubmission = (subm: PaymentSubmission) => {
+    if (role !== "academy-admin") return;
     if (subm.status !== "pending") return;
 
-    const receiptNo = generateUniqueReceiptNumber(receipts);
+    const submMonth = subm.obligationId.match(/\d{4}-\d{2}/)?.[0] || currentBillingMonth;
+    const receiptNo = generateUniqueReceiptNumber(receipts, submMonth);
     const txId = `tx-${Date.now()}`;
     const verifiedDate = new Date().toISOString().slice(0, 10);
     const finalRef = subm.referenceId || receiptNo;
+
+    // Resolve the actual student and enrollment associated with the submission
+    const actualStudent = students.find((s) => s.id === subm.studentId);
+    const actualEnrollment =
+      enrollments.find((e) => e.id === subm.enrollmentId) ||
+      enrollments.find(
+        (e) =>
+          e.studentId === subm.studentId &&
+          e.subjectName.toLowerCase() === subm.subjectName.toLowerCase()
+      );
 
     // 1. Create verified payment transaction
     const newTx: PaymentTransaction = {
       id: txId,
       obligationId: subm.obligationId,
-      enrollmentId: subm.enrollmentId,
+      enrollmentId: subm.enrollmentId || actualEnrollment?.id || "",
       studentId: subm.studentId,
       amount: subm.amount,
       paymentDate: subm.transferDate || verifiedDate,
@@ -341,21 +367,21 @@ export function FeesModule({
       ? calculateAccountBalance(obligation, [...payments, newTx], adjustments)
       : { balance: 0 };
 
-    // 2. Create verified receipt
+    // 2. Create verified receipt using actual student and enrollment metadata
     const newReceipt: VerifiedFeeReceipt = {
       id: `rec-${Date.now()}`,
       receiptNumber: receiptNo,
       submissionId: subm.id,
       paymentTransactionId: txId,
       obligationId: subm.obligationId,
-      enrollmentId: subm.enrollmentId,
+      enrollmentId: subm.enrollmentId || actualEnrollment?.id || "",
       studentId: subm.studentId,
       studentName: subm.studentName,
-      classGrade: effectiveStudent?.classGrade || "Class X",
-      guardianName: effectiveStudent?.guardianName || "Guardian",
+      classGrade: actualStudent?.classGrade || actualEnrollment?.classGrade || "Class X",
+      guardianName: actualStudent?.guardianName || "Guardian",
       subjectName: subm.subjectName,
-      teacherId: subm.teacherId,
-      teacherName: subm.teacherName,
+      teacherId: subm.teacherId || actualEnrollment?.teacherId || "",
+      teacherName: subm.teacherName || actualEnrollment?.teacherName || "",
       monthLabel: subm.monthLabel,
       amountReceived: subm.amount,
       paymentMethod: subm.paymentMethod,
@@ -405,6 +431,7 @@ export function FeesModule({
   };
 
   const handleRejectSubmission = () => {
+    if (role !== "academy-admin") return;
     if (!submissionDetailModal || !rejectReasonInput.trim()) return;
 
     const reason = rejectReasonInput.trim();
@@ -627,7 +654,7 @@ export function FeesModule({
   const handleGenerateNextMonthBills = () => {
     if (role !== "academy-admin") return;
     const month = generateMonthInput; // e.g. "2026-11"
-    const monthLabel = `November 2026`;
+    const monthLabel = formatBillingMonthLabel(month);
     const dueDate = `${month}-15`;
 
     let createdCount = 0;
@@ -735,12 +762,17 @@ export function FeesModule({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
+    const allowedTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
+    const allowedExts = [".png", ".jpg", ".jpeg", ".webp"];
+    const fileExt = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+    const isAllowedType = allowedTypes.includes(file.type.toLowerCase()) || allowedExts.includes(fileExt);
+
+    if (!isAllowedType) {
       setPayFormError("Please select a valid image file (PNG, JPEG, or WebP).");
       return;
     }
 
-    if (file.size > 2 * 1024 * 1024) {
+    if (file.size <= 0 || file.size > 2 * 1024 * 1024) {
       setPayFormError("Screenshot image exceeds 2 MB limit. Please select a smaller file.");
       return;
     }
@@ -788,6 +820,11 @@ export function FeesModule({
 
     const { obligation, enrollment } = payModal;
     const dest = destinations.find(
+      (d) =>
+        d.subjectName.toLowerCase() === enrollment.subjectName.toLowerCase() &&
+        d.isActive &&
+        (!enrollment.teacherId || d.teacherId === enrollment.teacherId)
+    ) || destinations.find(
       (d) => d.subjectName.toLowerCase() === enrollment.subjectName.toLowerCase() && d.isActive
     );
 
@@ -919,10 +956,10 @@ export function FeesModule({
       studentName: rec.studentName,
       subjectName: rec.subjectName,
       teacherId: rec.teacherId,
-      month: "2026-10",
+      month: rec.obligationId.match(/\d{4}-\d{2}/)?.[0] || currentBillingMonth,
       monthLabel: rec.monthLabel,
       feeAmount: rec.amountReceived,
-      dueDate: "2026-10-15",
+      dueDate: `${rec.obligationId.match(/\d{4}-\d{2}/)?.[0] || currentBillingMonth}-15`,
     };
 
     const st = students.find((s) => s.id === rec.studentId) || {
@@ -1039,7 +1076,7 @@ export function FeesModule({
 
           <div style={{ display: "flex", gap: "var(--space-2)", alignItems: "center", flexWrap: "wrap" }}>
             <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)" }}>
-              Active Cycle: <strong>October 2026</strong>
+              Active Cycle: <strong>{formatBillingMonthLabel(currentBillingMonth)}</strong>
             </span>
             <Button
               variant="secondary"
@@ -1320,7 +1357,7 @@ export function FeesModule({
                         let subPaid = 0;
 
                         for (const enr of matchingEnr) {
-                          const ob = obligations.find((o) => o.enrollmentId === enr.id && o.month === "2026-10");
+                          const ob = obligations.find((o) => o.enrollmentId === enr.id && o.month === currentBillingMonth);
                           if (ob) {
                             const calc = calculateAccountBalance(ob, payments, adjustments);
                             subObligation += calc.netCharge;
@@ -1377,7 +1414,7 @@ export function FeesModule({
                         let facPaid = 0;
 
                         for (const enr of facEnrollments) {
-                          const ob = obligations.find((o) => o.enrollmentId === enr.id && o.month === "2026-10");
+                          const ob = obligations.find((o) => o.enrollmentId === enr.id && o.month === currentBillingMonth);
                           if (ob) {
                             const calc = calculateAccountBalance(ob, payments, adjustments);
                             facTarget += calc.netCharge;
@@ -1447,7 +1484,7 @@ export function FeesModule({
                           let stPaid = 0;
 
                           for (const enr of sEnr) {
-                            const ob = obligations.find((o) => o.enrollmentId === enr.id && o.month === "2026-10");
+                            const ob = obligations.find((o) => o.enrollmentId === enr.id && o.month === currentBillingMonth);
                             if (ob) {
                               const calc = calculateAccountBalance(ob, payments, adjustments);
                               stTarget += calc.netCharge;
@@ -1988,8 +2025,8 @@ export function FeesModule({
               </thead>
               <tbody>
                 {teacherEnrollments.map((enr) => {
-                  const currentOb = obligations.find((o) => o.enrollmentId === enr.id && o.month === "2026-10");
-                  const prevOb = obligations.find((o) => o.enrollmentId === enr.id && o.month === "2026-09");
+                  const currentOb = obligations.find((o) => o.enrollmentId === enr.id && o.month === currentBillingMonth);
+                  const prevOb = obligations.find((o) => o.enrollmentId === enr.id && o.month === prevBillingMonth);
 
                   const currentCalc = currentOb
                     ? calculateAccountBalance(currentOb, payments, adjustments)
@@ -2043,18 +2080,21 @@ export function FeesModule({
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "var(--space-4)" }}>
               {studentEnrollments.map((enr) => {
-                const currentOb = obligations.find((o) => o.enrollmentId === enr.id && o.month === "2026-10") || {
-                  id: `ob-${enr.id}-2026-10`,
-                  enrollmentId: enr.id,
-                  studentId: enr.studentId,
-                  studentName: enr.studentName,
-                  subjectName: enr.subjectName,
-                  teacherId: enr.teacherId,
-                  month: "2026-10",
-                  monthLabel: "October 2026",
-                  feeAmount: enr.monthlyFeeAmount,
-                  dueDate: "2026-10-15",
-                };
+                const enrObs = obligations.filter((o) => o.enrollmentId === enr.id);
+                const currentOb =
+                  enrObs.find((o) => o.month === currentBillingMonth) ||
+                  enrObs[enrObs.length - 1] || {
+                    id: `ob-${enr.id}-${currentBillingMonth}`,
+                    enrollmentId: enr.id,
+                    studentId: enr.studentId,
+                    studentName: enr.studentName,
+                    subjectName: enr.subjectName,
+                    teacherId: enr.teacherId,
+                    month: currentBillingMonth,
+                    monthLabel: formatBillingMonthLabel(currentBillingMonth),
+                    feeAmount: enr.monthlyFeeAmount,
+                    dueDate: `${currentBillingMonth}-15`,
+                  };
 
                 const calc = calculateAccountBalance(currentOb, payments, adjustments);
                 const pendingSubm = submissions.find(
@@ -2481,6 +2521,11 @@ export function FeesModule({
             {/* Admin Destination Resolution & Method Selection */}
             {(() => {
               const dest = destinations.find(
+                (d) =>
+                  d.subjectName.toLowerCase() === payModal.enrollment.subjectName.toLowerCase() &&
+                  d.isActive &&
+                  (!payModal.enrollment.teacherId || d.teacherId === payModal.enrollment.teacherId)
+              ) || destinations.find(
                 (d) => d.subjectName.toLowerCase() === payModal.enrollment.subjectName.toLowerCase() && d.isActive
               );
 
@@ -2923,7 +2968,7 @@ export function FeesModule({
             zIndex: 100,
           }}
         >
-          <Card padding="lg" style={{ maxWidth: "480px", width: "100%" }}>
+          <Card padding="lg" style={{ maxWidth: "480px", width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
             <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 700, margin: "0 0 var(--space-2)" }}>
               Authorize Traceable Fee Adjustment
             </h3>
@@ -3074,10 +3119,18 @@ export function FeesModule({
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) {
+                    const allowedTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
+                    const allowedExts = [".png", ".jpg", ".jpeg", ".webp"];
+                    const fileExt = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+                    if (!allowedTypes.includes(file.type.toLowerCase()) && !allowedExts.includes(fileExt)) {
+                      setDestFormError("Please select a valid image file (PNG, JPEG, or WebP).");
+                      return;
+                    }
                     if (file.size > 2 * 1024 * 1024) {
                       setDestFormError("QR image exceeds 2MB limit.");
                       return;
                     }
+                    setDestFormError("");
                     const reader = new FileReader();
                     reader.onload = () => {
                       setDestQrPreview(reader.result as string);
@@ -3135,7 +3188,7 @@ export function FeesModule({
             zIndex: 100,
           }}
         >
-          <Card padding="lg" style={{ maxWidth: "460px", width: "100%" }}>
+          <Card padding="lg" style={{ maxWidth: "460px", width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
             <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 700, margin: "0 0 2px" }}>
               Revise Monthly Fee — {revisionModal.classGrade} {revisionModal.subjectName}
             </h3>
@@ -3200,7 +3253,7 @@ export function FeesModule({
             zIndex: 100,
           }}
         >
-          <Card padding="lg" style={{ maxWidth: "460px", width: "100%" }}>
+          <Card padding="lg" style={{ maxWidth: "460px", width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
             <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 700, margin: "0 0 2px" }}>
               Generate Next Monthly Billing Cycle
             </h3>
@@ -3264,7 +3317,7 @@ export function FeesModule({
             zIndex: 100,
           }}
         >
-          <Card padding="lg" style={{ maxWidth: "500px", width: "100%" }}>
+          <Card padding="lg" style={{ maxWidth: "500px", width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
             <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 700, margin: "0 0 6px" }}>
               Reset Fee Demo Data?
             </h3>
