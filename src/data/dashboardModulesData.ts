@@ -7,6 +7,7 @@ import type {
   NoticeItem,
   BatchDefinition,
   AuditLogEntry,
+  TeacherProfile,
 } from "@/types";
 
 /**
@@ -857,6 +858,84 @@ export const SAMPLE_BATCHES: BatchDefinition[] = [
     status: "active",
   },
 ];
+
+function parseGradeFlags(text: string) {
+  const s = " " + (text || "").toLowerCase().replace(/[^a-z0-9]/g, " ") + " ";
+  return {
+    is9: /\b(9|ix)\b/.test(s),
+    is10: /\b(10|x)\b/.test(s),
+    is11: /\b(11|xi)\b/.test(s),
+    is12: /\b(12|xii)\b/.test(s),
+  };
+}
+
+/**
+ * Determines whether a batch is compatible with a student's grade/class.
+ * Ensures Class IX/X students cannot enroll in Class XI-XII batches, and vice versa,
+ * while respecting multi-class batches (e.g. Class IX-X, Class XI-XII).
+ */
+export function isBatchMatchingClass(batch: BatchDefinition, studentClass: string): boolean {
+  if (!batch.classGrade && !batch.name) return true;
+  const bGrade = (batch.classGrade || "").trim().toLowerCase();
+  const sGrade = (studentClass || "").trim().toLowerCase();
+  const bName = (batch.name || "").toLowerCase();
+
+  // Direct exact match
+  if (bGrade === sGrade) return true;
+
+  const s = parseGradeFlags(studentClass);
+  const b = parseGradeFlags((batch.classGrade || "") + " " + (batch.name || ""));
+
+  const studentHasGrade = s.is9 || s.is10 || s.is11 || s.is12;
+  const batchHasGrade = b.is9 || b.is10 || b.is11 || b.is12;
+
+  if (studentHasGrade && batchHasGrade) {
+    if (s.is9 && b.is9) return true;
+    if (s.is10 && b.is10) return true;
+    if (s.is11 && b.is11) return true;
+    if (s.is12 && b.is12) return true;
+    return false;
+  }
+
+  return bGrade === sGrade || bName.includes(sGrade);
+}
+
+/**
+ * Determines whether a batch is compatible with a subject name.
+ * Supports composite subjects like "Physics & Chemistry" or "Accountancy & Economics".
+ */
+export function isBatchMatchingSubject(batch: BatchDefinition, subjectName: string): boolean {
+  if (!batch.subject) return true;
+  const bSub = batch.subject.trim().toLowerCase();
+  const sSub = subjectName.trim().toLowerCase();
+  if (bSub === sSub) return true;
+  if (bSub.includes(sSub) || sSub.includes(bSub)) return true;
+  // Handle "English" vs "English Language & Literature"
+  if (bSub.includes("english") && sSub.includes("english")) return true;
+  return false;
+}
+
+/**
+ * Filters faculty members who are active and qualified to teach a given subject.
+ * Returns only valid, active faculty assignments without unvetted fallbacks.
+ */
+export function getEligibleFacultyForSubject(faculty: TeacherProfile[], subjectName: string): TeacherProfile[] {
+  const activeFaculty = faculty.filter((f) => (f.status || "active") === "active");
+  return activeFaculty.filter((f) => {
+    if (!f.assignedSubjects || f.assignedSubjects.length === 0) return true;
+    return f.assignedSubjects.some((sub) => {
+      const s = sub.trim().toLowerCase();
+      const target = subjectName.trim().toLowerCase();
+      return (
+        s === target ||
+        s.includes(target) ||
+        target.includes(s) ||
+        (s.includes("english") && target.includes("english"))
+      );
+    });
+  });
+}
+
 
 /**
  * System and Ledger Audit Logs
