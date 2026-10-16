@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useDemoStorage, DEMO_STORAGE_KEYS } from "@/lib/demoStorage";
+import { recordCreate, recordUpdate } from "@/lib/auditService";
 
 interface AttendanceModuleProps {
   role: UserRole;
@@ -152,6 +153,25 @@ export function AttendanceModule({
           : rec,
       ),
     );
+
+    recordUpdate({
+      action: "Update Attendance Record",
+      type: "enrollment",
+      target: `${editRecord.studentName} · ${editRecord.subject} (${editRecord.batch})`,
+      details: `Updated attendance status for ${editRecord.studentName} from ${editRecord.status.toUpperCase()} to ${editStatus.toUpperCase()} on ${targetDate}.`,
+      performedBy: role === "academy-admin" ? "Academy Administrator" : "Faculty Teacher",
+      actorRole: role,
+      entityType: "attendance",
+      entityId: editRecord.id,
+      outcome: "SUCCESS",
+      changedFields: ["status", "date"],
+      diff: [
+        { fieldName: "status", before: editRecord.status, after: editStatus },
+        { fieldName: "date", before: editRecord.date, after: targetDate },
+      ],
+      sourcePortal: role,
+    });
+
     setActionSuccessNotice(
       `Updated attendance for ${editRecord.studentName} to ${editStatus.toUpperCase()}${targetDate !== editRecord.date ? ` on ${targetDate}` : ""}.`,
     );
@@ -247,6 +267,21 @@ export function AttendanceModule({
     };
 
     setRecords((prev) => [newRec, ...prev]);
+
+    recordCreate({
+      action: "Mark Attendance",
+      type: "enrollment",
+      target: `${student.name} · ${markSubject} (${batch})`,
+      details: `Marked attendance for ${student.name} as ${markStatus.toUpperCase()} in ${markSubject} (${batch}) on ${trimmedDate}.${markRemarks.trim() ? ` Remarks: ${markRemarks.trim()}` : ""}`,
+      performedBy: role === "academy-admin" ? "Academy Administrator" : "Faculty Teacher",
+      actorRole: role,
+      entityType: "attendance",
+      entityId: newRec.id,
+      outcome: "SUCCESS",
+      changedFields: ["status", "date", "subject", "batch"],
+      sourcePortal: role,
+    });
+
     setIsMarkModalOpen(false);
     setMarkRemarks("");
     setMarkError(null);
