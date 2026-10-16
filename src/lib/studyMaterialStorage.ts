@@ -324,6 +324,14 @@ export const demoStudyMaterialStorage: StudyMaterialStorageService = {
     const current = this.getMaterials();
     const next = current.filter((m) => m.id !== id);
     setDemoStorage(DEMO_STORAGE_KEYS.STUDY_MATERIALS, next);
+    const existing = clientFileBlobMap.get(id);
+    if (existing?.url && typeof URL !== "undefined" && typeof URL.revokeObjectURL === "function") {
+      try {
+        URL.revokeObjectURL(existing.url);
+      } catch {
+        // Safe fallback in non-browser or mocking environments
+      }
+    }
     clientFileBlobMap.delete(id);
     deleteBinaryFile(id).catch(() => {});
     if (typeof window !== "undefined") {
