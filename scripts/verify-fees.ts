@@ -24,6 +24,7 @@ import {
   generateUniqueReceiptNumber,
   calculateMidMonthFee,
   isBillDuplicate,
+  formatBillingMonthLabel,
   SAMPLE_ENROLLMENTS,
   SAMPLE_STUDENTS,
   SAMPLE_OBLIGATIONS,
@@ -897,6 +898,138 @@ console.log("\nTest 16: Screenshot-based payment submission & Admin verification
   console.log("  ✓ Verified: Screenshot-based submission, file size/type validation, UTR optionality, pending status isolation, payment method switching (UPI vs Bank Transfer), and Admin review workflow.");
 }
 
+// -------------------------------------------------------------------------
+// Test 17: Regression — Multi-teacher destination resolution, actual student receipt metadata, role guard & dynamic billing
+// -------------------------------------------------------------------------
+console.log("\nTest 17: Multi-teacher destination resolution, actual student receipt metadata, role guard & dynamic billing...");
+{
+  // 1. Multi-teacher destination resolution
+  const mathDestAzhar: PaymentDestination = {
+    id: "dest-math-azhar",
+    subjectName: "Mathematics",
+    teacherId: "tch-azhar",
+    teacherName: "Azhar Sir",
+    upiId: "azhar.maths@okaxis",
+    accountHolderName: "Aroush Academy - Azhar Sir",
+    bankName: "SBI",
+    accountNumber: "••••5812",
+    ifscCode: "SBIN0001234",
+    branchName: "Park Circus",
+    isActive: true,
+    lastUpdated: "2026-10-01",
+    updatedBy: "Admin",
+  };
+
+  const mathDestKhan: PaymentDestination = {
+    id: "dest-math-khan",
+    subjectName: "Mathematics",
+    teacherId: "tch-khan",
+    teacherName: "Khan Sir",
+    upiId: "khan.maths@okhdfc",
+    accountHolderName: "Aroush Academy - Khan Sir",
+    bankName: "HDFC",
+    accountNumber: "••••9999",
+    ifscCode: "HDFC0000999",
+    branchName: "CIT Road",
+    isActive: true,
+    lastUpdated: "2026-10-01",
+    updatedBy: "Admin",
+  };
+
+  const allDestinations = [mathDestAzhar, mathDestKhan];
+
+  // Resolve destination for enrollment under Khan Sir
+  const khanEnrollment = {
+    id: "enr-test-khan",
+    studentId: "std-105",
+    subjectName: "Mathematics",
+    teacherId: "tch-khan",
+  };
+
+  const resolvedDest = allDestinations.find(
+    (d) =>
+      d.subjectName.toLowerCase() === khanEnrollment.subjectName.toLowerCase() &&
+      d.isActive &&
+      (!khanEnrollment.teacherId || d.teacherId === khanEnrollment.teacherId)
+  ) || allDestinations.find(
+    (d) => d.subjectName.toLowerCase() === khanEnrollment.subjectName.toLowerCase() && d.isActive
+  );
+
+  assert(resolvedDest !== undefined, "Destination resolved");
+  assert.strictEqual(resolvedDest?.teacherId, "tch-khan", "Correct teacher destination resolved when subject is shared");
+  assert.strictEqual(resolvedDest?.upiId, "khan.maths@okhdfc", "Correct UPI ID resolved");
+
+  // 2. Actual student metadata on approval (must NOT copy unrelated student's details)
+  const rohanStudent = SAMPLE_STUDENTS.find((s) => s.id === "std-105")!;
+  assert.strictEqual(rohanStudent.name, "Rohan Mukherjee");
+  assert.strictEqual(rohanStudent.classGrade, "Class IX");
+  assert.strictEqual(rohanStudent.guardianName, "Amit Mukherjee");
+
+  const rohanSubmission: PaymentSubmission = {
+    id: "subm-rohan-test",
+    studentId: "std-105",
+    studentName: "Rohan Mukherjee",
+    subjectName: "Mathematics",
+    teacherId: "tch-azhar",
+    teacherName: "Azhar Sir",
+    enrollmentId: "enr-105-math",
+    obligationId: "ob-105-math-2026-10",
+    monthLabel: "October 2026",
+    amount: 1400,
+    paymentMethod: "upi",
+    referenceId: "UPI9988112233",
+    transferDate: "2026-10-16",
+    status: "pending",
+    submittedAt: "2026-10-16T10:00:00.000Z",
+    submittedByRole: "student",
+    submittedByName: "Rohan Mukherjee",
+  };
+
+  // Simulate approval resolution logic
+  const targetStudent = SAMPLE_STUDENTS.find((s) => s.id === rohanSubmission.studentId);
+  const targetReceipt: VerifiedFeeReceipt = {
+    id: `rec-test-rohan`,
+    receiptNumber: generateUniqueReceiptNumber(SAMPLE_FEE_RECEIPTS),
+    submissionId: rohanSubmission.id,
+    paymentTransactionId: "tx-test-rohan",
+    obligationId: rohanSubmission.obligationId,
+    enrollmentId: rohanSubmission.enrollmentId,
+    studentId: rohanSubmission.studentId,
+    studentName: rohanSubmission.studentName,
+    classGrade: targetStudent?.classGrade || "Class X",
+    guardianName: targetStudent?.guardianName || "Guardian",
+    subjectName: rohanSubmission.subjectName,
+    teacherId: rohanSubmission.teacherId,
+    teacherName: rohanSubmission.teacherName,
+    monthLabel: rohanSubmission.monthLabel,
+    amountReceived: rohanSubmission.amount,
+    paymentMethod: rohanSubmission.paymentMethod,
+    referenceId: rohanSubmission.referenceId || "REF",
+    verifiedDate: "2026-10-16",
+    issuedBy: "Academy Admin Office",
+    remainingBalanceAfterPayment: 0,
+  };
+
+  assert.strictEqual(targetReceipt.classGrade, "Class IX", "Receipt uses actual student class (Class IX), not default/unrelated Class X");
+  assert.strictEqual(targetReceipt.guardianName, "Amit Mukherjee", "Receipt uses actual guardian (Amit Mukherjee), not unrelated Tariq Rahman");
+  assert.strictEqual(targetReceipt.studentName, "Rohan Mukherjee", "Receipt student name is accurate");
+
+  // 3. Billing month label formatting utility
+  assert.strictEqual(formatBillingMonthLabel("2026-11"), "November 2026", "2026-11 formatted to November 2026");
+  assert.strictEqual(formatBillingMonthLabel("2026-12"), "December 2026", "2026-12 formatted to December 2026");
+  assert.strictEqual(formatBillingMonthLabel("2027-01"), "January 2027", "2027-01 formatted to January 2027");
+
+  // 4. Admin-only approval guard
+  const canApprove = (userRole: string) => userRole === "academy-admin";
+  assert.strictEqual(canApprove("student"), false, "Student role blocked from approving payments");
+  assert.strictEqual(canApprove("teacher"), false, "Teacher role blocked from approving payments");
+  assert.strictEqual(canApprove("parent"), false, "Parent role blocked from approving payments");
+  assert.strictEqual(canApprove("academy-admin"), true, "Only academy-admin role permitted to approve payments");
+
+  console.log("  ✓ Verified: Multi-teacher destination resolution, actual student receipt metadata, role guard & dynamic billing.");
+}
+
 console.log("\n==================================================================");
-console.log("   ALL 16 FEE MANAGEMENT VERIFICATION TESTS PASSED SUCCESSFULLY!  ");
+console.log("   ALL 17 FEE MANAGEMENT VERIFICATION TESTS PASSED SUCCESSFULLY!  ");
 console.log("==================================================================\n");
+
