@@ -366,16 +366,37 @@ console.log("\nTest 8: Sensitive data sanitization, credentials exclusion & phon
   assert(sanitized.includes("[REDACTED]"), "Password marked as REDACTED");
   assert(sanitized.includes("••••••"), "Phone number digits masked");
 
+  // Regression: capture group replacement must preserve property name, not literal '$1'
+  assert(!sanitized.includes("$1="), "Capture group correctly replaced; no literal $1= leak");
+  assert(sanitized.includes("password=[REDACTED]"), "Password key preserved with [REDACTED]");
+
+  // Regression: various phone formats (spaced, 0-prefix, +91-prefix)
+  const spacedPhoneText = "Contact numbers: 098830 11221, +91 98830 22334, and token='secret_token_val_123'";
+  const sanitizedSpaced = sanitizeAuditText(spacedPhoneText);
+  assert(!sanitizedSpaced.includes("098830 11221"), "Spaced 0-prefixed phone masked");
+  assert(!sanitizedSpaced.includes("98830 22334"), "Spaced +91 phone masked");
+  assert(!sanitizedSpaced.includes("secret_token_val_123"), "Quoted token redacted");
+  assert(sanitizedSpaced.includes("token=[REDACTED]"), "Token key preserved with [REDACTED]");
+
+  // Regression: Ordinary business text and identifiers must NOT be corrupted
+  const ordinaryText = "Assigned keyword: algebra to Batch Alpha; receipt REC-2026-10-888 generated for std-901 with fee ₹5000";
+  const sanitizedOrdinary = sanitizeAuditText(ordinaryText);
+  assert.strictEqual(sanitizedOrdinary, ordinaryText, "Ordinary text, keywords, amounts, and IDs not corrupted");
+
   const rawDiff = [
     { fieldName: "guardianPhone", before: "9830112233", after: "9830998877" },
     { fieldName: "passwordHash", before: "$2a$12$abcdef", after: "$2a$12$ghijkl" },
     { fieldName: "classGrade", before: "Class IX", after: "Class X" },
+    { fieldName: "phone", before: "9831098310", after: "9831098311" },
+    { fieldName: "contactNumber", before: "09883011221", after: "09883011222" },
   ];
   const sanitizedDiffResult = sanitizeDiff(rawDiff);
 
   assert.strictEqual(sanitizedDiffResult?.[0].before, "[REDACTED]", "Guardian phone redacted in diff");
   assert.strictEqual(sanitizedDiffResult?.[1].after, "[REDACTED]", "Password hash redacted in diff");
   assert.strictEqual(sanitizedDiffResult?.[2].after, "Class X", "Safe business field preserved in diff");
+  assert.strictEqual(sanitizedDiffResult?.[3].before, "[REDACTED]", "Plain 'phone' field redacted in diff");
+  assert.strictEqual(sanitizedDiffResult?.[4].after, "[REDACTED]", "'contactNumber' field redacted in diff");
 
   console.log("  ✓ Passed: Strict sanitization and phone number masking verified");
 }
