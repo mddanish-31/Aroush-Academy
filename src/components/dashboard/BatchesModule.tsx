@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useDemoStorage, DEMO_STORAGE_KEYS } from "@/lib/demoStorage";
+import { recordCreate } from "@/lib/auditService";
 
 export function BatchesModule() {
   const [batches, setBatches] = useDemoStorage<BatchDefinition[]>(
@@ -61,6 +62,19 @@ export function BatchesModule() {
     };
 
     setBatches((prev) => [newBatch, ...prev]);
+    recordCreate({
+      action: "Create Batch",
+      type: "enrollment",
+      target: `${newBatch.name} · ${newBatch.subject}`,
+      details: `Created batch ${newBatch.name} (${newBatch.classGrade}). Teacher: ${newBatch.teacherName}, Capacity: ${newBatch.capacity}, Fee: ₹${newBatch.monthlyFee}/mo.`,
+      performedBy: "Academy Administrator",
+      actorRole: "academy-admin",
+      entityType: "batch",
+      entityId: newBatch.id,
+      outcome: "SUCCESS",
+      changedFields: ["name", "subject", "classGrade", "teacherName", "capacity", "monthlyFee"],
+      sourcePortal: "academy-admin",
+    });
     setIsCreateModalOpen(false);
     setNameInput("");
     setActionSuccessNotice(`Created batch "${newBatch.name}" assigned to ${newBatch.teacherName}.`);
