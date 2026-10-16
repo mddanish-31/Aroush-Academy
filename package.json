@@ -15,7 +15,8 @@
     "test:cross-portal": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-cross-portal.ts",
     "test:digital-id": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-digital-id.ts",
     "test:audit-logs": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-audit-logs.ts",
-    "test:fees": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-fees.ts"
+    "test:fees": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-fees.ts",
+    "test:browser-qa": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-browser-qa-flows.ts"
   },
   "dependencies": {
     "next": "16.4.0",
