@@ -12,15 +12,20 @@
     "test:timetable": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-timetable.ts",
     "test:online-classes": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-online-classes.ts",
     "test:examinations": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-examinations.ts",
-    "test:cross-portal": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-cross-portal.ts"
+    "test:cross-portal": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-cross-portal.ts",
+    "test:digital-id": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-digital-id.ts",
+    "test:audit-logs": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-audit-logs.ts",
+    "test:fees": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-fees.ts"
   },
   "dependencies": {
     "next": "16.4.0",
+    "qrcode-svg": "^1.1.0",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@types/qrcode-svg": "^1.1.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
