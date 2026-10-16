@@ -54,8 +54,25 @@ export type DemoStorageKey = (typeof DEMO_STORAGE_KEYS)[keyof typeof DEMO_STORAG
 // In-memory runtime cache for client-side role and tab switching
 const memoryCache: Record<string, unknown> = {};
 
+// BroadcastChannel singleton for instantaneous cross-tab synchronization
+let crossTabBroadcastChannel: BroadcastChannel | null = null;
+
+function getCrossTabChannel(): BroadcastChannel | null {
+  if (typeof window === "undefined" || typeof window.BroadcastChannel === "undefined") {
+    return null;
+  }
+  if (!crossTabBroadcastChannel) {
+    try {
+      crossTabBroadcastChannel = new BroadcastChannel("aroush_demo_cross_tab_sync");
+    } catch {
+      crossTabBroadcastChannel = null;
+    }
+  }
+  return crossTabBroadcastChannel;
+}
+
 /**
- * Detects whether sessionStorage is available in the current runtime environment.
+ * Detects whether sessionStorage and localStorage are available in the current runtime environment.
  */
 export function isDemoStorageAvailable(): boolean {
   if (typeof window === "undefined") return false;
@@ -71,6 +88,7 @@ export function isDemoStorageAvailable(): boolean {
 
 /**
  * Safely retrieves and parses a stored demo record with fallback and type validation.
+ * Checks in-memory cache, sessionStorage (tab scope), and mirrors from localStorage (cross-tab scope).
  */
 export function getDemoStorage<T>(
   key: string,
@@ -92,7 +110,21 @@ export function getDemoStorage<T>(
   }
 
   try {
-    const raw = window.sessionStorage.getItem(key);
+    let raw = window.sessionStorage.getItem(key);
+
+    // If not in this tab's sessionStorage, retrieve from localStorage (cross-tab / persisted)
+    if (!raw) {
+      try {
+        raw = window.localStorage.getItem(key);
+        if (raw) {
+          // Populate current tab's sessionStorage to align state
+          window.sessionStorage.setItem(key, raw);
+        }
+      } catch {
+        // Ignore localStorage retrieval errors in restricted modes
+      }
+    }
+
     if (!raw) {
       return fallback;
     }
@@ -120,7 +152,8 @@ export function getDemoStorage<T>(
 }
 
 /**
- * Safely persists a demo record to sessionStorage and updates the runtime cache.
+ * Safely persists a demo record to memory cache, sessionStorage, and localStorage,
+ * and notifies active tabs via BroadcastChannel.
  */
 export function setDemoStorage<T>(key: string, value: T): boolean {
   // Always update in-memory runtime cache
@@ -131,22 +164,45 @@ export function setDemoStorage<T>(key: string, value: T): boolean {
   }
 
   try {
-    window.sessionStorage.setItem(key, JSON.stringify(value));
+    const serialized = JSON.stringify(value);
+    window.sessionStorage.setItem(key, serialized);
+
+    try {
+      window.localStorage.setItem(key, serialized);
+    } catch {
+      // Ignore localStorage quota or restriction errors
+    }
+
+    const channel = getCrossTabChannel();
+    if (channel) {
+      channel.postMessage({ type: "change", key, value });
+    }
+
     return true;
   } catch (error) {
-    console.warn(`[DemoStorage] Failed to write key "${key}" to sessionStorage.`, error);
+    console.warn(`[DemoStorage] Failed to write key "${key}".`, error);
     return false;
   }
 }
 
 /**
- * Removes a specific demo key from sessionStorage and the runtime cache.
+ * Removes a specific demo key from memory cache, sessionStorage, and localStorage.
  */
 export function removeDemoStorage(key: string): boolean {
   delete memoryCache[key];
   if (typeof window === "undefined") return false;
   try {
     window.sessionStorage.removeItem(key);
+    try {
+      window.localStorage.removeItem(key);
+    } catch {
+      // Ignore
+    }
+
+    const channel = getCrossTabChannel();
+    if (channel) {
+      channel.postMessage({ type: "remove", key });
+    }
     return true;
   } catch {
     return false;
@@ -154,7 +210,7 @@ export function removeDemoStorage(key: string): boolean {
 }
 
 /**
- * Resets all AROUSH Academy demo storage keys back to default sample data.
+ * Resets all AROUSH Academy demo storage keys back to default sample data across all tabs.
  */
 export function clearAllDemoStorage(): boolean {
   for (const k of Object.values(DEMO_STORAGE_KEYS)) {
@@ -162,6 +218,7 @@ export function clearAllDemoStorage(): boolean {
     if (typeof window !== "undefined") {
       try {
         window.sessionStorage.removeItem(k);
+        window.localStorage.removeItem(k);
       } catch {
         // Ignore errors
       }
@@ -169,12 +226,16 @@ export function clearAllDemoStorage(): boolean {
   }
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent("aroush-demo-storage-reset"));
+    const channel = getCrossTabChannel();
+    if (channel) {
+      channel.postMessage({ type: "reset" });
+    }
   }
   return true;
 }
 
 /**
- * Resets only fee-related demo keys to fallback sample data.
+ * Resets only fee-related demo keys to fallback sample data across all tabs.
  * Does not disturb other modules like attendance, timetable, or mock exams.
  */
 export function resetFeeDemoStorage(): boolean {
@@ -201,6 +262,7 @@ export function resetFeeDemoStorage(): boolean {
     if (typeof window !== "undefined") {
       try {
         window.sessionStorage.removeItem(k);
+        window.localStorage.removeItem(k);
       } catch {
         // Ignore
       }
@@ -209,6 +271,10 @@ export function resetFeeDemoStorage(): boolean {
 
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent("aroush-demo-storage-reset"));
+    const channel = getCrossTabChannel();
+    if (channel) {
+      channel.postMessage({ type: "reset-fee" });
+    }
   }
   return true;
 }
@@ -252,8 +318,9 @@ export function useDemoStorage<T>(
     }
   }, [key, fallback, validator]);
 
-  // Synchronize with external changes or other instances of this key
+  // Synchronize with external changes or other instances of this key across components and browser tabs
   useEffect(() => {
+    // 1. Same-window custom event handler
     const handleStorageChange = (e: Event) => {
       const customEvent = e as CustomEvent<{ key: string; value?: unknown }>;
       if (customEvent.detail && customEvent.detail.key === key) {
@@ -266,24 +333,91 @@ export function useDemoStorage<T>(
       }
     };
 
+    // 2. Cross-tab BroadcastChannel event handler
+    const ch = getCrossTabChannel();
+    const handleBroadcastMessage = (event: MessageEvent) => {
+      if (!event.data) return;
+      if (event.data.type === "change" && event.data.key === key) {
+        const val = event.data.value;
+        if (!validator || validator(val)) {
+          memoryCache[key] = val;
+          try {
+            window.sessionStorage.setItem(key, JSON.stringify(val));
+          } catch {
+            // Ignore
+          }
+          setState(val as T);
+        }
+      } else if (event.data.type === "remove" && event.data.key === key) {
+        delete memoryCache[key];
+        try {
+          window.sessionStorage.removeItem(key);
+        } catch {
+          // Ignore
+        }
+        setState(fallback);
+      } else if (event.data.type === "reset" || event.data.type === "reset-fee") {
+        const loaded = getDemoStorage<T>(key, fallback, validator);
+        setState(loaded);
+      }
+    };
+
+    // 3. Native browser window "storage" event handler (cross-tab fallback for all modern browsers)
+    const handleWindowStorage = (e: StorageEvent) => {
+      if (e.key === key) {
+        if (e.newValue) {
+          try {
+            const parsed = JSON.parse(e.newValue);
+            if (!validator || validator(parsed)) {
+              memoryCache[key] = parsed;
+              try {
+                window.sessionStorage.setItem(key, e.newValue);
+              } catch {
+                // Ignore
+              }
+              setState(parsed as T);
+            }
+          } catch {
+            // Ignore parse errors
+          }
+        } else {
+          delete memoryCache[key];
+          try {
+            window.sessionStorage.removeItem(key);
+          } catch {
+            // Ignore
+          }
+          setState(fallback);
+        }
+      }
+    };
+
     const handleStorageReset = () => {
       setState(fallback);
     };
 
     if (typeof window !== "undefined") {
       window.addEventListener("aroush-demo-storage-change", handleStorageChange);
+      window.addEventListener("storage", handleWindowStorage);
       window.addEventListener("aroush-demo-storage-reset", handleStorageReset);
+    }
+    if (ch) {
+      ch.addEventListener("message", handleBroadcastMessage);
     }
 
     return () => {
       if (typeof window !== "undefined") {
         window.removeEventListener("aroush-demo-storage-change", handleStorageChange);
+        window.removeEventListener("storage", handleWindowStorage);
         window.removeEventListener("aroush-demo-storage-reset", handleStorageReset);
+      }
+      if (ch) {
+        ch.removeEventListener("message", handleBroadcastMessage);
       }
     };
   }, [key, fallback, validator]);
 
-  // Wrapped state setter that updates state, runtime memory cache, and sessionStorage
+  // Wrapped state setter that updates state, runtime memory cache, sessionStorage, and localStorage
   const setStoredState: React.Dispatch<React.SetStateAction<T>> = useCallback(
     (action) => {
       setState((prev) => {
