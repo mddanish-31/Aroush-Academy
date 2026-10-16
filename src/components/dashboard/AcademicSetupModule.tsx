@@ -269,6 +269,16 @@ export function AcademicSetupModule() {
       status: "active",
     };
     setBatches((prev) => [newBatch, ...prev]);
+
+    // Support legitimate additional assignments: ensure the assigned instructor's profile reflects this subject
+    if (teacher && !teacher.assignedSubjects.some((s) => s.toLowerCase() === batchSubjectInput.toLowerCase())) {
+      const updatedTeacher: TeacherProfile = {
+        ...teacher,
+        assignedSubjects: [...teacher.assignedSubjects, batchSubjectInput],
+        batches: [...(teacher.batches || []), newBatch.name],
+      };
+      setFaculty((prev) => prev.map((t) => (t.id === teacher.id ? updatedTeacher : t)));
+    }
     recordCreate({
       action: "Create Batch",
       type: "enrollment",
@@ -546,6 +556,28 @@ export function AcademicSetupModule() {
                     </td>
                     <td style={{ padding: "12px 14px", fontWeight: 600 }}>
                       ₹{b.monthlyFee.toLocaleString()}/mo
+                      {(() => {
+                        const matchingSub = subjects.find(
+                          (s) => s.name.toLowerCase() === b.subject.toLowerCase(),
+                        );
+                        if (
+                          matchingSub &&
+                          b.monthlyFee !== matchingSub.defaultMonthlyFee
+                        ) {
+                          return (
+                            <div
+                              style={{
+                                fontSize: "10px",
+                                color: "var(--color-accent)",
+                                marginTop: "2px",
+                              }}
+                            >
+                              Batch Rate (Catalog: ₹{matchingSub.defaultMonthlyFee}/mo)
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
                     </td>
                     <td style={{ padding: "12px 14px" }}>
                       <Badge variant={b.status === "active" ? "success" : "neutral"} size="sm">
@@ -977,7 +1009,14 @@ export function AcademicSetupModule() {
                   <label style={{ fontSize: "var(--text-xs)", fontWeight: 600, display: "block", marginBottom: "4px" }}>Subject *</label>
                   <select
                     value={batchSubjectInput}
-                    onChange={(e) => setBatchSubjectInput(e.target.value)}
+                    onChange={(e) => {
+                      const newSub = e.target.value;
+                      setBatchSubjectInput(newSub);
+                      const foundSub = subjects.find((s) => s.name === newSub);
+                      if (foundSub) {
+                        setBatchFeeInput(String(foundSub.defaultMonthlyFee));
+                      }
+                    }}
                     style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-sm)" }}
                   >
                     {subjects.filter((s) => s.isActive).map((s) => (
