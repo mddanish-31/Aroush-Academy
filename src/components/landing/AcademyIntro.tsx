@@ -1,4 +1,5 @@
 import React from "react";
+import { Phone } from "lucide-react";
 import { Card } from "../ui/Card";
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
@@ -90,7 +91,8 @@ export function AcademyIntro() {
               </p>
               <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap" }}>
                 <Button href={`tel:${academyCenterInfo.phones[0]}`} variant="secondary" size="sm">
-                  📞 Call {academyCenterInfo.phones[0]}
+                  <Phone size={14} style={{ marginRight: "6px" }} />
+                  Call {academyCenterInfo.phones[0]}
                 </Button>
                 <Button href="#enquiry" variant="accent" size="sm">
                   Send Admission Inquiry

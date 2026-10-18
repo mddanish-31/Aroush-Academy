@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 
 export const metadata: Metadata = {
-  title: "Create Account — ArousH Academy",
+  title: "Create Account - ArousH Academy",
   description:
     "Student and Guardian account registration for ArousH Academy. Faculty and Administration accounts require institutional authorization.",
 };

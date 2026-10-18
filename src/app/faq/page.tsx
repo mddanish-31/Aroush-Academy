@@ -1,10 +1,12 @@
 import React from "react";
-import { Badge } from "@/components/ui/Badge";
 import { FaqItem } from "@/types";
 
 export const metadata = {
-  title: "Frequently Asked Questions — ArousH Academy",
+  title: "Frequently Asked Questions - ArousH Academy",
   description: "Comprehensive FAQ covering admissions, curriculum, dual-faculty maths, mock tests, and parent oversight at ArousH Academy, Park Circus.",
+  alternates: {
+    canonical: "/faq",
+  },
 };
 
 const FAQ_ITEMS: FaqItem[] = [
@@ -12,7 +14,7 @@ const FAQ_ITEMS: FaqItem[] = [
     id: "admissions-1",
     category: "Admissions & Accounts",
     question: "How do admissions and batch placements work at ArousH Academy?",
-    answer: "Admissions begin with an academic consultation with Azhar Sir to assess the student's current school syllabus, board requirements, and focus areas. Students are then enrolled into Class V–XII batches strictly matched to their board curriculum.",
+    answer: "Admissions begin with an academic consultation with Azhar Sir to assess the student's current school syllabus, board requirements, and focus areas. Students are then enrolled into Class V-XII batches strictly matched to their board curriculum.",
   },
   {
     id: "admissions-2",
@@ -71,9 +73,9 @@ export default function FaqPage() {
     <div style={{ paddingTop: "var(--space-12)", paddingBottom: "var(--space-16)" }}>
       <div className="container-narrow">
         <div style={{ marginBottom: "var(--space-8)" }}>
-          <Badge variant="accent" size="sm">
-            Admissions &amp; Academic Guidance
-          </Badge>
+          <span style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--color-accent-blue)", fontWeight: 600 }}>
+            Admissions and Academic Guidance
+          </span>
           <h1
             style={{
               fontSize: "clamp(2rem, 4vw, 3rem)",
@@ -84,12 +86,11 @@ export default function FaqPage() {
           >
             Frequently Asked Questions
           </h1>
-          <p style={{ fontSize: "var(--text-base)", color: "var(--color-neutral-dark)", lineHeight: 1.6 }}>
+          <p style={{ fontSize: "var(--text-base)", color: "var(--color-text-secondary)", lineHeight: 1.6 }}>
             Clear answers about our coaching programs, board syllabi, faculty structure, monthly mock testing, and admissions at Park Circus.
           </p>
         </div>
 
-        {/* Categorized native <details> accordion lists */}
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-10)" }}>
           {categories.map((category) => (
             <div key={category}>
@@ -99,7 +100,7 @@ export default function FaqPage() {
                   fontWeight: 600,
                   color: "var(--color-primary)",
                   paddingBottom: "var(--space-2)",
-                  borderBottom: "1px solid var(--color-border)",
+                  borderBottom: "1px solid rgba(170, 170, 170, 0.35)",
                   marginBottom: "var(--space-4)",
                 }}
               >
@@ -111,9 +112,9 @@ export default function FaqPage() {
                   <details
                     key={item.id}
                     style={{
-                      backgroundColor: "var(--color-surface)",
-                      border: "1px solid var(--color-border)",
-                      borderRadius: "var(--radius-md)",
+                      backgroundColor: "#FFFFFF",
+                      border: "1px solid rgba(170, 170, 170, 0.35)",
+                      borderRadius: "10px",
                       padding: "var(--space-4)",
                       cursor: "pointer",
                       transition: "box-shadow var(--transition-fast)",
@@ -123,7 +124,7 @@ export default function FaqPage() {
                       style={{
                         fontWeight: 600,
                         fontSize: "var(--text-base)",
-                        color: "var(--color-primary)",
+                        color: "#1D1D1F",
                         listStyle: "none",
                         display: "flex",
                         justifyContent: "space-between",
@@ -131,28 +132,13 @@ export default function FaqPage() {
                       }}
                     >
                       <span>{item.question}</span>
-                      <span style={{ color: "var(--color-neutral)", fontSize: "var(--text-sm)", marginLeft: "var(--space-2)" }}>▼</span>
+                      <span style={{ color: "var(--color-text-secondary)", fontSize: "var(--text-xs)", marginLeft: "var(--space-2)" }}>+</span>
                     </summary>
 
-                    <div style={{ marginTop: "var(--space-3)", paddingTop: "var(--space-3)", borderTop: "1px solid var(--color-border-subtle)", cursor: "default" }}>
-                      <p style={{ fontSize: "var(--text-sm)", color: "var(--color-neutral-dark)", lineHeight: 1.6, margin: 0 }}>
+                    <div style={{ marginTop: "var(--space-3)", paddingTop: "var(--space-3)", borderTop: "1px solid rgba(170, 170, 170, 0.2)", cursor: "default" }}>
+                      <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", lineHeight: 1.6, margin: 0 }}>
                         {item.answer}
                       </p>
-                      {item.reviewNotes && (
-                        <div
-                          style={{
-                            marginTop: "var(--space-2)",
-                            padding: "6px 10px",
-                            backgroundColor: "var(--color-surface-muted)",
-                            borderRadius: "var(--radius-sm)",
-                            fontSize: "var(--text-xs)",
-                            color: "var(--color-warning)",
-                            fontWeight: 500,
-                          }}
-                        >
-                          Notice: {item.reviewNotes}
-                        </div>
-                      )}
                     </div>
                   </details>
                 ))}

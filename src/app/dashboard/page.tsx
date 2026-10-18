@@ -2,7 +2,7 @@ import React, { Suspense } from "react";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 
 export const metadata = {
-  title: "Role Portals & Workspace Preview — ArousH Academy",
+  title: "Role Portals & Workspace Preview - ArousH Academy",
   description: "Interactive preview of role-tailored dashboards for Academy Admin, Teachers, Students, and Parents with subject-wise fee tracking.",
 };
 

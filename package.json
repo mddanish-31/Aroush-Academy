@@ -16,9 +16,14 @@
     "test:digital-id": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-digital-id.ts",
     "test:audit-logs": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-audit-logs.ts",
     "test:fees": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-fees.ts",
-    "test:browser-qa": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-browser-qa-flows.ts"
+    "test:browser-qa": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-browser-qa-flows.ts",
+    "test:content": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-content.ts",
+    "test:contrast": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-contrast.ts",
+    "test:media": "node --experimental-strip-types --loader ./scripts/loader.mjs scripts/verify-media-urls.ts",
+    "qa:browser": "node scripts/qa-browser.mjs"
   },
   "dependencies": {
+    "lucide-react": "^1.59.0",
     "next": "16.4.0",
     "qrcode-svg": "^1.1.0",
     "react": "19.3.0",
@@ -31,6 +36,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
+    "playwright": "^1.64.1",
     "typescript": "^5"
   }
 }

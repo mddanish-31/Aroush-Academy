@@ -3,6 +3,7 @@ import type { AssessmentRecord, IssuedCertificateRecord, UserRole, SubjectEnroll
 import { SAMPLE_ASSESSMENTS, SAMPLE_ISSUED_CERTIFICATES } from "@/data/dashboardModulesData";
 import { SAMPLE_STUDENTS, SAMPLE_ENROLLMENTS } from "@/data/enrollmentFeeData";
 import { DEMO_STORAGE_KEYS, getDemoStorage, setDemoStorage, removeDemoStorage, clearAllDemoStorage } from "@/lib/demoStorage";
+import { isAssessmentVisibleToStudent, isEligibleForCertificate } from "@/lib/assessmentVisibility";
 
 console.log("==================================================================");
 console.log("   AROUCH ACADEMY — EXAMINATIONS & CERTIFICATE VERIFICATION       ");
@@ -184,22 +185,11 @@ console.log("\nCase 7: Admin creates a published assessment; eligible Student se
   const student = SAMPLE_STUDENTS.find((s) => s.id === "std-101")!;
   const enrollments = SAMPLE_ENROLLMENTS.filter((e) => e.studentId === student.id);
 
-  const isVisibleToStudent = (exam: AssessmentRecord, std: StudentProfile, enrs: SubjectEnrollment[]) => {
-    if (exam.classGrade !== std.classGrade) return false;
-    if (exam.status !== "published" && exam.status !== "completed") return false;
-    const isEnrolledInSubject = enrs.some(
-      (e) => e.subjectName.toLowerCase().trim() === exam.subject.toLowerCase().trim()
-    );
-    const hasScore = exam.studentScores.some((sc) => sc.studentId === std.id);
-    return isEnrolledInSubject || hasScore;
-  };
+  assert.strictEqual(isAssessmentVisibleToStudent(newExam, student, enrollments), true, "Eligible student std-101 sees new published test");
 
-  assert.strictEqual(isVisibleToStudent(newExam, student, enrollments), true, "Eligible student std-101 sees new published test");
-
-  // Student std-103 (Class XII)
   const student12 = SAMPLE_STUDENTS.find((s) => s.id === "std-103")!;
   const enrollments12 = SAMPLE_ENROLLMENTS.filter((e) => e.studentId === student12.id);
-  assert.strictEqual(isVisibleToStudent(newExam, student12, enrollments12), false, "Class XII student std-103 cannot see Class X test");
+  assert.strictEqual(isAssessmentVisibleToStudent(newExam, student12, enrollments12), false, "Class XII student std-103 cannot see Class X test");
 
   console.log("  ✓ Passed: Admin created published assessment; strictly visible to eligible student only");
 }
@@ -254,15 +244,15 @@ console.log("\nCase 9: Draft assessments remain hidden; quick publish/unpublish 
   setDemoStorage(DEMO_STORAGE_KEYS.ASSESSMENTS, draftStore);
 
   const std = SAMPLE_STUDENTS.find((s) => s.id === "std-101")!;
-  const studentVisibleDrafts = draftStore.filter((a) => a.classGrade === std.classGrade && (a.status === "published" || a.status === "completed"));
+  const stdEnrs = SAMPLE_ENROLLMENTS.filter((e) => e.studentId === std.id);
+  const studentVisibleDrafts = draftStore.filter((a) => isAssessmentVisibleToStudent(a, std, stdEnrs));
   assert.strictEqual(studentVisibleDrafts.some((a) => a.id === exam.id), false, "Draft exam is completely hidden from student");
 
-  // 2. Publish back to published
   const publishedVersion: AssessmentRecord = { ...exam, status: "published" };
   const publishedStore = store.map((a) => (a.id === exam.id ? publishedVersion : a));
   setDemoStorage(DEMO_STORAGE_KEYS.ASSESSMENTS, publishedStore);
 
-  const studentVisiblePublished = publishedStore.filter((a) => a.classGrade === std.classGrade && (a.status === "published" || a.status === "completed"));
+  const studentVisiblePublished = publishedStore.filter((a) => isAssessmentVisibleToStudent(a, std, stdEnrs));
   assert.strictEqual(studentVisiblePublished.some((a) => a.id === exam.id), true, "Published exam is immediately visible to student");
 
   console.log("  ✓ Passed: Drafts strictly hidden; publishing and unpublishing toggles visibility immediately");
@@ -427,6 +417,375 @@ console.log("\nCase 16: Explicit architectural boundary and persistence limits..
   console.log("  ✓ Passed: Client-side storage boundaries honestly specified and verified");
 }
 
+console.log("\nCase 17: completed-not-visible...");
+{
+  const testStudent: StudentProfile = {
+    id: "std-test-1",
+    name: "Test Student",
+    classGrade: "Class X",
+    board: "ICSE",
+    guardianName: "Parent",
+    guardianPhone: "1234567890",
+    joiningDate: "2026-01-01",
+    studentStatus: "active",
+  };
+  const testEnrollments: SubjectEnrollment[] = [
+    {
+      id: "enr-test-math",
+      studentId: "std-test-1",
+      studentName: "Test Student",
+      classGrade: "Class X",
+      subjectName: "Mathematics",
+      teacherId: "tch-azhar",
+      teacherName: "Azhar Sir",
+      batchName: "Batch Alpha (Class IX-X)",
+      enrollmentDate: "2026-01-01",
+      monthlyFeeAmount: 1500,
+      status: "active",
+    },
+  ];
+  const completedExam: AssessmentRecord = {
+    id: "exam-completed-1",
+    title: "Completed Unit Test",
+    subject: "Mathematics",
+    batch: "Batch Alpha (Class IX-X)",
+    classGrade: "Class X",
+    date: "2026-10-01",
+    totalMarks: 50,
+    teacherId: "tch-azhar",
+    type: "regular-class-test",
+    status: "completed",
+    studentScores: [],
+  };
+  assert.strictEqual(
+    isAssessmentVisibleToStudent(completedExam, testStudent, testEnrollments),
+    false,
+    "Completed assessment must not be visible to student",
+  );
+  console.log("  ✓ Passed: completed-not-visible");
+}
+
+console.log("\nCase 18: unpublished-marks-hidden...");
+{
+  const testStudent: StudentProfile = {
+    id: "std-test-2",
+    name: "Test Student 2",
+    classGrade: "Class X",
+    board: "ICSE",
+    guardianName: "Parent",
+    guardianPhone: "1234567890",
+    joiningDate: "2026-01-01",
+    studentStatus: "active",
+  };
+  const testEnrollments: SubjectEnrollment[] = [
+    {
+      id: "enr-test-math-2",
+      studentId: "std-test-2",
+      studentName: "Test Student 2",
+      classGrade: "Class X",
+      subjectName: "Mathematics",
+      teacherId: "tch-azhar",
+      teacherName: "Azhar Sir",
+      batchName: "Batch Alpha (Class IX-X)",
+      enrollmentDate: "2026-01-01",
+      monthlyFeeAmount: 1500,
+      status: "active",
+    },
+  ];
+  const draftExamWithMarks: AssessmentRecord = {
+    id: "exam-draft-marks-1",
+    title: "Draft Test With Marks",
+    subject: "Mathematics",
+    batch: "Batch Alpha (Class IX-X)",
+    classGrade: "Class X",
+    date: "2026-10-01",
+    totalMarks: 100,
+    teacherId: "tch-azhar",
+    type: "board-mock-test",
+    status: "draft",
+    certificatePolicy: { enabled: true, minPercentage: 75 },
+    studentScores: [
+      {
+        studentId: "std-test-2",
+        studentName: "Test Student 2",
+        marksObtained: 95,
+        status: "evaluated",
+      },
+    ],
+  };
+  assert.strictEqual(
+    isAssessmentVisibleToStudent(draftExamWithMarks, testStudent, testEnrollments),
+    false,
+    "Unpublished assessment with marks must be hidden from student",
+  );
+  assert.strictEqual(
+    isEligibleForCertificate(draftExamWithMarks, 95),
+    false,
+    "Unpublished assessment cannot grant certificate eligibility",
+  );
+  console.log("  ✓ Passed: unpublished-marks-hidden");
+}
+
+console.log("\nCase 19: no-enrollment-hidden...");
+{
+  const testStudent: StudentProfile = {
+    id: "std-test-3",
+    name: "Test Student 3",
+    classGrade: "Class X",
+    board: "ICSE",
+    guardianName: "Parent",
+    guardianPhone: "1234567890",
+    joiningDate: "2026-01-01",
+    studentStatus: "active",
+  };
+  const publishedExam: AssessmentRecord = {
+    id: "exam-no-enr-1",
+    title: "Published Exam",
+    subject: "Mathematics",
+    batch: "Batch Alpha (Class IX-X)",
+    classGrade: "Class X",
+    date: "2026-10-01",
+    totalMarks: 50,
+    teacherId: "tch-azhar",
+    type: "regular-class-test",
+    status: "published",
+    studentScores: [
+      {
+        studentId: "std-test-3",
+        studentName: "Test Student 3",
+        marksObtained: 45,
+        status: "evaluated",
+      },
+    ],
+  };
+  assert.strictEqual(
+    isAssessmentVisibleToStudent(publishedExam, testStudent, []),
+    false,
+    "Exam must be hidden if student has zero active enrollments",
+  );
+  const inactiveEnrollment: SubjectEnrollment[] = [
+    {
+      id: "enr-inactive-1",
+      studentId: "std-test-3",
+      studentName: "Test Student 3",
+      classGrade: "Class X",
+      subjectName: "Mathematics",
+      teacherId: "tch-azhar",
+      teacherName: "Azhar Sir",
+      batchName: "Batch Alpha (Class IX-X)",
+      enrollmentDate: "2026-01-01",
+      monthlyFeeAmount: 1500,
+      status: "paused",
+    },
+  ];
+  assert.strictEqual(
+    isAssessmentVisibleToStudent(publishedExam, testStudent, inactiveEnrollment),
+    false,
+    "Exam must be hidden if student has only paused enrollment",
+  );
+  console.log("  ✓ Passed: no-enrollment-hidden");
+}
+
+console.log("\nCase 20: substring subject not matched...");
+{
+  const testStudent: StudentProfile = {
+    id: "std-test-4",
+    name: "Test Student 4",
+    classGrade: "Class X",
+    board: "ICSE",
+    guardianName: "Parent",
+    guardianPhone: "1234567890",
+    joiningDate: "2026-01-01",
+    studentStatus: "active",
+  };
+  const scienceEnrollments: SubjectEnrollment[] = [
+    {
+      id: "enr-sci-only",
+      studentId: "std-test-4",
+      studentName: "Test Student 4",
+      classGrade: "Class X",
+      subjectName: "Science",
+      teacherId: "tch-alvi",
+      teacherName: "Dr. Tariq Alvi",
+      batchName: "Batch Beta (Class X)",
+      enrollmentDate: "2026-01-01",
+      monthlyFeeAmount: 1500,
+      status: "active",
+    },
+  ];
+  const csExam: AssessmentRecord = {
+    id: "exam-cs-1",
+    title: "Computer Science Assessment",
+    subject: "Computer Science",
+    batch: "Batch Beta (Class X)",
+    classGrade: "Class X",
+    date: "2026-10-01",
+    totalMarks: 50,
+    teacherId: "tch-alvi",
+    status: "published",
+    studentScores: [],
+  };
+  assert.strictEqual(
+    isAssessmentVisibleToStudent(csExam, testStudent, scienceEnrollments),
+    false,
+    "Science enrollment must not match Computer Science exam",
+  );
+  const csEnrollments: SubjectEnrollment[] = [
+    {
+      id: "enr-cs-only",
+      studentId: "std-test-4",
+      studentName: "Test Student 4",
+      classGrade: "Class X",
+      subjectName: "Computer Science",
+      teacherId: "tch-alvi",
+      teacherName: "Dr. Tariq Alvi",
+      batchName: "Batch Beta (Class X)",
+      enrollmentDate: "2026-01-01",
+      monthlyFeeAmount: 1500,
+      status: "active",
+    },
+  ];
+  const scienceExam: AssessmentRecord = {
+    id: "exam-sci-1",
+    title: "Science Assessment",
+    subject: "Science",
+    batch: "Batch Beta (Class X)",
+    classGrade: "Class X",
+    date: "2026-10-01",
+    totalMarks: 50,
+    teacherId: "tch-alvi",
+    status: "published",
+    studentScores: [],
+  };
+  assert.strictEqual(
+    isAssessmentVisibleToStudent(scienceExam, testStudent, csEnrollments),
+    false,
+    "Computer Science enrollment must not match Science exam",
+  );
+  const paddedScienceExam: AssessmentRecord = {
+    ...scienceExam,
+    subject: "  Science  ",
+  };
+  assert.strictEqual(
+    isAssessmentVisibleToStudent(paddedScienceExam, testStudent, scienceEnrollments),
+    true,
+    "Trimmed and normalized subject match must succeed",
+  );
+  console.log("  ✓ Passed: substring subject (\"Science\" vs \"Computer Science\") not matched");
+}
+
+console.log("\nCase 21: published+enrolled visible...");
+{
+  const testStudent: StudentProfile = {
+    id: "std-test-5",
+    name: "Test Student 5",
+    classGrade: "Class X",
+    board: "ICSE",
+    guardianName: "Parent",
+    guardianPhone: "1234567890",
+    joiningDate: "2026-01-01",
+    studentStatus: "active",
+  };
+  const testEnrollments: SubjectEnrollment[] = [
+    {
+      id: "enr-test-math-5",
+      studentId: "std-test-5",
+      studentName: "Test Student 5",
+      classGrade: "Class X",
+      subjectName: "Mathematics",
+      teacherId: "tch-azhar",
+      teacherName: "Azhar Sir",
+      batchName: "Batch Alpha (Class IX-X)",
+      enrollmentDate: "2026-01-01",
+      monthlyFeeAmount: 1500,
+      status: "active",
+    },
+  ];
+  const publishedExam: AssessmentRecord = {
+    id: "exam-pub-5",
+    title: "Class X Math Test",
+    subject: "Mathematics",
+    batch: "Batch Alpha (Class IX-X)",
+    classGrade: "Class X",
+    date: "2026-10-25",
+    totalMarks: 50,
+    teacherId: "tch-azhar",
+    status: "published",
+    studentScores: [],
+  };
+  assert.strictEqual(
+    isAssessmentVisibleToStudent(publishedExam, testStudent, testEnrollments),
+    true,
+    "Published exam with active enrollment must be visible",
+  );
+  console.log("  ✓ Passed: published+enrolled visible");
+}
+
+console.log("\nCase 22: unpublish hides again...");
+{
+  const testStudent: StudentProfile = {
+    id: "std-test-6",
+    name: "Test Student 6",
+    classGrade: "Class X",
+    board: "ICSE",
+    guardianName: "Parent",
+    guardianPhone: "1234567890",
+    joiningDate: "2026-01-01",
+    studentStatus: "active",
+  };
+  const testEnrollments: SubjectEnrollment[] = [
+    {
+      id: "enr-test-math-6",
+      studentId: "std-test-6",
+      studentName: "Test Student 6",
+      classGrade: "Class X",
+      subjectName: "Mathematics",
+      teacherId: "tch-azhar",
+      teacherName: "Azhar Sir",
+      batchName: "Batch Alpha (Class IX-X)",
+      enrollmentDate: "2026-01-01",
+      monthlyFeeAmount: 1500,
+      status: "active",
+    },
+  ];
+  const exam: AssessmentRecord = {
+    id: "exam-toggle-6",
+    title: "Class X Math Toggle Test",
+    subject: "Mathematics",
+    batch: "Batch Alpha (Class IX-X)",
+    classGrade: "Class X",
+    date: "2026-10-25",
+    totalMarks: 50,
+    teacherId: "tch-azhar",
+    status: "published",
+    studentScores: [],
+  };
+  assert.strictEqual(
+    isAssessmentVisibleToStudent(exam, testStudent, testEnrollments),
+    true,
+    "Exam starts visible when published",
+  );
+  const unpublishedExam: AssessmentRecord = {
+    ...exam,
+    status: "draft",
+  };
+  assert.strictEqual(
+    isAssessmentVisibleToStudent(unpublishedExam, testStudent, testEnrollments),
+    false,
+    "Exam is hidden when unpublished to draft",
+  );
+  const completedExam: AssessmentRecord = {
+    ...exam,
+    status: "completed",
+  };
+  assert.strictEqual(
+    isAssessmentVisibleToStudent(completedExam, testStudent, testEnrollments),
+    false,
+    "Exam is hidden when status is set to completed",
+  );
+  console.log("  ✓ Passed: unpublish hides again");
+}
+
 console.log("\n==================================================================");
-console.log("   ALL 16 EXAMINATIONS & CERTIFICATE TESTS PASSED SUCCESSFULLY!   ");
+console.log("   ALL 22 EXAMINATIONS & CERTIFICATE TESTS PASSED SUCCESSFULLY!   ");
 console.log("==================================================================\n");

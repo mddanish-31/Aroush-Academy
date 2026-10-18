@@ -22,7 +22,7 @@ const STEPS: OnboardingStep[] = [
     title: "Batch & Board Alignment",
     tagline: "Targeted Classroom Environment",
     description:
-      "Students are enrolled in appropriate Class V–XII batches strictly mapped to their respective board curriculum (ICSE, CBSE, or West Bengal Board).",
+      "Students are enrolled in appropriate Class V-XII batches strictly mapped to their respective board curriculum (ICSE, CBSE, or West Bengal Board).",
     keyOutcomes: [
       "Board-specific batch scheduling",
       "Subject enrollment and study material access",
@@ -61,7 +61,7 @@ export function HowItWorks() {
       <div className="container">
         <div style={{ textAlign: "center", marginBottom: "var(--space-12)" }}>
           <Badge variant="accent" size="sm">
-            Student Journey &bull; Classes V–XII
+            Student Journey &bull; Classes V-XII
           </Badge>
           <h2
             style={{

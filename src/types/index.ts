@@ -220,6 +220,7 @@ export interface CookiePreferences {
   analytics: boolean;
   marketing: boolean;
   consented: boolean;
+  version?: string;
   updatedAt?: string;
 }
 

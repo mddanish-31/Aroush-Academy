@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useSyncExternalStore } from "react";
-import { Button } from "../ui/Button";
+import { X } from "lucide-react";
 import { CookiePreferences } from "@/types";
 
 const COOKIE_STORAGE_KEY = "aroushh_cookie_preferences_v1";
+const CONSENT_VERSION = "1.0.0";
 
 const DEFAULT_PREFERENCES: CookiePreferences = {
   necessary: true,
@@ -40,7 +41,6 @@ export function CookieConsent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [draftPreferences, setDraftPreferences] = useState<CookiePreferences>(DEFAULT_PREFERENCES);
 
-  // Sync draft preferences whenever storedJson changes
   const parsedPreferences: CookiePreferences = React.useMemo(() => {
     if (!storedJson || storedJson === "__SERVER__") {
       return DEFAULT_PREFERENCES;
@@ -52,7 +52,6 @@ export function CookieConsent() {
     }
   }, [storedJson]);
 
-  // Global listener so Footer or Settings link can reopen preferences anytime
   useEffect(() => {
     const handleReopen = () => {
       setDraftPreferences(parsedPreferences);
@@ -64,7 +63,6 @@ export function CookieConsent() {
     };
   }, [parsedPreferences]);
 
-  // Close modal on Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -78,14 +76,14 @@ export function CookieConsent() {
   const savePreferences = (updated: CookiePreferences) => {
     const record: CookiePreferences = {
       ...updated,
-      necessary: true, // strictly enforced
+      necessary: true,
       consented: true,
+      version: CONSENT_VERSION,
       updatedAt: new Date().toISOString(),
     };
     try {
       localStorage.setItem(COOKIE_STORAGE_KEY, JSON.stringify(record));
     } catch {
-      // ponytail: graceful storage fallback
     }
     setIsModalOpen(false);
 
@@ -118,14 +116,12 @@ export function CookieConsent() {
     savePreferences(draftPreferences);
   };
 
-  // SSR check: Do not render during server pass
   if (storedJson === "__SERVER__") return null;
 
   const isBannerVisible = !parsedPreferences.consented && !isModalOpen;
 
   return (
     <>
-      {/* Floating Bottom Consent Banner */}
       {isBannerVisible && (
         <aside
           role="region"
@@ -135,66 +131,72 @@ export function CookieConsent() {
             bottom: "var(--space-4)",
             left: "var(--space-4)",
             right: "var(--space-4)",
-            maxWidth: "720px",
+            maxWidth: "760px",
             margin: "0 auto",
-            backgroundColor: "var(--color-surface)",
-            border: "1px solid var(--color-border)",
-            borderRadius: "var(--radius-lg)",
-            boxShadow: "var(--shadow-lg)",
+            backgroundColor: "#FFFFFF",
+            border: "1px solid rgba(170, 170, 170, 0.4)",
+            borderRadius: "16px",
+            boxShadow: "0 12px 32px rgba(0, 0, 0, 0.08)",
             padding: "var(--space-5)",
             zIndex: 90,
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "var(--space-2)" }}>
-              <h3 style={{ fontSize: "var(--text-base)", fontWeight: 600 }}>Cookie &amp; Privacy Preferences</h3>
-              <span style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)" }}>Apple-grade transparency</span>
+              <h3 style={{ fontSize: "var(--text-base)", fontWeight: 600, color: "#1D1D1F" }}>
+                Cookie and Privacy Preferences
+              </h3>
+              <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>
+                Strict DPDP Act 2023 alignment
+              </span>
             </div>
-            <p style={{ fontSize: "var(--text-sm)", color: "var(--color-neutral-dark)", margin: 0 }}>
-              ArousH Academy uses essential cookies to ensure the platform operates reliably and securely. Optional cookies help improve learning insights. No advertising trackers are active in this environment.
+            <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.6 }}>
+              ArousH Academy uses essential cookies to ensure secure authentication, portal session persistence, and system reliability. Optional cookies remember preferences. No third-party advertising trackers are active.
             </p>
             <div
               style={{
                 display: "flex",
                 flexWrap: "wrap",
-                gap: "var(--space-2)",
+                gap: "var(--space-3)",
                 justifyContent: "flex-end",
                 marginTop: "var(--space-2)",
               }}
             >
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
+                type="button"
                 onClick={() => {
                   setDraftPreferences(parsedPreferences);
                   setIsModalOpen(true);
                 }}
-                aria-label="Manage individual cookie preferences"
+                className="btn-secondary"
+                style={{ fontSize: "var(--text-xs)", minWidth: "110px", height: "36px" }}
+                aria-label="Customize cookie preferences"
               >
-                Manage Preferences
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
+                Customize
+              </button>
+              <button
+                type="button"
                 onClick={handleRejectNonEssential}
+                className="btn-secondary"
+                style={{ fontSize: "var(--text-xs)", minWidth: "150px", height: "36px" }}
                 aria-label="Reject non-essential cookies"
               >
                 Reject Non-Essential
-              </Button>
-              <Button
-                variant="accent"
-                size="sm"
+              </button>
+              <button
+                type="button"
                 onClick={handleAcceptAll}
+                className="btn-secondary"
+                style={{ fontSize: "var(--text-xs)", minWidth: "110px", height: "36px" }}
                 aria-label="Accept all cookies"
               >
                 Accept All
-              </Button>
+              </button>
             </div>
           </div>
         </aside>
       )}
 
-      {/* Modal / Dialog for Detailed Preferences */}
       {isModalOpen && (
         <div
           role="dialog"
@@ -203,7 +205,7 @@ export function CookieConsent() {
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.4)",
+            backgroundColor: "rgba(0, 0, 0, 0.45)",
             backdropFilter: "blur(6px)",
             WebkitBackdropFilter: "blur(6px)",
             display: "flex",
@@ -215,12 +217,12 @@ export function CookieConsent() {
         >
           <div
             style={{
-              backgroundColor: "var(--color-surface)",
-              borderRadius: "var(--radius-xl)",
+              backgroundColor: "#FFFFFF",
+              borderRadius: "16px",
               maxWidth: "600px",
               width: "100%",
-              boxShadow: "var(--shadow-lg)",
-              border: "1px solid var(--color-border)",
+              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.12)",
+              border: "1px solid rgba(170, 170, 170, 0.4)",
               padding: "var(--space-6)",
               display: "flex",
               flexDirection: "column",
@@ -231,7 +233,7 @@ export function CookieConsent() {
           >
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <h2 id="cookie-preferences-title" style={{ fontSize: "var(--text-xl)", fontWeight: 600 }}>
+                <h2 id="cookie-preferences-title" style={{ fontSize: "var(--text-xl)", fontWeight: 600, color: "#1D1D1F" }}>
                   Cookie Settings
                 </h2>
                 <button
@@ -239,56 +241,63 @@ export function CookieConsent() {
                   onClick={() => setIsModalOpen(false)}
                   aria-label="Close preferences modal"
                   style={{
-                    padding: "var(--space-1) var(--space-2)",
-                    fontSize: "var(--text-lg)",
-                    color: "var(--color-neutral-dark)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "8px",
+                    border: "none",
+                    background: "transparent",
+                    color: "#1D1D1F",
+                    cursor: "pointer",
                   }}
                 >
-                  ✕
+                  <X size={18} />
                 </button>
               </div>
-              <p style={{ fontSize: "var(--text-sm)", color: "var(--color-neutral-dark)", marginTop: "var(--space-2)" }}>
-                Control which cookies and telemetry categories you allow. Changes will take effect immediately.
+              <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", marginTop: "var(--space-2)", lineHeight: 1.6 }}>
+                Control which cookies and telemetry categories you allow. Changes will take effect immediately and are stored with version and timestamp.
               </p>
             </div>
 
-            {/* Cookie Categories List */}
             <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
-              {/* Strictly Necessary */}
               <div
                 style={{
                   padding: "var(--space-3) var(--space-4)",
-                  border: "1px solid var(--color-border)",
-                  borderRadius: "var(--radius-md)",
-                  backgroundColor: "var(--color-surface-muted)",
+                  border: "1px solid rgba(170, 170, 170, 0.35)",
+                  borderRadius: "10px",
+                  backgroundColor: "rgba(245, 245, 247, 0.7)",
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
-                    <strong style={{ fontSize: "var(--text-sm)", color: "var(--color-primary)" }}>Strictly Necessary Cookies</strong>
-                    <p style={{ fontSize: "var(--text-xs)", margin: "4px 0 0" }}>
-                      Essential for authentication, security, and session management. Cannot be disabled.
+                    <strong style={{ fontSize: "var(--text-sm)", color: "#1D1D1F" }}>Strictly Necessary Cookies</strong>
+                    <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)", margin: "4px 0 0", lineHeight: 1.5 }}>
+                      Essential for authentication, secure portal access, and session integrity. Cannot be disabled.
                     </p>
                   </div>
-                  <span style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--color-neutral-dark)" }}>Always Active</span>
+                  <span style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--color-text-secondary)", whiteSpace: "nowrap", marginLeft: "12px" }}>
+                    Always Active
+                  </span>
                 </div>
               </div>
 
-              {/* Functional Cookies */}
               <div
                 style={{
                   padding: "var(--space-3) var(--space-4)",
-                  border: "1px solid var(--color-border)",
-                  borderRadius: "var(--radius-md)",
+                  border: "1px solid rgba(170, 170, 170, 0.35)",
+                  borderRadius: "10px",
+                  backgroundColor: "#FFFFFF",
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div style={{ paddingRight: "var(--space-3)" }}>
-                    <label htmlFor="pref-functional" style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--color-primary)", cursor: "pointer" }}>
-                      Functional &amp; Experience
+                    <label htmlFor="pref-functional" style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "#1D1D1F", cursor: "pointer" }}>
+                      Functional Preferences
                     </label>
-                    <p style={{ fontSize: "var(--text-xs)", margin: "4px 0 0" }}>
-                      Remembers theme preferences, language, and role portal state across sessions.
+                    <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)", margin: "4px 0 0", lineHeight: 1.5 }}>
+                      Remembers motion mode and portal interface layout preferences across visits.
                     </p>
                   </div>
                   <input
@@ -296,26 +305,26 @@ export function CookieConsent() {
                     type="checkbox"
                     checked={draftPreferences.functional}
                     onChange={(e) => setDraftPreferences({ ...draftPreferences, functional: e.target.checked })}
-                    style={{ width: "18px", height: "18px", accentColor: "var(--color-accent)", cursor: "pointer" }}
+                    style={{ width: "18px", height: "18px", accentColor: "#007AFF", cursor: "pointer" }}
                   />
                 </div>
               </div>
 
-              {/* Analytics & Performance */}
               <div
                 style={{
                   padding: "var(--space-3) var(--space-4)",
-                  border: "1px solid var(--color-border)",
-                  borderRadius: "var(--radius-md)",
+                  border: "1px solid rgba(170, 170, 170, 0.35)",
+                  borderRadius: "10px",
+                  backgroundColor: "#FFFFFF",
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div style={{ paddingRight: "var(--space-3)" }}>
-                    <label htmlFor="pref-analytics" style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--color-primary)", cursor: "pointer" }}>
-                      Performance &amp; Analytics
+                    <label htmlFor="pref-analytics" style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "#1D1D1F", cursor: "pointer" }}>
+                      Performance and Reliability
                     </label>
-                    <p style={{ fontSize: "var(--text-xs)", margin: "4px 0 0" }}>
-                      Aggregated metrics for loading speed and site performance. Zero third-party advertising trackers loaded.
+                    <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)", margin: "4px 0 0", lineHeight: 1.5 }}>
+                      Aggregated metrics for page load speeds and API performance. Zero third-party trackers.
                     </p>
                   </div>
                   <input
@@ -323,29 +332,38 @@ export function CookieConsent() {
                     type="checkbox"
                     checked={draftPreferences.analytics}
                     onChange={(e) => setDraftPreferences({ ...draftPreferences, analytics: e.target.checked })}
-                    style={{ width: "18px", height: "18px", accentColor: "var(--color-accent)", cursor: "pointer" }}
+                    style={{ width: "18px", height: "18px", accentColor: "#007AFF", cursor: "pointer" }}
                   />
                 </div>
               </div>
             </div>
 
-            {/* Modal Actions */}
             <div
               style={{
                 display: "flex",
                 flexWrap: "wrap",
-                gap: "var(--space-2)",
+                gap: "var(--space-3)",
                 justifyContent: "flex-end",
-                paddingTop: "var(--space-2)",
-                borderTop: "1px solid var(--color-border)",
+                paddingTop: "var(--space-3)",
+                borderTop: "1px solid rgba(170, 170, 170, 0.35)",
               }}
             >
-              <Button variant="secondary" size="sm" onClick={handleRejectNonEssential}>
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ fontSize: "var(--text-xs)", height: "36px" }}
+                onClick={handleRejectNonEssential}
+              >
                 Reject All Optional
-              </Button>
-              <Button variant="accent" size="sm" onClick={handleSaveCustom}>
+              </button>
+              <button
+                type="button"
+                className="btn-primary"
+                style={{ fontSize: "var(--text-xs)", height: "36px" }}
+                onClick={handleSaveCustom}
+              >
                 Save Preferences
-              </Button>
+              </button>
             </div>
           </div>
         </div>
@@ -354,9 +372,6 @@ export function CookieConsent() {
   );
 }
 
-/**
- * Utility helper to trigger the preferences modal from any link or button (e.g. Footer)
- */
 export function openCookiePreferences() {
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent("open-cookie-preferences"));

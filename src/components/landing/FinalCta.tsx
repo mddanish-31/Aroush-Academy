@@ -30,7 +30,7 @@ export function FinalCta() {
               marginBottom: "var(--space-4)",
             }}
           >
-            <span>●</span> Admissions Open &bull; Classes V–XII
+            <span>●</span> Admissions Open &bull; Classes V-XII
           </div>
 
           <h2
@@ -90,7 +90,7 @@ export function FinalCta() {
               paddingTop: "var(--space-6)",
             }}
           >
-            <span>✓ Classes V–XII &bull; ICSE, CBSE &amp; WB Board</span>
+            <span>✓ Classes V-XII &bull; ICSE, CBSE &amp; WB Board</span>
             <span>✓ Maths 3 Days/Week with Dual Faculty</span>
             <span>✓ 1/1 Samsul Huda Road, Park Circus</span>
           </div>

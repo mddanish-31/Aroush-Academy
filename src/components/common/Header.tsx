@@ -1,24 +1,221 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { Button } from "../ui/Button";
+import { usePathname } from "next/navigation";
+import {
+  BookOpen,
+  Building2,
+  GraduationCap,
+  Award,
+  BookMarked,
+  Compass,
+  CheckCircle2,
+  Users,
+  Send,
+  MapPin,
+  HelpCircle,
+  ChevronDown,
+  Menu,
+  X,
+  LucideIcon,
+} from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { ROLE_DEFAULT_ROUTES, ROLE_DISPLAY_NAMES } from "@/lib/auth/authTypes";
+import { siteSettings } from "@/content/site";
+import type { NavItem } from "@/content/types";
+import { MotionToggle } from "@/lib/motion/MotionProvider";
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  BookOpen,
+  Building2,
+  GraduationCap,
+  Award,
+  BookMarked,
+  Compass,
+  CheckCircle2,
+  Users,
+  Send,
+  MapPin,
+  HelpCircle,
+};
 
 export function Header() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const [prevPathname, setPrevPathname] = useState(pathname);
   const { user, isAuthenticated, logout } = useAuth();
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [mobileAccordion, setMobileAccordion] = useState<Record<string, boolean>>({
+    about: false,
+    programs: true,
+    "why-aroush": false,
+    admissions: false,
+  });
+
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
+    setMobileDrawerOpen(false);
+    setActiveDropdown(null);
+  }
+
+  const navContainerRef = useRef<HTMLElement | null>(null);
+  const drawerRef = useRef<HTMLDivElement | null>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const closeDropdown = useCallback(() => {
+    setActiveDropdown(null);
+  }, []);
+
+  useEffect(() => {
+    if (!mobileDrawerOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [mobileDrawerOpen]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (mobileDrawerOpen) {
+          setMobileDrawerOpen(false);
+        } else if (activeDropdown) {
+          const trigger = document.getElementById(`nav-trigger-${activeDropdown}`);
+          closeDropdown();
+          trigger?.focus();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mobileDrawerOpen, activeDropdown, closeDropdown]);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (navContainerRef.current && !navContainerRef.current.contains(e.target as Node)) {
+        closeDropdown();
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [closeDropdown]);
+
+  useEffect(() => {
+    if (!mobileDrawerOpen || !drawerRef.current) return;
+    const focusable = drawerRef.current.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    if (!focusable.length) return;
+    const firstElement = focusable[0];
+    const lastElement = focusable[focusable.length - 1];
+
+    firstElement.focus();
+
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          lastElement.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          firstElement.focus();
+          e.preventDefault();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleTabKey);
+    return () => window.removeEventListener("keydown", handleTabKey);
+  }, [mobileDrawerOpen]);
+
+  const handleTriggerMouseEnter = (groupId: string) => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    if (window.matchMedia("(pointer: fine)").matches) {
+      setActiveDropdown(groupId);
+    }
+  };
+
+  const handleTriggerMouseLeave = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => {
+      closeDropdown();
+    }, 180);
+  };
+
+  const handleNavBlur = (e: React.FocusEvent) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      closeDropdown();
+    }
+  };
+
+  const handleDropdownKeyDown = (e: React.KeyboardEvent, groupIndex: number) => {
+    const groups = siteSettings.navGroups;
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      const nextIndex = (groupIndex + 1) % groups.length;
+      const nextButton = document.getElementById(`nav-trigger-${groups[nextIndex].id}`);
+      nextButton?.focus();
+      setActiveDropdown(groups[nextIndex].id);
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      const prevIndex = (groupIndex - 1 + groups.length) % groups.length;
+      const prevButton = document.getElementById(`nav-trigger-${groups[prevIndex].id}`);
+      prevButton?.focus();
+      setActiveDropdown(groups[prevIndex].id);
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      const firstItem = document.querySelector<HTMLElement>(`#dropdown-panel-${groups[groupIndex].id} a`);
+      firstItem?.focus();
+    }
+  };
+
+  const handleItemKeyDown = (e: React.KeyboardEvent, groupId: string) => {
+    const items = Array.from(
+      document.querySelectorAll<HTMLElement>(`#dropdown-panel-${groupId} a`)
+    );
+    const currentIndex = items.indexOf(document.activeElement as HTMLElement);
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      const nextIndex = (currentIndex + 1) % items.length;
+      items[nextIndex]?.focus();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (currentIndex === 0) {
+        document.getElementById(`nav-trigger-${groupId}`)?.focus();
+      } else {
+        const prevIndex = (currentIndex - 1 + items.length) % items.length;
+        items[prevIndex]?.focus();
+      }
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      closeDropdown();
+      document.getElementById(`nav-trigger-${groupId}`)?.focus();
+    }
+  };
+
+  const toggleAccordion = (groupId: string) => {
+    setMobileAccordion((prev) => ({
+      ...prev,
+      [groupId]: !prev[groupId],
+    }));
+  };
 
   return (
     <header
-      className="glass-nav"
       role="banner"
       style={{
-        backgroundColor: "rgba(255, 255, 255, 0.92)",
+        position: "sticky",
+        top: 0,
+        zIndex: 50,
+        backgroundColor: "rgba(255, 255, 255, 0.94)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
-        borderBottom: "1px solid var(--color-border)",
+        borderBottom: "1px solid rgba(170, 170, 170, 0.35)",
       }}
     >
       <div
@@ -27,167 +224,220 @@ export function Header() {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          height: "68px",
+          height: "72px",
         }}
       >
-        {/* Brand Logo & Wordmark */}
         <Link
           href="/"
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "var(--space-3)",
+            gap: "12px",
             textDecoration: "none",
-            color: "var(--color-primary)",
+            color: "#1D1D1F",
           }}
           aria-label="ArousH Academy Home"
+          onClick={closeDropdown}
         >
-          {/* Logo Mark Placeholder */}
           <div
             style={{
-              width: "34px",
-              height: "34px",
-              borderRadius: "var(--radius-md)",
-              backgroundColor: "var(--color-primary)",
+              width: "36px",
+              height: "36px",
+              borderRadius: "8px",
+              backgroundColor: "#1D1D1F",
               color: "#FFFFFF",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontWeight: 700,
-              fontSize: "16px",
+              fontSize: "17px",
               letterSpacing: "-0.04em",
-              boxShadow: "var(--shadow-sm)",
             }}
           >
             A
           </div>
-
-          <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.1 }}>
+          <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.15 }}>
             <span style={{ fontWeight: 700, fontSize: "17px", letterSpacing: "-0.02em" }}>
-              ArousH <span style={{ color: "var(--color-neutral-dark)", fontWeight: 400 }}>Academy</span>
+              ArousH <span style={{ color: "var(--color-text-secondary)", fontWeight: 400 }}>Academy</span>
             </span>
-            <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
-              Azhar Sir &bull; Park Circus
+            <span style={{ fontSize: "11px", color: "var(--color-text-secondary)", fontWeight: 500 }}>
+              Azhar Sir - Park Circus
             </span>
           </div>
         </Link>
 
-        {/* Desktop Navigation Links */}
         <nav
+          ref={navContainerRef}
           role="navigation"
           aria-label="Primary Navigation"
+          onBlur={handleNavBlur}
+          className="desktop-nav"
           style={{
             display: "none",
             alignItems: "center",
-            gap: "var(--space-6)",
+            gap: "8px",
+            position: "relative",
           }}
-          className="desktop-nav"
         >
-          <Link
-            href="/#about"
-            style={{
-              fontSize: "var(--text-sm)",
-              color: "var(--color-neutral-dark)",
-              fontWeight: 500,
-              transition: "color var(--transition-fast)",
-            }}
-          >
-            About
-          </Link>
-          <Link
-            href="/#courses"
-            style={{
-              fontSize: "var(--text-sm)",
-              color: "var(--color-neutral-dark)",
-              fontWeight: 500,
-              transition: "color var(--transition-fast)",
-            }}
-          >
-            Courses
-          </Link>
-          <Link
-            href="/#features"
-            style={{
-              fontSize: "var(--text-sm)",
-              color: "var(--color-neutral-dark)",
-              fontWeight: 500,
-              transition: "color var(--transition-fast)",
-            }}
-          >
-            Why Choose Us
-          </Link>
-          <Link
-            href="/#faculty"
-            style={{
-              fontSize: "var(--text-sm)",
-              color: "var(--color-neutral-dark)",
-              fontWeight: 500,
-              transition: "color var(--transition-fast)",
-            }}
-          >
-            Faculty
-          </Link>
-          <Link
-            href="/#enquiry"
-            style={{
-              fontSize: "var(--text-sm)",
-              color: "var(--color-neutral-dark)",
-              fontWeight: 500,
-              transition: "color var(--transition-fast)",
-            }}
-          >
-            Admissions
-          </Link>
-          <Link
-            href="/faq"
-            style={{
-              fontSize: "var(--text-sm)",
-              color: "var(--color-neutral-dark)",
-              fontWeight: 500,
-              transition: "color var(--transition-fast)",
-            }}
-          >
-            FAQ
-          </Link>
+          {siteSettings.navGroups.map((group, groupIndex) => {
+            const isOpen = activeDropdown === group.id;
+            return (
+              <div
+                key={group.id}
+                style={{ position: "relative" }}
+                onMouseEnter={() => handleTriggerMouseEnter(group.id)}
+                onMouseLeave={handleTriggerMouseLeave}
+              >
+                <button
+                  id={`nav-trigger-${group.id}`}
+                  type="button"
+                  aria-expanded={isOpen}
+                  aria-controls={`dropdown-panel-${group.id}`}
+                  aria-haspopup="true"
+                  onClick={() => setActiveDropdown(isOpen ? null : group.id)}
+                  onKeyDown={(e) => handleDropdownKeyDown(e, groupIndex)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "8px 14px",
+                    borderRadius: "8px",
+                    border: "none",
+                    backgroundColor: isOpen ? "rgba(29, 29, 31, 0.06)" : "transparent",
+                    color: isOpen ? "#007AFF" : "#1D1D1F",
+                    fontSize: "var(--text-sm)",
+                    fontWeight: 500,
+                    cursor: "pointer",
+                    transition: "color 180ms ease-out, background-color 180ms ease-out",
+                  }}
+                >
+                  <span>{group.title}</span>
+                  <ChevronDown
+                    size={14}
+                    strokeWidth={2}
+                    style={{
+                      transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+                      transition: "transform 200ms ease-out",
+                    }}
+                  />
+                </button>
+
+                {isOpen && (
+                  <div
+                    id={`dropdown-panel-${group.id}`}
+                    role="region"
+                    aria-label={`${group.title} Submenu`}
+                    style={{
+                      position: "absolute",
+                      top: "calc(100% + 8px)",
+                      left: groupIndex > 1 ? "auto" : "0",
+                      right: groupIndex > 1 ? "0" : "auto",
+                      width: "320px",
+                      backgroundColor: "#FFFFFF",
+                      borderRadius: "16px",
+                      border: "1px solid rgba(170, 170, 170, 0.35)",
+                      boxShadow: "0 12px 32px rgba(0, 0, 0, 0.08)",
+                      padding: "10px",
+                      zIndex: 60,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "4px",
+                    }}
+                  >
+                    {group.items.map((item: NavItem) => {
+                      const IconComponent = ICON_MAP[item.icon] || BookOpen;
+                      return (
+                        <Link
+                          key={item.title}
+                          href={item.href}
+                          onClick={closeDropdown}
+                          onKeyDown={(e) => handleItemKeyDown(e, group.id)}
+                          style={{
+                            display: "flex",
+                            alignItems: "flex-start",
+                            gap: "12px",
+                            padding: "10px 12px",
+                            borderRadius: "10px",
+                            textDecoration: "none",
+                            color: "#1D1D1F",
+                            transition: "background-color 150ms ease-out",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = "#F5F5F7";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = "transparent";
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "32px",
+                              height: "32px",
+                              borderRadius: "8px",
+                              backgroundColor: "rgba(0, 122, 255, 0.08)",
+                              color: "#007AFF",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                              marginTop: "2px",
+                            }}
+                          >
+                            <IconComponent size={16} strokeWidth={2} />
+                          </div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                            <span style={{ fontSize: "14px", fontWeight: 600, color: "#1D1D1F" }}>
+                              {item.title}
+                            </span>
+                            <span style={{ fontSize: "12px", color: "var(--color-text-secondary)", lineHeight: 1.4 }}>
+                              {item.description}
+                            </span>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </nav>
 
-        {/* Header Right Actions: Login & Admission Enquiry / Dashboard & Sign Out */}
-        <div style={{ display: "none", alignItems: "center", gap: "var(--space-2)" }} className="desktop-nav">
+        <div className="desktop-nav" style={{ display: "none", alignItems: "center", gap: "12px" }}>
+          <MotionToggle />
           {isAuthenticated && user ? (
             <>
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: "var(--space-2)",
-                  padding: "4px 10px",
-                  backgroundColor: "var(--color-surface-muted)",
-                  borderRadius: "var(--radius-full)",
-                  border: "1px solid var(--color-border)",
+                  gap: "6px",
+                  padding: "6px 12px",
+                  backgroundColor: "#F5F5F7",
+                  borderRadius: "8px",
+                  border: "1px solid rgba(170, 170, 170, 0.35)",
                   fontSize: "var(--text-xs)",
                 }}
               >
-                <span style={{ fontWeight: 600 }}>{user.name.split(" ")[0]}</span>
-                <span style={{ color: "var(--color-neutral-dark)", fontSize: "11px" }}>
+                <span style={{ fontWeight: 600, color: "#1D1D1F" }}>{user.name.split(" ")[0]}</span>
+                <span style={{ color: "var(--color-text-secondary)" }}>
                   ({ROLE_DISPLAY_NAMES[user.role]})
                 </span>
               </div>
-              <Button href={ROLE_DEFAULT_ROUTES[user.role]} variant="accent" size="sm">
+              <Link
+                href={ROLE_DEFAULT_ROUTES[user.role]}
+                className="btn-primary"
+                style={{ fontSize: "var(--text-xs)", height: "36px" }}
+              >
                 Dashboard
-              </Button>
+              </Link>
               <button
                 type="button"
                 onClick={async () => {
                   await logout();
                 }}
-                style={{
-                  fontSize: "var(--text-xs)",
-                  color: "var(--color-neutral-dark)",
-                  cursor: "pointer",
-                  padding: "6px 10px",
-                  background: "none",
-                  border: "none",
-                }}
+                className="btn-ghost"
+                style={{ fontSize: "var(--text-xs)" }}
                 aria-label="Sign out of session"
               >
                 Sign Out
@@ -195,171 +445,239 @@ export function Header() {
             </>
           ) : (
             <>
-              <Button href="/login" variant="ghost" size="sm">
+              <Link
+                href="/login"
+                className="btn-ghost"
+                style={{ fontSize: "var(--text-sm)" }}
+              >
                 Log In
-              </Button>
-              <Button href="/register" variant="accent" size="sm">
+              </Link>
+              <Link
+                href="/register"
+                className="btn-primary"
+                style={{ fontSize: "var(--text-sm)" }}
+              >
                 Sign Up
-              </Button>
+              </Link>
             </>
           )}
         </div>
 
-        {/* Mobile Hamburger Toggle */}
         <button
           type="button"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-expanded={mobileMenuOpen}
-          aria-label="Toggle navigation menu"
+          onClick={() => setMobileDrawerOpen(!mobileDrawerOpen)}
+          aria-expanded={mobileDrawerOpen}
+          aria-controls="mobile-navigation-drawer"
+          aria-label={mobileDrawerOpen ? "Close navigation menu" : "Open navigation menu"}
           className="mobile-toggle"
           style={{
-            display: "flex",
+            display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
             width: "40px",
             height: "40px",
-            borderRadius: "var(--radius-md)",
-            border: "1px solid var(--color-border)",
-            backgroundColor: "var(--color-surface)",
+            borderRadius: "8px",
+            border: "1px solid rgba(170, 170, 170, 0.4)",
+            backgroundColor: "#FFFFFF",
+            color: "#1D1D1F",
             cursor: "pointer",
           }}
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            {mobileMenuOpen ? (
-              <path d="M18 6L6 18M6 6l12 12" />
-            ) : (
-              <path d="M3 12h18M3 6h18M3 18h18" />
-            )}
-          </svg>
+          {mobileDrawerOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
-      {/* Mobile Drawer Menu */}
-      {mobileMenuOpen && (
+      {mobileDrawerOpen && (
         <div
+          id="mobile-navigation-drawer"
+          ref={drawerRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile Navigation Drawer"
           style={{
-            backgroundColor: "var(--color-surface)",
-            borderBottom: "1px solid var(--color-border)",
-            padding: "var(--space-4) var(--space-6)",
+            position: "fixed",
+            top: "72px",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "#FFFFFF",
+            borderTop: "1px solid rgba(170, 170, 170, 0.35)",
+            padding: "var(--space-6)",
+            overflowY: "auto",
             display: "flex",
             flexDirection: "column",
-            gap: "var(--space-3)",
-            animation: "fadeIn 150ms ease-out",
+            justifyContent: "space-between",
+            gap: "var(--space-6)",
+            zIndex: 99,
           }}
         >
-          <Link
-            href="/#about"
-            onClick={() => setMobileMenuOpen(false)}
-            style={{ padding: "var(--space-2) 0", fontSize: "var(--text-sm)", fontWeight: 500, color: "var(--color-primary)" }}
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
+            {siteSettings.navGroups.map((group) => {
+              const isExpanded = Boolean(mobileAccordion[group.id]);
+              return (
+                <div
+                  key={group.id}
+                  style={{
+                    borderBottom: "1px solid rgba(170, 170, 170, 0.25)",
+                    paddingBottom: "var(--space-3)",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleAccordion(group.id)}
+                    aria-expanded={isExpanded}
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "8px 0",
+                      background: "none",
+                      border: "none",
+                      color: "#1D1D1F",
+                      fontSize: "var(--text-base)",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <span>{group.title}</span>
+                    <ChevronDown
+                      size={18}
+                      strokeWidth={2}
+                      style={{
+                        color: "var(--color-text-secondary)",
+                        transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                        transition: "transform 200ms ease-out",
+                      }}
+                    />
+                  </button>
+
+                  {isExpanded && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "6px",
+                        paddingTop: "6px",
+                        paddingLeft: "4px",
+                      }}
+                    >
+                      {group.items.map((item) => {
+                        const IconComponent = ICON_MAP[item.icon] || BookOpen;
+                        return (
+                          <Link
+                            key={item.title}
+                            href={item.href}
+                            onClick={() => setMobileDrawerOpen(false)}
+                            style={{
+                              display: "flex",
+                              alignItems: "flex-start",
+                              gap: "10px",
+                              padding: "8px",
+                              borderRadius: "8px",
+                              textDecoration: "none",
+                              color: "#1D1D1F",
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: "28px",
+                                height: "28px",
+                                borderRadius: "6px",
+                                backgroundColor: "rgba(0, 122, 255, 0.08)",
+                                color: "#007AFF",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexShrink: 0,
+                                marginTop: "2px",
+                              }}
+                            >
+                              <IconComponent size={14} />
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "column" }}>
+                              <span style={{ fontSize: "14px", fontWeight: 600 }}>{item.title}</span>
+                              <span style={{ fontSize: "12px", color: "var(--color-text-secondary)" }}>
+                                {item.description}
+                              </span>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "var(--space-3)",
+              paddingTop: "var(--space-4)",
+              borderTop: "1px solid rgba(170, 170, 170, 0.35)",
+            }}
           >
-            About ArousH Academy
-          </Link>
-          <Link
-            href="/#courses"
-            onClick={() => setMobileMenuOpen(false)}
-            style={{ padding: "var(--space-2) 0", fontSize: "var(--text-sm)", fontWeight: 500, color: "var(--color-primary)" }}
-          >
-            Courses (Classes V–XII)
-          </Link>
-          <Link
-            href="/#features"
-            onClick={() => setMobileMenuOpen(false)}
-            style={{ padding: "var(--space-2) 0", fontSize: "var(--text-sm)", fontWeight: 500, color: "var(--color-primary)" }}
-          >
-            Why Choose Us
-          </Link>
-          <Link
-            href="/#faculty"
-            onClick={() => setMobileMenuOpen(false)}
-            style={{ padding: "var(--space-2) 0", fontSize: "var(--text-sm)", fontWeight: 500, color: "var(--color-primary)" }}
-          >
-            Faculty &amp; Teaching Team
-          </Link>
-          <Link
-            href="/#enquiry"
-            onClick={() => setMobileMenuOpen(false)}
-            style={{ padding: "var(--space-2) 0", fontSize: "var(--text-sm)", fontWeight: 500, color: "var(--color-primary)" }}
-          >
-            Admission Enquiry
-          </Link>
-          <Link
-            href="/faq"
-            onClick={() => setMobileMenuOpen(false)}
-            style={{ padding: "var(--space-2) 0", fontSize: "var(--text-sm)", fontWeight: 500, color: "var(--color-primary)" }}
-          >
-            Frequently Asked Questions
-          </Link>
-          <div style={{ paddingTop: "var(--space-3)", display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)" }}>
+                Motion Mode
+              </span>
+              <MotionToggle />
+            </div>
+
             {isAuthenticated && user ? (
               <>
                 <div
                   style={{
-                    padding: "var(--space-2)",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    backgroundColor: "#F5F5F7",
                     fontSize: "var(--text-xs)",
-                    backgroundColor: "var(--color-surface-muted)",
-                    borderRadius: "var(--radius-sm)",
+                    color: "var(--color-text-secondary)",
                   }}
                 >
-                  Signed in as <strong>{user.name}</strong> ({ROLE_DISPLAY_NAMES[user.role]})
+                  Signed in as <strong style={{ color: "#1D1D1F" }}>{user.name}</strong> ({ROLE_DISPLAY_NAMES[user.role]})
                 </div>
-                <Button
+                <Link
                   href={ROLE_DEFAULT_ROUTES[user.role]}
-                  variant="accent"
-                  size="sm"
-                  style={{ width: "100%" }}
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className="btn-primary"
+                  style={{ width: "100%", textAlign: "center" }}
                 >
-                  Dashboard
-                </Button>
+                  Open Dashboard
+                </Link>
                 <button
                   type="button"
                   onClick={async () => {
-                    setMobileMenuOpen(false);
+                    setMobileDrawerOpen(false);
                     await logout();
                   }}
-                  style={{
-                    fontSize: "var(--text-xs)",
-                    color: "var(--color-neutral-dark)",
-                    padding: "var(--space-2)",
-                    textAlign: "center",
-                    cursor: "pointer",
-                    background: "none",
-                    border: "none",
-                  }}
-                  aria-label="Sign out of session"
+                  className="btn-secondary"
+                  style={{ width: "100%", textAlign: "center" }}
                 >
                   Sign Out
                 </button>
               </>
             ) : (
               <>
-                <Button
+                <Link
                   href="/login"
-                  variant="ghost"
-                  size="sm"
-                  style={{ width: "100%" }}
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className="btn-secondary"
+                  style={{ width: "100%", textAlign: "center" }}
                 >
                   Log In
-                </Button>
-                <Button
+                </Link>
+                <Link
                   href="/register"
-                  variant="accent"
-                  size="sm"
-                  style={{ width: "100%" }}
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className="btn-primary"
+                  style={{ width: "100%", textAlign: "center" }}
                 >
                   Sign Up
-                </Button>
+                </Link>
               </>
             )}
           </div>
@@ -372,11 +690,6 @@ export function Header() {
             display: flex !important;
           }
           .mobile-toggle {
-            display: none !important;
-          }
-        }
-        @media (max-width: 540px) {
-          .hidden-mobile {
             display: none !important;
           }
         }

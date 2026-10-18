@@ -1,4 +1,5 @@
 import React from "react";
+import { AlertTriangle } from "lucide-react";
 import { Card } from "../ui/Card";
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
@@ -106,7 +107,7 @@ export function Pricing() {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginBottom: "4px" }}>
-            <span style={{ fontSize: "var(--text-sm)" }}>⚠️</span>
+            <AlertTriangle size={14} style={{ color: "var(--color-warning)" }} />
             <strong style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--color-neutral-dark)" }}>
               Architecture Planning Notice &bull; Unconfirmed Sample Figures
             </strong>

@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import { LoginForm } from "@/components/auth/LoginForm";
 
 export const metadata: Metadata = {
-  title: "Sign In — ArousH Academy",
+  title: "Sign In - ArousH Academy",
   description:
     "Sign in to ArousH Academy for Academy Administration, Teachers, Students, and Parents.",
 };

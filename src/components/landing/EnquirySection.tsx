@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Phone, MapPin, ClipboardCheck, AlertCircle } from "lucide-react";
 import { Card } from "../ui/Card";
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
@@ -83,8 +84,8 @@ export function EnquirySection() {
                 <p style={{ fontSize: "var(--text-sm)", color: "var(--color-primary)", marginTop: "3px", lineHeight: 1.5 }}>
                   {academyCenterInfo.address}
                 </p>
-                <span style={{ fontSize: "var(--text-xs)", color: "var(--color-accent)", fontWeight: 500 }}>
-                  📍 {academyCenterInfo.landmark}
+                <span style={{ fontSize: "var(--text-xs)", color: "var(--color-accent)", fontWeight: 500, display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                  <MapPin size={12} /> {academyCenterInfo.landmark}
                 </span>
               </div>
 
@@ -111,7 +112,7 @@ export function EnquirySection() {
                         gap: "6px",
                       }}
                     >
-                      📞 {phone}
+                      <Phone size={12} /> {phone}
                     </a>
                   ))}
                 </div>
@@ -140,7 +141,7 @@ export function EnquirySection() {
                 lineHeight: 1.5,
               }}
             >
-              Classes V–XII &bull; ICSE, CBSE &amp; West Bengal Board &bull; Maths 3 days/week with dual teachers.
+              Classes V-XII &bull; ICSE, CBSE &amp; West Bengal Board &bull; Maths 3 days/week with dual teachers.
             </div>
           </Card>
 
@@ -163,7 +164,7 @@ export function EnquirySection() {
                   textAlign: "center",
                 }}
               >
-                <span style={{ fontSize: "36px" }}>📋</span>
+                <ClipboardCheck size={36} style={{ color: "#34C759", margin: "0 auto" }} />
                 <h4 style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--color-primary)", marginTop: "var(--space-2)", marginBottom: "var(--space-1)" }}>
                   Inquiry Details Recorded
                 </h4>
@@ -192,10 +193,10 @@ export function EnquirySection() {
 
                 <div style={{ display: "flex", gap: "var(--space-2)", justifyContent: "center", flexWrap: "wrap", marginBottom: "var(--space-4)" }}>
                   <Button href="tel:09883005641" variant="accent" size="sm">
-                    📞 Call 098830 05641
+                    <Phone size={14} style={{ marginRight: "6px" }} /> Call 098830 05641
                   </Button>
                   <Button href="tel:8240816226" variant="secondary" size="sm">
-                    📞 Call 82408 16226
+                    <Phone size={14} style={{ marginRight: "6px" }} /> Call 82408 16226
                   </Button>
                 </div>
 
@@ -235,9 +236,12 @@ export function EnquirySection() {
                       fontSize: "var(--text-xs)",
                       color: "#D70015",
                       fontWeight: 500,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
                     }}
                   >
-                    ⚠️ {errorMessage}
+                    <AlertCircle size={14} /> {errorMessage}
                   </div>
                 )}
 

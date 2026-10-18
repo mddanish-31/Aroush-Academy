@@ -28,6 +28,10 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ExamCertificateModal } from "./ExamCertificateModal";
+import {
+  isAssessmentVisibleToStudent,
+  isEligibleForCertificate,
+} from "@/lib/assessmentVisibility";
 import { useDemoStorage, DEMO_STORAGE_KEYS } from "@/lib/demoStorage";
 import {
   recordCreate,
@@ -256,25 +260,8 @@ export function AssessmentsModule({
           return false;
         }
       } else if (role === "student" || role === "parent") {
-        // Students and parents only see published or completed assessments for their class grade
-        if (!targetStudent) return false;
-        if (exam.classGrade !== targetStudent.classGrade) return false;
-        if (exam.status !== "published" && exam.status !== "completed") return false;
-
-        // Scoped strictly to student's enrolled subjects or exams where they have recorded results
-        const studentEnrollments = enrollments.filter(
-          (e) => e.studentId === targetStudent.id && (e.status || "active") === "active"
-        );
-        if (studentEnrollments.length > 0) {
-          const isEnrolledInSubject = studentEnrollments.some((e) => {
-            const sName = e.subjectName.toLowerCase().trim();
-            const exSub = exam.subject.toLowerCase().trim();
-            return sName === exSub || exSub.includes(sName) || sName.includes(exSub);
-          });
-          const hasScoreRecorded = exam.studentScores.some(
-            (s) => s.studentId === targetStudent.id
-          );
-          if (!isEnrolledInSubject && !hasScoreRecorded) return false;
+        if (!isAssessmentVisibleToStudent(exam, targetStudent, enrollments)) {
+          return false;
         }
       }
 
@@ -320,11 +307,12 @@ export function AssessmentsModule({
       (a) => a.status === "draft" || a.status === "completed"
     ).length;
 
-    // Certificates issued: active issued certificates in the system
     const activeIssuedCount = issuedCertificates.filter((c) => {
       if (c.status !== "issued") return false;
       if (role === "student" || role === "parent") {
-        return targetStudent ? c.studentId === targetStudent.id : false;
+        if (!targetStudent || c.studentId !== targetStudent.id) return false;
+        const exam = assessments.find((a) => a.id === c.assessmentId);
+        return exam ? isAssessmentVisibleToStudent(exam, targetStudent, enrollments) : false;
       }
       if (role === "teacher") {
         const matchingExam = assessments.find((a) => a.id === c.assessmentId);
@@ -339,7 +327,7 @@ export function AssessmentsModule({
       pendingPublicationCount,
       activeIssuedCount,
     };
-  }, [visibleAssessments, issuedCertificates, role, targetStudent, assessments, currentTeacherId]);
+  }, [visibleAssessments, issuedCertificates, role, targetStudent, enrollments, assessments, currentTeacherId]);
 
   // --------------------------------------------------------------------------
   // ACADEMIC RESULTS CALCULATION FOR RESULTS & REPORTS TAB
@@ -369,9 +357,8 @@ export function AssessmentsModule({
     }> = [];
 
     assessments.forEach((exam) => {
-      // Role scoping for results
       if (role === "student" || role === "parent") {
-        if (exam.status !== "published" && exam.status !== "completed") return; // Students/parents can view published or completed results
+        if (!isAssessmentVisibleToStudent(exam, targetStudent, enrollments)) return;
       } else if (role === "teacher") {
         if (exam.teacherId !== currentTeacherId && !currentTeacher?.assignedSubjects.includes(exam.subject)) {
           return;
@@ -384,9 +371,8 @@ export function AssessmentsModule({
       if (scoreEntry && scoreEntry.status === "evaluated") {
         const pct = exam.totalMarks > 0 ? Math.round((scoreEntry.marksObtained / exam.totalMarks) * 100) : 0;
         const certPolicy = exam.certificatePolicy || { enabled: false, minPercentage: 75 };
-        const isEligible = Boolean(certPolicy.enabled && pct >= certPolicy.minPercentage);
+        const isEligible = isEligibleForCertificate(exam, scoreEntry.marksObtained);
 
-        // Check if certificate was officially issued
         const issuedCert = issuedCertificates.find(
           (c) => c.assessmentId === exam.id && c.studentId === targetStudent.id && c.status === "issued"
         );
@@ -422,7 +408,7 @@ export function AssessmentsModule({
     });
 
     return records;
-  }, [assessments, role, currentTeacherId, currentTeacher, filterSubject, targetStudent, issuedCertificates, faculty]);
+  }, [assessments, role, currentTeacherId, currentTeacher, filterSubject, targetStudent, enrollments, issuedCertificates, faculty]);
 
   // Aggregate results summary derived strictly from studentResultsLedger
   const resultsSummary = useMemo(() => {
@@ -470,14 +456,15 @@ export function AssessmentsModule({
   // --------------------------------------------------------------------------
   const certificateAssessments = useMemo(() => {
     return assessments.filter((exam) => {
-      // Must have certificates enabled
       if (!exam.certificatePolicy?.enabled) return false;
+      if (role === "student" || role === "parent") {
+        return isAssessmentVisibleToStudent(exam, targetStudent, enrollments);
+      }
       if (role === "teacher" && exam.teacherId !== currentTeacherId) return false;
       return true;
     });
-  }, [assessments, role, currentTeacherId]);
+  }, [assessments, role, currentTeacherId, targetStudent, enrollments]);
 
-  // Selected assessment for certificate queue
   const [selectedCertAssessmentId, setSelectedCertAssessmentId] = useState<string>(
     certificateAssessments[0]?.id || "exam-4"
   );
@@ -486,13 +473,16 @@ export function AssessmentsModule({
     return assessments.find((a) => a.id === selectedCertAssessmentId) || certificateAssessments[0] || assessments[0];
   }, [assessments, selectedCertAssessmentId, certificateAssessments]);
 
-  // Eligible students for activeCertAssessment
   const certAuditList = useMemo(() => {
     if (!activeCertAssessment || !activeCertAssessment.certificatePolicy?.enabled) {
       return [];
     }
-
-    const threshold = activeCertAssessment.certificatePolicy.minPercentage;
+    if (
+      (role === "student" || role === "parent") &&
+      !isAssessmentVisibleToStudent(activeCertAssessment, targetStudent, enrollments)
+    ) {
+      return [];
+    }
 
     return activeCertAssessment.studentScores.map((score) => {
       const student = students.find((s) => s.id === score.studentId) || {
@@ -505,7 +495,9 @@ export function AssessmentsModule({
       const pct = activeCertAssessment.totalMarks > 0
         ? Math.round((score.marksObtained / activeCertAssessment.totalMarks) * 100)
         : 0;
-      const isEligible = score.status === "evaluated" && pct >= threshold;
+      const isEligible =
+        score.status === "evaluated" &&
+        isEligibleForCertificate(activeCertAssessment, score.marksObtained);
 
       const issuedCert = issuedCertificates.find(
         (c) => c.assessmentId === activeCertAssessment.id && c.studentId === score.studentId && c.status === "issued"
@@ -526,7 +518,7 @@ export function AssessmentsModule({
         revokedCert,
       };
     });
-  }, [activeCertAssessment, issuedCertificates, students]);
+  }, [activeCertAssessment, issuedCertificates, students, role, targetStudent, enrollments]);
 
   // --------------------------------------------------------------------------
   // CERTIFICATE ISSUANCE & REVOCATION HANDLERS
@@ -548,6 +540,12 @@ export function AssessmentsModule({
   const handleConfirmIssueCertificate = () => {
     if (!pendingIssueCandidate) return;
     const { assessment, student, marksObtained, totalMarks, percentage } = pendingIssueCandidate;
+
+    if (assessment.status !== "published") {
+      showToast("Certificates can only be issued for published assessments.");
+      setIsConfirmIssueOpen(false);
+      return;
+    }
 
     // Prevent duplicate active issuance
     const alreadyIssued = issuedCertificates.some(
@@ -652,6 +650,14 @@ export function AssessmentsModule({
   };
 
   const handlePreviewCertificateModal = (cert: IssuedCertificateRecord | AcademicCertificateData, isIssued = true) => {
+    if (role === "student" || role === "parent") {
+      if (!targetStudent || cert.studentId !== targetStudent.id) return;
+      const certAssessmentId = "assessmentId" in cert ? cert.assessmentId : undefined;
+      const exam = certAssessmentId
+        ? assessments.find((a) => a.id === certAssessmentId)
+        : assessments.find((a) => a.title === cert.assessmentName && a.subject === cert.subject);
+      if (!exam || !isAssessmentVisibleToStudent(exam, targetStudent, enrollments)) return;
+    }
     setActiveCertificate(cert);
     setActiveCertIsIssued(isIssued);
   };
@@ -2842,7 +2848,20 @@ export function AssessmentsModule({
                     </tr>
                   </thead>
                   <tbody>
-                    {issuedCertificates.map((cert) => (
+                    {issuedCertificates
+                      .filter((cert) => {
+                        if (role === "student" || role === "parent") {
+                          if (!targetStudent || cert.studentId !== targetStudent.id) return false;
+                          const exam = assessments.find((a) => a.id === cert.assessmentId);
+                          return exam ? isAssessmentVisibleToStudent(exam, targetStudent, enrollments) : false;
+                        }
+                        if (role === "teacher") {
+                          const exam = assessments.find((a) => a.id === cert.assessmentId);
+                          return exam ? (exam.teacherId === currentTeacherId || currentTeacher?.assignedSubjects.includes(exam.subject)) : true;
+                        }
+                        return true;
+                      })
+                      .map((cert) => (
                       <tr key={cert.id} style={{ borderBottom: "1px solid var(--color-border)" }}>
                         <td style={{ padding: "10px 12px", fontWeight: 700, color: "#007AFF" }}>
                           {cert.certificateNumber}
@@ -3656,7 +3675,34 @@ export function AssessmentsModule({
       {/* ==================================================================== */}
       {activeCertificate && (
         <ExamCertificateModal
-          isOpen={Boolean(activeCertificate)}
+          isOpen={
+            role === "student" || role === "parent"
+              ? Boolean(
+                  targetStudent &&
+                    activeCertificate.studentId === targetStudent.id &&
+                    (() => {
+                      const certAssessmentId =
+                        "assessmentId" in activeCertificate
+                          ? (activeCertificate as { assessmentId?: string }).assessmentId
+                          : undefined;
+                      const exam = certAssessmentId
+                        ? assessments.find((a) => a.id === certAssessmentId)
+                        : assessments.find(
+                            (a) =>
+                              a.title === activeCertificate.assessmentName &&
+                              a.subject === activeCertificate.subject,
+                          );
+                      return exam
+                        ? isAssessmentVisibleToStudent(
+                            exam,
+                            targetStudent,
+                            enrollments,
+                          )
+                        : false;
+                    })(),
+                )
+              : Boolean(activeCertificate)
+          }
           onClose={() => setActiveCertificate(null)}
           certificate={activeCertificate}
           isIssued={activeCertIsIssued}
