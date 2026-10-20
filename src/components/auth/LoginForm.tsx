@@ -9,11 +9,10 @@ import { DEMO_ACCOUNTS } from "@/lib/auth/demoAccounts";
 import {
   ROLE_DEFAULT_ROUTES,
   ROLE_DISPLAY_NAMES,
-  ROLE_DESCRIPTIONS,
 } from "@/lib/auth/authTypes";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Check, AlertCircle } from "lucide-react";
+import { Check, Eye, EyeOff } from "lucide-react";
 
 const ROLES_ORDER: UserRole[] = ["academy-admin", "teacher", "student", "parent"];
 
@@ -28,8 +27,21 @@ export function LoginForm() {
   const [chosenRole, setChosenRole] = useState<UserRole | null>(null);
   const selectedRole = chosenRole || validQueryRole || "student";
 
-  const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("");
+  const [isRoleSelectorOpen, setIsRoleSelectorOpen] = useState(false);
+  const [identifier, setIdentifier] = useState(() => {
+    if (process.env.NEXT_PUBLIC_AUTH_MODE === "demo") {
+      const demo = DEMO_ACCOUNTS[selectedRole];
+      return demo ? demo.user.identifier : "";
+    }
+    return "";
+  });
+  const [password, setPassword] = useState(() => {
+    if (process.env.NEXT_PUBLIC_AUTH_MODE === "demo") {
+      const demo = DEMO_ACCOUNTS[selectedRole];
+      return demo ? demo.demoPassword : "";
+    }
+    return "";
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -38,6 +50,17 @@ export function LoginForm() {
   const [resetIdentifier, setResetIdentifier] = useState("");
   const [resetMessage, setResetMessage] = useState<string | null>(null);
   const [isResetSubmitting, setIsResetSubmitting] = useState(false);
+  const [prevSelectedRole, setPrevSelectedRole] = useState(selectedRole);
+  if (prevSelectedRole !== selectedRole) {
+    setPrevSelectedRole(selectedRole);
+    if (process.env.NEXT_PUBLIC_AUTH_MODE === "demo") {
+      const demo = DEMO_ACCOUNTS[selectedRole];
+      if (demo) {
+        setIdentifier(demo.user.identifier);
+        setPassword(demo.demoPassword);
+      }
+    }
+  }
 
   const handleSelectRolePill = (role: UserRole) => {
     setChosenRole(role);
@@ -120,39 +143,21 @@ export function LoginForm() {
     }
   };
 
+  const showDemoHelper =
+    process.env.NEXT_PUBLIC_AUTH_MODE === "demo" &&
+    process.env.NODE_ENV !== "production";
+
   return (
     <div
       style={{
-        paddingTop: "var(--space-12)",
-        paddingBottom: "var(--space-20)",
-        minHeight: "85vh",
+        paddingTop: "clamp(20px, 3vw, 36px)",
+        paddingBottom: "var(--space-16)",
+        minHeight: "80vh",
         display: "flex",
         alignItems: "center",
       }}
     >
-      <div className="container-narrow" style={{ maxWidth: "560px" }}>
-        <div
-          style={{
-            backgroundColor: "rgba(29, 29, 31, 0.04)",
-            border: "1px solid rgba(170, 170, 170, 0.35)",
-            borderRadius: "var(--radius-md)",
-            padding: "var(--space-3) var(--space-4)",
-            marginBottom: "var(--space-6)",
-            display: "flex",
-            alignItems: "flex-start",
-            gap: "var(--space-3)",
-          }}
-          role="note"
-          aria-label="Demo environment notice"
-        >
-          <AlertCircle size={16} aria-hidden="true" style={{ color: "#1D1D1F", flexShrink: 0, marginTop: "2px" }} />
-          <div style={{ fontSize: "var(--text-xs)", color: "var(--color-primary)", lineHeight: 1.5 }}>
-            <strong>DEMO ENVIRONMENT NOTICE:</strong> This frontend preview uses a client-side mock
-            authentication adapter. No real credentials, JWTs, or encrypted server sessions are in use.
-            Select any role below for instant demo credentials.
-          </div>
-        </div>
-
+      <div className="container-narrow" style={{ maxWidth: "520px" }}>
         <Card padding="lg" style={{ boxShadow: "var(--shadow-md)" }}>
           <div
             style={{
@@ -184,7 +189,7 @@ export function LoginForm() {
               fontSize: "var(--text-xs)",
               color: "var(--color-neutral-dark)",
               textAlign: "center",
-              marginBottom: "var(--space-6)",
+              marginBottom: "var(--space-4)",
               lineHeight: 1.5,
             }}
           >
@@ -200,7 +205,7 @@ export function LoginForm() {
                 border: "1px solid var(--color-border)",
                 borderRadius: "var(--radius-md)",
                 padding: "var(--space-3) var(--space-4)",
-                marginBottom: "var(--space-5)",
+                marginBottom: "var(--space-4)",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
@@ -305,26 +310,46 @@ export function LoginForm() {
             </form>
           ) : (
             <form onSubmit={handleSubmit} noValidate>
-              <div style={{ marginBottom: "var(--space-4)" }}>
-                <span
-                  id="role-select-label"
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "var(--space-3)",
+                  padding: "6px 10px",
+                  borderRadius: "var(--radius-md)",
+                  backgroundColor: "var(--color-surface-muted)",
+                }}
+              >
+                <span style={{ fontSize: "var(--text-xs)", color: "#1D1D1F" }}>
+                  Role: <strong data-testid="selected-role-name">{ROLE_DISPLAY_NAMES[selectedRole]}</strong>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsRoleSelectorOpen((prev) => !prev)}
                   style={{
-                    display: "block",
-                    fontSize: "var(--text-xs)",
+                    fontSize: "11px",
                     fontWeight: 600,
-                    marginBottom: "var(--space-2)",
-                    color: "var(--color-primary)",
+                    color: "#1D1D1F",
+                    textDecoration: "underline",
+                    textDecorationColor: "#007AFF",
+                    textUnderlineOffset: "2px",
+                    cursor: "pointer",
                   }}
                 >
-                  Select Target Portal Role
-                </span>
+                  Change role
+                </button>
+              </div>
+
+              {isRoleSelectorOpen && (
                 <div
                   role="radiogroup"
-                  aria-labelledby="role-select-label"
+                  aria-label="Choose role"
                   style={{
                     display: "grid",
                     gridTemplateColumns: "repeat(2, 1fr)",
                     gap: "var(--space-2)",
+                    marginBottom: "var(--space-4)",
                   }}
                 >
                   {ROLES_ORDER.map((r) => {
@@ -335,7 +360,10 @@ export function LoginForm() {
                         type="button"
                         role="radio"
                         aria-checked={isSelected}
-                        onClick={() => handleSelectRolePill(r)}
+                        onClick={() => {
+                          handleSelectRolePill(r);
+                          setIsRoleSelectorOpen(false);
+                        }}
                         style={{
                           padding: "8px 10px",
                           borderRadius: "var(--radius-md)",
@@ -346,7 +374,6 @@ export function LoginForm() {
                           fontWeight: isSelected ? 600 : 500,
                           textAlign: "left",
                           cursor: "pointer",
-                          transition: "all var(--transition-fast)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "space-between",
@@ -360,16 +387,7 @@ export function LoginForm() {
                     );
                   })}
                 </div>
-                <div
-                  style={{
-                    fontSize: "11px",
-                    color: "var(--color-neutral-dark)",
-                    marginTop: "6px",
-                  }}
-                >
-                  {ROLE_DESCRIPTIONS[selectedRole]}
-                </div>
-              </div>
+              )}
 
               <div style={{ marginBottom: "var(--space-3)" }}>
                 <label
@@ -452,10 +470,10 @@ export function LoginForm() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your account password"
+                    placeholder="Enter account security key"
                     style={{
                       width: "100%",
-                      padding: "10px 42px 10px 14px",
+                      padding: "10px 38px 10px 14px",
                       borderRadius: "var(--radius-md)",
                       border: "1px solid var(--color-border)",
                       backgroundColor: "var(--color-surface)",
@@ -467,21 +485,20 @@ export function LoginForm() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={showPassword ? "Hide password key" : "Show password key"}
                     style={{
                       position: "absolute",
-                      right: "10px",
+                      right: "12px",
                       top: "50%",
                       transform: "translateY(-50%)",
                       color: "var(--color-neutral-dark)",
-                      fontSize: "12px",
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
                       padding: "4px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
-                    {showPassword ? "Hide" : "Show"}
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </div>
@@ -490,13 +507,13 @@ export function LoginForm() {
                 <div
                   style={{
                     backgroundColor: "rgba(255, 59, 48, 0.08)",
-                    border: "1px solid rgba(255, 59, 48, 0.25)",
+                    border: "1px solid rgba(255, 59, 48, 0.3)",
                     borderRadius: "var(--radius-md)",
-                    padding: "var(--space-2) var(--space-3)",
+                    padding: "var(--space-3)",
                     marginBottom: "var(--space-4)",
                     fontSize: "var(--text-xs)",
-                    color: "#D32F2F",
-                    lineHeight: 1.4,
+                    color: "var(--color-danger)",
+                    lineHeight: 1.5,
                   }}
                   role="alert"
                 >
@@ -512,79 +529,93 @@ export function LoginForm() {
                   disabled={isSubmitting}
                   style={{ width: "100%" }}
                 >
-                  {isSubmitting ? "Authenticating..." : `Sign In as ${ROLE_DISPLAY_NAMES[selectedRole]}`}
+                  {isSubmitting ? "Authenticating Persona..." : `Sign In as ${ROLE_DISPLAY_NAMES[selectedRole]}`}
                 </Button>
               </div>
 
-              <div
-                style={{
-                  borderTop: "1px solid var(--color-border)",
-                  paddingTop: "var(--space-4)",
-                  marginTop: "var(--space-4)",
-                }}
-              >
-                <div
+              {showDemoHelper && (
+                <details
                   style={{
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    color: "var(--color-neutral-dark)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    marginBottom: "var(--space-2)",
-                    textAlign: "center",
+                    marginBottom: "var(--space-4)",
+                    padding: "10px 12px",
+                    borderRadius: "var(--radius-md)",
+                    backgroundColor: "rgba(29, 29, 31, 0.03)",
+                    border: "1px solid rgba(170, 170, 170, 0.35)",
                   }}
                 >
-                  Quick One-Click Demo Personas
-                </div>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(2, 1fr)",
-                    gap: "var(--space-2)",
-                  }}
-                >
-                  {ROLES_ORDER.map((r) => {
-                    const demo = DEMO_ACCOUNTS[r];
-                    return (
-                      <button
-                        key={`quick-${r}`}
-                        type="button"
-                        onClick={() => handleQuickDemoSignIn(r)}
-                        style={{
-                          padding: "6px 8px",
-                          borderRadius: "var(--radius-sm)",
-                          border: "1px solid var(--color-border)",
-                          backgroundColor: "var(--color-surface-muted)",
-                          fontSize: "11px",
-                          color: "var(--color-primary)",
-                          cursor: "pointer",
-                          display: "flex",
-                          flexDirection: "column",
-                          textAlign: "left",
-                          transition: "border-color var(--transition-fast)",
-                        }}
-                      >
-                        <span style={{ fontWeight: 600 }}>{demo.user.name}</span>
-                        <span style={{ fontSize: "10px", color: "#48484A" }}>
-                          {ROLE_DISPLAY_NAMES[r]} &bull; {demo.demoPassword}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+                  <summary
+                    style={{
+                      cursor: "pointer",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      color: "#1D1D1F",
+                    }}
+                  >
+                    Demo Accounts & Quick Sign In
+                  </summary>
+                  <div style={{ marginTop: "var(--space-3)" }}>
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        color: "var(--color-neutral-dark)",
+                        marginBottom: "var(--space-2)",
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      Mock adapter preview. Select any role below for instant demo credentials:
+                    </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(2, 1fr)",
+                        gap: "var(--space-2)",
+                      }}
+                    >
+                      {ROLES_ORDER.map((r) => {
+                        const demo = DEMO_ACCOUNTS[r];
+                        return (
+                          <button
+                            key={`quick-${r}`}
+                            type="button"
+                            onClick={() => handleQuickDemoSignIn(r)}
+                            style={{
+                              padding: "8px",
+                              borderRadius: "var(--radius-md)",
+                              border: "1px solid var(--color-border)",
+                              backgroundColor: "var(--color-surface)",
+                              textAlign: "left",
+                              cursor: "pointer",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "2px",
+                            }}
+                          >
+                            <span style={{ fontSize: "11px", fontWeight: 600, color: "#1D1D1F" }}>
+                              {demo.user.name}
+                            </span>
+                            <span style={{ fontSize: "10px", color: "#48484A" }}>
+                              {ROLE_DISPLAY_NAMES[r]} &bull; {demo.demoPassword}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </details>
+              )}
             </form>
           )}
 
           <div
             style={{
               borderTop: "1px solid var(--color-border)",
-              marginTop: "var(--space-5)",
               paddingTop: "var(--space-4)",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
               fontSize: "var(--text-xs)",
+              flexWrap: "wrap",
+              gap: "var(--space-2)",
             }}
           >
             <Link href="/" style={{ color: "var(--color-neutral-dark)" }}>

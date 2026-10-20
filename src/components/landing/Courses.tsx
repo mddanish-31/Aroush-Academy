@@ -28,7 +28,7 @@ export function Courses() {
                 marginBottom: "12px",
               }}
             >
-              What We Teach
+              Academic Divisions
             </span>
             <h2
               style={{
@@ -63,24 +63,27 @@ export function Courses() {
             return (
               <Reveal key={course.id} delay={idx * 60}>
                 <div
-                  id={course.id === "course-v-viii" ? "courses-v-viii" : course.id === "course-ix-x" ? "courses-ix-x" : "courses-xi-xii"}
+                  id={course.id}
+                  className="course-card-wrapper"
                   style={{
                     backgroundColor: "#FFFFFF",
                     borderRadius: "20px",
                     border: "1px solid rgba(170, 170, 170, 0.3)",
                     overflow: "hidden",
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-                    alignItems: "center",
+                    display: "flex",
+                    flexDirection: isReversed ? "row-reverse" : "row",
+                    alignItems: "stretch",
                   }}
                 >
                   <div
+                    className="course-photo-col"
                     style={{
-                      order: isReversed ? 2 : 1,
-                      aspectRatio: "16 / 10",
+                      width: "35%",
+                      minHeight: "280px",
                       position: "relative",
                       backgroundColor: "#E5E5EA",
                       overflow: "hidden",
+                      flexShrink: 0,
                     }}
                   >
                     <Image
@@ -88,7 +91,7 @@ export function Courses() {
                       alt={mediaItem.alt}
                       width={mediaItem.width}
                       height={mediaItem.height}
-                      sizes="(max-width: 768px) 100vw, 600px"
+                      sizes="(max-width: 768px) 100vw, 420px"
                       style={{
                         width: "100%",
                         height: "100%",
@@ -99,18 +102,19 @@ export function Courses() {
                   </div>
 
                   <div
+                    className="course-content-col"
                     style={{
-                      order: isReversed ? 1 : 2,
-                      padding: "clamp(28px, 4vw, 48px)",
+                      width: "65%",
+                      padding: "clamp(24px, 3.5vw, 44px)",
                       display: "flex",
                       flexDirection: "column",
                       justifyContent: "center",
                     }}
                   >
-                    <div style={{ marginBottom: "8px" }}>
+                    <div style={{ marginBottom: "6px" }}>
                       <span
                         style={{
-                          fontSize: "13px",
+                          fontSize: "12px",
                           fontWeight: 600,
                           color: "var(--color-text-secondary)",
                           textTransform: "uppercase",
@@ -124,19 +128,32 @@ export function Courses() {
                     <h3
                       style={{
                         fontFamily: "var(--font-display)",
-                        fontSize: "clamp(1.5rem, 2.5vw, 2rem)",
-                        fontWeight: 700,
-                        color: "#1D1D1F",
-                        margin: "0 0 12px 0",
-                        lineHeight: 1.15,
+                        fontSize: "clamp(1.25rem, 2vw, 1.65rem)",
+                        fontWeight: 600,
+                        color: "var(--color-text-secondary)",
+                        margin: "0 0 8px 0",
+                        lineHeight: 1.2,
                       }}
                     >
                       {course.title}
                     </h3>
 
+                    <div
+                      style={{
+                        fontFamily: "var(--font-display)",
+                        fontSize: "clamp(1.5rem, 2.5vw, 2.15rem)",
+                        fontWeight: 700,
+                        color: "#1D1D1F",
+                        lineHeight: 1.2,
+                        margin: "0 0 14px 0",
+                      }}
+                    >
+                      {course.subjects.join(", ")}
+                    </div>
+
                     <p
                       style={{
-                        fontSize: "15px",
+                        fontSize: "14px",
                         lineHeight: 1.6,
                         color: "var(--color-text-secondary)",
                         margin: "0 0 20px 0",
@@ -144,37 +161,6 @@ export function Courses() {
                     >
                       {course.description}
                     </p>
-
-                    <div
-                      style={{
-                        padding: "14px 0",
-                        borderTop: "1px solid rgba(170, 170, 170, 0.25)",
-                        borderBottom: "1px solid rgba(170, 170, 170, 0.25)",
-                        marginBottom: "24px",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: "12px",
-                          fontWeight: 600,
-                          color: "#1D1D1F",
-                          display: "block",
-                          marginBottom: "4px",
-                        }}
-                      >
-                        Core Subjects Taught
-                      </span>
-                      <p
-                        style={{
-                          fontSize: "14px",
-                          color: "var(--color-text-secondary)",
-                          margin: 0,
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        {course.subjects.join(", ")}
-                      </p>
-                    </div>
 
                     <div>
                       <a
@@ -185,11 +171,11 @@ export function Courses() {
                           alignItems: "center",
                           gap: "8px",
                           color: "#1D1D1F",
-                          fontSize: "15px",
+                          fontSize: "14px",
                           fontWeight: 600,
-                          textDecoration: "none",
-                          borderBottom: "1.5px solid transparent",
-                          paddingBottom: "2px",
+                          textDecoration: "underline",
+                          textDecorationColor: "#007AFF",
+                          textUnderlineOffset: "3px",
                         }}
                       >
                         <span>{course.ctaLabel}</span>
@@ -203,6 +189,7 @@ export function Courses() {
           })}
         </div>
       </div>
+
     </section>
   );
 }

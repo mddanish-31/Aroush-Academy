@@ -687,13 +687,13 @@ button.btn-ghost:focus-visible {
   background-color: rgba(29, 29, 31, 0.04) !important;
 }
 
-.badge-accent {
+.container-narrow .badge-accent {
   background-color: rgba(29, 29, 31, 0.08) !important;
   color: #1D1D1F !important;
   border-color: rgba(29, 29, 31, 0.15) !important;
 }
 
-button[role="radio"][aria-checked="true"] {
+.container-narrow button[role="radio"][aria-checked="true"] {
   background-color: #1D1D1F !important;
   color: #FFFFFF !important;
   border-color: #1D1D1F !important;
@@ -892,6 +892,47 @@ details.faq-item[open] .faq-answer {
   transition: opacity 120ms ease-out;
 }
 
+.what-we-teach-row {
+  transition: transform 200ms ease-out;
+}
 
+.what-we-teach-row:hover {
+  transform: translateX(4px);
+}
 
+.what-we-teach-row .what-we-teach-arrow {
+  opacity: 0.4;
+  transform: translateX(-4px);
+}
 
+.what-we-teach-row:hover .what-we-teach-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+@media (max-width: 640px) {
+  .what-we-teach-row {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 8px;
+  }
+  .what-we-teach-row > div {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 768px) {
+  .course-card-wrapper {
+    flex-direction: column !important;
+  }
+  .course-photo-col {
+    width: 100% !important;
+    height: 220px !important;
+    min-height: 220px !important;
+  }
+  .course-content-col {
+    width: 100% !important;
+    padding: 24px !important;
+  }
+}

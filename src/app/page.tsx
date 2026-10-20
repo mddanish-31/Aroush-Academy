@@ -1,5 +1,6 @@
 import React from "react";
 import { Hero } from "@/components/landing/Hero";
+import { WhatWeTeach } from "@/components/landing/WhatWeTeach";
 import { AcademyIntro } from "@/components/landing/AcademyIntro";
 import { Courses } from "@/components/landing/Courses";
 import { Features } from "@/components/landing/Features";
@@ -17,6 +18,7 @@ export default async function HomePage() {
   return (
     <>
       <Hero hero={hero} />
+      <WhatWeTeach />
       <AcademyIntro />
       <Courses />
       <Features />

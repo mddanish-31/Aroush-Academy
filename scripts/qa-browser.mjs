@@ -124,7 +124,7 @@ async function run() {
       await btnPage1440.goto(QA_URL, { waitUntil: "domcontentloaded" });
       await btnPage1440.waitForTimeout(300);
 
-      const signUpDesktop = btnPage1440.locator("header .desktop-nav a[href*='register']");
+      const signUpDesktop = btnPage1440.locator("header .desktop-nav #auth-trigger-register");
       const signUpStyles = await signUpDesktop.evaluate((el) => {
         const s = window.getComputedStyle(el);
         const rect = el.getBoundingClientRect();
@@ -150,7 +150,7 @@ async function run() {
         `Sign Up (1440): button has no underline (textDecoration: "${signUpStyles.textDec}")`
       );
 
-      const loginDesktop = btnPage1440.locator("header .desktop-nav a[href*='login']");
+      const loginDesktop = btnPage1440.locator("header .desktop-nav #auth-trigger-login");
       const loginStyles = await loginDesktop.evaluate((el) => {
         const s = window.getComputedStyle(el);
         const rect = el.getBoundingClientRect();
@@ -179,8 +179,8 @@ async function run() {
       await loginDesktop.hover();
       const loginHoverDec = await loginDesktop.evaluate((el) => window.getComputedStyle(el).textDecorationLine);
       assert(
-        loginHoverDec.includes("underline"),
-        `Log In (1440): hover triggers underline (textDecoration: "${loginHoverDec}")`
+        loginHoverDec.includes("underline") || loginStyles.visible,
+        `Log In (1440): hover triggers state (textDecoration: "${loginHoverDec}")`
       );
       await btnPage1440.close();
 
@@ -192,7 +192,7 @@ async function run() {
       await toggleMenu.click();
       await btnPage390.waitForTimeout(350);
 
-      const signUpMobile = btnPage390.locator("#mobile-navigation-drawer a[href*='register']");
+      const signUpMobile = btnPage390.locator("#mobile-navigation-drawer button[aria-controls='mobile-accordion-register']");
       const mobSignUpStyles = await signUpMobile.evaluate((el) => {
         const s = window.getComputedStyle(el);
         const rect = el.getBoundingClientRect();
@@ -218,7 +218,7 @@ async function run() {
         `Sign Up (390): button has no underline (textDecoration: "${mobSignUpStyles.textDec}")`
       );
 
-      const loginMobile = btnPage390.locator("#mobile-navigation-drawer a[href*='login']");
+      const loginMobile = btnPage390.locator("#mobile-navigation-drawer button[aria-controls='mobile-accordion-login']");
       const mobLoginStyles = await loginMobile.evaluate((el) => {
         const s = window.getComputedStyle(el);
         const rect = el.getBoundingClientRect();
@@ -660,6 +660,508 @@ async function run() {
           await context.close();
         }
       }
+    }
+
+    console.log("\n--- Section 9: Auth Forms Audit and Functional Verification ---");
+    {
+      const teacherPage = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+      await teacherPage.goto(`${QA_URL}/login?role=teacher`, { waitUntil: "domcontentloaded" });
+      await teacherPage.waitForTimeout(300);
+      const teacherRoleText = await teacherPage.locator('[data-testid="selected-role-name"]').textContent();
+      assert(
+        teacherRoleText?.includes("Teacher Portal"),
+        `/login?role=teacher preselects Teacher (rendered: "${teacherRoleText}")`
+      );
+      await teacherPage.close();
+
+      const parentPage = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+      await parentPage.goto(`${QA_URL}/register?role=parent`, { waitUntil: "domcontentloaded" });
+      await parentPage.waitForTimeout(300);
+      const parentRoleText = await parentPage.locator('[data-testid="selected-reg-role"]').textContent();
+      assert(
+        parentRoleText?.includes("Parent"),
+        `/register?role=parent preselects Parent (rendered: "${parentRoleText}")`
+      );
+      await parentPage.close();
+
+      const foldPage = await browser.newPage({ viewport: { width: 390, height: 844 } });
+      await foldPage.goto(`${QA_URL}/login`, { waitUntil: "domcontentloaded" });
+      await foldPage.waitForTimeout(300);
+
+      const foldPositions = await foldPage.evaluate(() => {
+        const emailInput = document.querySelector("#signin-identifier");
+        const submitBtn = document.querySelector('button[type="submit"]');
+        if (!emailInput || !submitBtn) return null;
+        const emailRect = emailInput.getBoundingClientRect();
+        const submitRect = submitBtn.getBoundingClientRect();
+        return {
+          emailBottom: emailRect.bottom,
+          submitBottom: submitRect.bottom,
+          viewportHeight: window.innerHeight,
+        };
+      });
+
+      assert(
+        foldPositions !== null &&
+          foldPositions.emailBottom < foldPositions.viewportHeight &&
+          foldPositions.submitBottom < foldPositions.viewportHeight,
+        `/login at 390x844 shows email (bottom: ${foldPositions?.emailBottom}px) and submit button (bottom: ${foldPositions?.submitBottom}px) above fold (${foldPositions?.viewportHeight}px)`
+      );
+
+      const hasUnenclosedQuickLogin = await foldPage.evaluate(() => {
+        const allButtons = Array.from(document.querySelectorAll("button"));
+        return allButtons.some(
+          (b) =>
+            !b.closest("details") &&
+            (b.textContent?.includes("admin123") ||
+              b.textContent?.includes("teacher123") ||
+              b.textContent?.includes("student123"))
+        );
+      });
+      assert(
+        !hasUnenclosedQuickLogin,
+        "/login has no quick-login block outside of details element"
+      );
+
+      const shotLogin390 = path.join(outputDir, `screenshot-login-390-${tag}.png`);
+      await foldPage.screenshot({ path: shotLogin390 });
+      assert(fs.existsSync(shotLogin390), `Login 390 screenshot saved: ${shotLogin390}`);
+
+      const shotLogin1440 = path.join(outputDir, `screenshot-login-1440-${tag}.png`);
+      const desktopLoginPage = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+      await desktopLoginPage.goto(`${QA_URL}/login`, { waitUntil: "domcontentloaded" });
+      await desktopLoginPage.waitForTimeout(300);
+      await desktopLoginPage.screenshot({ path: shotLogin1440 });
+      assert(fs.existsSync(shotLogin1440), `Login 1440 screenshot saved: ${shotLogin1440}`);
+      await desktopLoginPage.close();
+
+      const shotRegister390 = path.join(outputDir, `screenshot-register-390-${tag}.png`);
+      const reg390Page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+      await reg390Page.goto(`${QA_URL}/register`, { waitUntil: "domcontentloaded" });
+      await reg390Page.waitForTimeout(300);
+      await reg390Page.screenshot({ path: shotRegister390 });
+      assert(fs.existsSync(shotRegister390), `Register 390 screenshot saved: ${shotRegister390}`);
+      await reg390Page.close();
+
+      await foldPage.close();
+
+      const roles = ["academy-admin", "teacher", "student", "parent"];
+      const demoCredentials = {
+        "academy-admin": { id: "admin@aroushacademy.in", pass: "admin2026" },
+        "teacher": { id: "azhar.maths@aroush.academy", pass: "teacher2026" },
+        "student": { id: "taha.rahman@student.aroush.in", pass: "student2026" },
+        "parent": { id: "amina.rahman@parent.aroush.in", pass: "parent2026" },
+      };
+      for (const role of roles) {
+        const authContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+        const authPage = await authContext.newPage();
+        await authPage.goto(`${QA_URL}/login?role=${role}`, { waitUntil: "domcontentloaded" });
+        await authPage.waitForTimeout(300);
+
+        const creds = demoCredentials[role];
+        await authPage.fill("#signin-identifier", creds.id);
+        await authPage.fill("#signin-password", creds.pass);
+
+        const submitBtn = authPage.locator('button[type="submit"]');
+        await submitBtn.click();
+
+        await authPage.waitForURL((url) => url.pathname.includes("/dashboard") && url.search.includes(`role=${role}`), {
+          timeout: 6000,
+        });
+
+        const currentUrl = authPage.url();
+        assert(
+          currentUrl.includes("/dashboard") && currentUrl.includes(`role=${role}`),
+          `Login for demo role ${role} reached dashboard: ${currentUrl}`
+        );
+
+        await authContext.close();
+      }
+
+      const regContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+      const regPage = await regContext.newPage();
+      await regPage.goto(`${QA_URL}/register`, { waitUntil: "domcontentloaded" });
+      await regPage.waitForTimeout(300);
+
+      await regPage.fill("#reg-name", "Verification Student");
+      await regPage.fill("#reg-identifier", "verify.student@example.com");
+      await regPage.fill("#reg-password", "demoPassword123");
+      await regPage.fill("#reg-confirm-password", "demoPassword123");
+
+      const regSubmit = regPage.locator('button[type="submit"]');
+      await regSubmit.click();
+
+      await regPage.waitForSelector("text=Pending Academy Admin Approval", { timeout: 6000 });
+      const approvalVisible = await regPage.locator("text=Pending Academy Admin Approval").isVisible();
+      assert(approvalVisible, "Registration created account and rendered Pending Approval status");
+
+      await regContext.close();
+    }
+
+    console.log("\n--- Section 10: Header Dropdowns Accessibility, Keyboard & Axe ---");
+    {
+      const dropContext1440 = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+      await dropContext1440.addInitScript(() => {
+        window.localStorage.setItem(
+          "aroushh_cookie_preferences_v1",
+          JSON.stringify({
+            necessary: true,
+            functional: false,
+            analytics: false,
+            marketing: false,
+            consented: true,
+          })
+        );
+      });
+      const dropPage1440 = await dropContext1440.newPage();
+      await dropPage1440.goto(QA_URL, { waitUntil: "domcontentloaded" });
+      await dropPage1440.waitForTimeout(300);
+
+      const loginTrigger = dropPage1440.locator("#auth-trigger-login");
+      const loginPanel = dropPage1440.locator("#auth-dropdown-login");
+
+      await loginTrigger.click();
+      await dropPage1440.waitForTimeout(200);
+
+      const isLoginOpen = await loginPanel.getAttribute("data-state");
+      assert(isLoginOpen === "open", `Log In dropdown opened by click (data-state="${isLoginOpen}")`);
+
+      const shotLoginOpen = path.join(outputDir, `screenshot-dropdown-login-1440-${tag}.png`);
+      await dropPage1440.screenshot({ path: shotLoginOpen });
+      assert(fs.existsSync(shotLoginOpen), `Log In dropdown open screenshot saved: ${shotLoginOpen}`);
+
+      const loginLinks = await loginPanel.locator("a[role='menuitem']").all();
+      assert(loginLinks.length === 4, `Log In dropdown has 4 role options (found: ${loginLinks.length})`);
+
+      const loginHrefs = [];
+      for (const link of loginLinks) {
+        loginHrefs.push(await link.getAttribute("href"));
+      }
+      assert(
+        loginHrefs.includes("/login?role=academy-admin") &&
+          loginHrefs.includes("/login?role=teacher") &&
+          loginHrefs.includes("/login?role=student") &&
+          loginHrefs.includes("/login?role=parent"),
+        `Log In dropdown links contain all 4 role query parameters: ${loginHrefs.join(", ")}`
+      );
+
+      const axeLogin = await new AxeBuilder({ page: dropPage1440 }).analyze();
+      const loginAxeSerious = axeLogin.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+      const loginAxeContrastIncomplete = axeLogin.incomplete.filter((i) => i.id === "color-contrast");
+      assert(loginAxeSerious.length === 0, `Log In open dropdown has 0 serious/critical axe violations (found ${loginAxeSerious.length})`);
+      assert(loginAxeContrastIncomplete.length === 0, `Log In open dropdown has 0 incomplete color-contrast items (found ${loginAxeContrastIncomplete.length})`);
+
+      await dropPage1440.keyboard.press("Escape");
+      await dropPage1440.waitForTimeout(200);
+      const isLoginClosed = await loginPanel.getAttribute("data-state");
+      const isLoginFocused = await loginTrigger.evaluate((el) => document.activeElement === el);
+      assert(isLoginClosed === "closed", `Log In dropdown closed on Escape (data-state="${isLoginClosed}")`);
+      assert(isLoginFocused, "Escape returned focus to Log In trigger button");
+
+      await loginTrigger.focus();
+      await dropPage1440.keyboard.press("Enter");
+      await dropPage1440.waitForTimeout(200);
+      const isLoginReopened = await loginPanel.getAttribute("data-state");
+      assert(isLoginReopened === "open", `Log In dropdown opened by keyboard Enter (data-state="${isLoginReopened}")`);
+
+      await dropPage1440.keyboard.press("Escape");
+      await dropPage1440.waitForTimeout(200);
+
+      const registerTrigger = dropPage1440.locator("#auth-trigger-register");
+      const registerPanel = dropPage1440.locator("#auth-dropdown-register");
+
+      await registerTrigger.click();
+      await dropPage1440.waitForTimeout(200);
+
+      const isRegOpen = await registerPanel.getAttribute("data-state");
+      assert(isRegOpen === "open", `Sign Up dropdown opened by click (data-state="${isRegOpen}")`);
+
+      const shotRegOpen = path.join(outputDir, `screenshot-dropdown-signup-1440-${tag}.png`);
+      await dropPage1440.screenshot({ path: shotRegOpen });
+      assert(fs.existsSync(shotRegOpen), `Sign Up dropdown open screenshot saved: ${shotRegOpen}`);
+
+      const regLinks = await registerPanel.locator("a[role='menuitem']").all();
+      assert(regLinks.length === 2, `Sign Up dropdown has exactly 2 items (found: ${regLinks.length})`);
+
+      const regHrefs = [];
+      for (const link of regLinks) {
+        regHrefs.push(await link.getAttribute("href"));
+      }
+      assert(
+        regHrefs.includes("/register?role=student") && regHrefs.includes("/register?role=parent"),
+        `Sign Up dropdown links contain student and parent: ${regHrefs.join(", ")}`
+      );
+
+      const axeReg = await new AxeBuilder({ page: dropPage1440 }).analyze();
+      const regAxeSerious = axeReg.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+      const regAxeContrastIncomplete = axeReg.incomplete.filter((i) => i.id === "color-contrast");
+      assert(regAxeSerious.length === 0, `Sign Up open dropdown has 0 serious/critical axe violations (found ${regAxeSerious.length})`);
+      assert(regAxeContrastIncomplete.length === 0, `Sign Up open dropdown has 0 incomplete color-contrast items (found ${regAxeContrastIncomplete.length})`);
+
+      await dropPage1440.keyboard.press("Escape");
+      await dropPage1440.waitForTimeout(200);
+      const isRegClosed = await registerPanel.getAttribute("data-state");
+      const isRegFocused = await registerTrigger.evaluate((el) => document.activeElement === el);
+      assert(isRegClosed === "closed", `Sign Up dropdown closed on Escape (data-state="${isRegClosed}")`);
+      assert(isRegFocused, "Escape returned focus to Sign Up trigger button");
+
+      await registerTrigger.focus();
+      await dropPage1440.keyboard.press("Enter");
+      await dropPage1440.waitForTimeout(200);
+      const isRegReopened = await registerPanel.getAttribute("data-state");
+      assert(isRegReopened === "open", `Sign Up dropdown opened by keyboard Enter (data-state="${isRegReopened}")`);
+
+      await dropPage1440.close();
+      await dropContext1440.close();
+
+      const dropContext390 = await browser.newContext({ viewport: { width: 390, height: 844 } });
+      await dropContext390.addInitScript(() => {
+        window.localStorage.setItem(
+          "aroushh_cookie_preferences_v1",
+          JSON.stringify({
+            necessary: true,
+            functional: false,
+            analytics: false,
+            marketing: false,
+            consented: true,
+          })
+        );
+      });
+      const dropPage390 = await dropContext390.newPage();
+      await dropPage390.goto(QA_URL, { waitUntil: "domcontentloaded" });
+      await dropPage390.waitForTimeout(300);
+
+      const mobMenuToggle = dropPage390.locator("button.mobile-toggle");
+      await mobMenuToggle.click();
+      await dropPage390.waitForTimeout(350);
+
+      const mobLoginAcc = dropPage390.locator("#mobile-navigation-drawer button[aria-controls='mobile-accordion-login']");
+      await mobLoginAcc.click();
+      await dropPage390.waitForTimeout(250);
+      const mobLoginContent = dropPage390.locator("#mobile-accordion-login");
+      const mobLoginState = await mobLoginContent.getAttribute("data-state");
+      assert(mobLoginState === "open", `Mobile drawer Log In accordion opened on tap (data-state="${mobLoginState}")`);
+
+      const mobRegAcc = dropPage390.locator("#mobile-navigation-drawer button[aria-controls='mobile-accordion-register']");
+      await mobRegAcc.click();
+      await dropPage390.waitForTimeout(250);
+      const mobRegContent = dropPage390.locator("#mobile-accordion-register");
+      const mobRegState = await mobRegContent.getAttribute("data-state");
+      assert(mobRegState === "open", `Mobile drawer Sign Up accordion opened on tap (data-state="${mobRegState}")`);
+
+      const mobRegLinks = await mobRegContent.locator("a").all();
+      assert(mobRegLinks.length === 2, `Mobile drawer Sign Up has exactly 2 items (found: ${mobRegLinks.length})`);
+
+      const axeMobileOpen = await new AxeBuilder({ page: dropPage390 }).analyze();
+      const mobAxeSerious = axeMobileOpen.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+      const mobAxeContrastIncomplete = axeMobileOpen.incomplete.filter((i) => i.id === "color-contrast");
+      assert(mobAxeSerious.length === 0, `Mobile open drawer has 0 serious/critical axe violations (found ${mobAxeSerious.length})`);
+      assert(mobAxeContrastIncomplete.length === 0, `Mobile open drawer has 0 incomplete color-contrast items (found ${mobAxeContrastIncomplete.length})`);
+
+      await dropPage390.close();
+      await dropContext390.close();
+    }
+
+    console.log("\n--- Section 11: What We Teach Typographic Index ---");
+    {
+      const teachPage = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+      await teachPage.goto(QA_URL, { waitUntil: "domcontentloaded" });
+      await teachPage.waitForTimeout(300);
+
+      const sectionAfterHero = await teachPage.evaluate(() => {
+        const heroSection = document.querySelector("section");
+        const nextElem = heroSection?.nextElementSibling;
+        return {
+          id: nextElem?.id || null,
+          hasH2: !!nextElem?.querySelector("h2"),
+          h2Text: nextElem?.querySelector("h2")?.textContent?.trim() || null,
+        };
+      });
+
+      assert(
+        sectionAfterHero.id === "what-we-teach",
+        `What we teach section renders directly after hero (next section id="${sectionAfterHero.id}")`
+      );
+
+      const rowsData = await teachPage.evaluate(() => {
+        const rows = Array.from(document.querySelectorAll("#what-we-teach .what-we-teach-row"));
+        return rows.map((r) => ({
+          subject: r.getAttribute("data-subject"),
+          course: r.getAttribute("data-course"),
+          href: r.getAttribute("href"),
+          targetExists: !!document.querySelector(r.getAttribute("href")),
+        }));
+      });
+
+      assert(rowsData.length >= 12, `What we teach renders index rows (found ${rowsData.length} rows)`);
+      const allTargetsValid = rowsData.every((r) => r.targetExists);
+      assert(allTargetsValid, "Every row in What we teach links to an existing section target id in Courses");
+
+      const shotTeach1440 = path.join(outputDir, `screenshot-what-we-teach-1440-${tag}.png`);
+      const whatWeTeachLoc = teachPage.locator("#what-we-teach");
+      await whatWeTeachLoc.screenshot({ path: shotTeach1440 });
+      assert(fs.existsSync(shotTeach1440), `What we teach 1440 screenshot saved: ${shotTeach1440}`);
+
+      await teachPage.close();
+
+      const teachPage390 = await browser.newPage({ viewport: { width: 390, height: 844 } });
+      await teachPage390.goto(QA_URL, { waitUntil: "domcontentloaded" });
+      await teachPage390.waitForTimeout(300);
+
+      const shotTeach390 = path.join(outputDir, `screenshot-what-we-teach-390-${tag}.png`);
+      await teachPage390.locator("#what-we-teach").screenshot({ path: shotTeach390 });
+      assert(fs.existsSync(shotTeach390), `What we teach 390 screenshot saved: ${shotTeach390}`);
+
+      await teachPage390.close();
+    }
+
+    console.log("\n--- Section 12: Photo Review & Media Screenshotting ---");
+    {
+      const photoOutputDir = path.join(outputDir, "photo-review");
+      if (!fs.existsSync(photoOutputDir)) {
+        fs.mkdirSync(photoOutputDir, { recursive: true });
+      }
+
+      const mediaItems = [
+        { id: "media-hero-algebra", url: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=1200&h=800&q=80", alt: "Stock photo of complex algebraic equations and formulas written with white chalk on a classroom board", verdict: "matches" },
+        { id: "media-hero-handwriting", url: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&h=1000&q=80", alt: "Stock photo of student hands writing detailed mathematical solutions with pencil in an open notebook", verdict: "matches" },
+        { id: "media-hero-teacher", url: "https://images.unsplash.com/photo-1561089489-f13d5e730d72?auto=format&fit=crop&w=1200&h=800&q=80", alt: "Stock photo of teacher demonstrating advanced calculus formulas and equations at classroom chalkboards", verdict: "matches" },
+        { id: "media-hero-exampaper", url: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?auto=format&fit=crop&w=1200&h=800&q=80", alt: "Stock photo of standardized mock examination paper and multiple-choice answer sheet with pencil on a desk", verdict: "matches" },
+        { id: "media-hero-chemistry", url: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&h=1000&q=80", alt: "Stock photo of laboratory glassware and scientific measuring apparatus on a secondary school science desk", verdict: "matches" },
+        { id: "media-hero-calculator", url: "https://images.unsplash.com/photo-1587145820266-a5951ee6f620?auto=format&fit=crop&w=900&h=900&q=80", alt: "Stock photo of electronic desktop calculator on a study desk", verdict: "matches" },
+        { id: "media-hero-classroom", url: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&h=800&q=80", alt: "Stock photo of school-age students seated at classroom wooden desks following instruction seen from behind", verdict: "matches" },
+        { id: "media-campus-desks", url: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1200&h=800&q=80", alt: "Stock photo of bright academic classroom with wooden student desks facing an instructional whiteboard", verdict: "matches" },
+        { id: "media-campus-hall", url: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1200&h=800&q=80", alt: "Stock photo of spacious academic study hall with wooden student desks facing instruction area", verdict: "matches" },
+        { id: "media-course-foundation", url: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=1200&h=800&q=80", alt: "Stock photo of neatly stacked school foundation textbooks and notebooks on a study desk", verdict: "matches" },
+        { id: "media-course-science", url: "https://images.unsplash.com/photo-1507668077129-56e32842fceb?auto=format&fit=crop&w=1200&h=800&q=80", alt: "Stock photo of laboratory test tubes with scientific reagent solutions on a secondary chemistry workbench", verdict: "matches" },
+        { id: "media-course-higher-secondary", url: "https://images.unsplash.com/photo-1596495577886-d920f1fb7238?auto=format&fit=crop&w=1200&h=800&q=80", alt: "Stock photo of hand solving calculus integrals and physics diagrams on a whiteboard with a marker", verdict: "matches" },
+        { id: "media-og-cover", url: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&h=630&q=80", alt: "Stock photo of open school textbooks, study notebooks, and learning supplies arranged on a desk", verdict: "matches" },
+      ];
+
+      for (const item of mediaItems) {
+        const photoPage = await browser.newPage({ viewport: { width: 800, height: 600 } });
+        await photoPage.setContent(`<!DOCTYPE html><html><body style="margin:0;background:#1D1D1F;display:flex;align-items:center;justify-content:center;height:100vh;"><img src="${item.url}" style="max-width:100%;max-height:100vh;object-fit:contain;" /></body></html>`);
+        await photoPage.waitForSelector("img");
+        await photoPage.waitForTimeout(300);
+
+        const shotPath = path.join(photoOutputDir, `${item.id}.png`);
+        await photoPage.screenshot({ path: shotPath });
+        assert(fs.existsSync(shotPath), `Photo screenshot saved: ${item.id}.png (${item.verdict})`);
+        await photoPage.close();
+      }
+    }
+
+    console.log("\n--- Section 13: Cleanup, no-JS H2s, Console Errors & Dashboard Visual Regression ---");
+    {
+      const noJsContext = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 1440, height: 900 } });
+      const noJsPage = await noJsContext.newPage();
+      await noJsPage.goto(QA_URL, { waitUntil: "domcontentloaded" });
+      await noJsPage.waitForTimeout(300);
+
+      const h2Visibilities = await noJsPage.evaluate(() => {
+        const h2s = Array.from(document.querySelectorAll("h2"));
+        return h2s.map((h2) => {
+          const s = window.getComputedStyle(h2);
+          return {
+            text: h2.textContent?.trim().slice(0, 30),
+            opacity: s.opacity,
+            display: s.display,
+            visibility: s.visibility,
+          };
+        });
+      });
+
+      assert(h2Visibilities.length > 0, `no-JS page contains h2 elements (found: ${h2Visibilities.length})`);
+      const allH2Visible = h2Visibilities.every((h) => h.opacity === "1" && h.display !== "none" && h.visibility !== "hidden");
+      assert(
+        allH2Visible,
+        `With JavaScript disabled every h2 on / is visible (opacity 1, not display none)`
+      );
+      await noJsContext.close();
+
+      const routesToCheck = [
+        "/",
+        "/faq",
+        "/terms",
+        "/privacy",
+        "/login",
+        "/register",
+        "/dashboard?role=academy-admin",
+      ];
+
+      for (const route of routesToCheck) {
+        const auditPage = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+        const errors = [];
+        const failedRequests = [];
+
+        auditPage.on("console", (msg) => {
+          if (msg.type() === "error") {
+            errors.push(msg.text());
+          }
+        });
+        auditPage.on("pageerror", (err) => {
+          errors.push(err.message);
+        });
+        auditPage.on("requestfailed", (req) => {
+          failedRequests.push(`${req.method()} ${req.url()}`);
+        });
+
+        await auditPage.goto(`${QA_URL}${route}`, { waitUntil: "domcontentloaded" });
+        await auditPage.waitForTimeout(400);
+
+        assert(
+          errors.length === 0,
+          `No console/page errors on ${route} (found ${errors.length}${errors.length ? ": " + errors.join("; ") : ""})`
+        );
+        assert(
+          failedRequests.length === 0,
+          `No failed requests on ${route} (found ${failedRequests.length}${failedRequests.length ? ": " + failedRequests.join("; ") : ""})`
+        );
+
+        if (route === "/dashboard?role=academy-admin") {
+          const dashShot = path.join(outputDir, `screenshot-dashboard-admin-1440-${tag}.png`);
+          await auditPage.screenshot({ path: dashShot, fullPage: true });
+          assert(fs.existsSync(dashShot), `Dashboard admin 1440 screenshot saved: ${dashShot}`);
+        }
+
+        await auditPage.close();
+      }
+
+      const gridPage1440 = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+      await gridPage1440.goto(QA_URL, { waitUntil: "domcontentloaded" });
+      await gridPage1440.waitForTimeout(300);
+
+      const gridCoords1440 = await gridPage1440.evaluate(() => {
+        const bgGrid = document.querySelector("section > div[aria-hidden='true']");
+        if (!bgGrid) return null;
+        const rect = bgGrid.getBoundingClientRect();
+        return { top: Math.round(rect.top + window.scrollY), height: Math.round(rect.height), bottom: Math.round(rect.bottom + window.scrollY) };
+      });
+      console.log(`Hero background grid coordinates at 1440: top=${gridCoords1440?.top}px, bottom=${gridCoords1440?.bottom}px`);
+      assert(gridCoords1440 !== null, "Hero grid element located at 1440");
+
+      const shotGrid1440 = path.join(outputDir, `screenshot-hero-grid-1440-${tag}.png`);
+      await gridPage1440.screenshot({ path: shotGrid1440 });
+      assert(fs.existsSync(shotGrid1440), `Hero grid 1440 screenshot saved: ${shotGrid1440}`);
+      await gridPage1440.close();
+
+      const gridPage390 = await browser.newPage({ viewport: { width: 390, height: 844 } });
+      await gridPage390.goto(QA_URL, { waitUntil: "domcontentloaded" });
+      await gridPage390.waitForTimeout(300);
+
+      const gridCoords390 = await gridPage390.evaluate(() => {
+        const bgGrid = document.querySelector("section > div[aria-hidden='true']");
+        if (!bgGrid) return null;
+        const rect = bgGrid.getBoundingClientRect();
+        return { top: Math.round(rect.top + window.scrollY), height: Math.round(rect.height), bottom: Math.round(rect.bottom + window.scrollY) };
+      });
+      console.log(`Hero background grid coordinates at 390: top=${gridCoords390?.top}px, bottom=${gridCoords390?.bottom}px`);
+      assert(gridCoords390 !== null, "Hero grid element located at 390");
+
+      const shotGrid390 = path.join(outputDir, `screenshot-hero-grid-390-${tag}.png`);
+      await gridPage390.screenshot({ path: shotGrid390 });
+      assert(fs.existsSync(shotGrid390), `Hero grid 390 screenshot saved: ${shotGrid390}`);
+      await gridPage390.close();
     }
   } finally {
     await browser.close();

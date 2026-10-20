@@ -22,7 +22,7 @@ export function Hero({ hero }: HeroProps) {
         aria-hidden="true"
         style={{
           position: "absolute",
-          top: "clamp(340px, 48vw, 420px)",
+          top: "clamp(465px, 33vw, 470px)",
           left: 0,
           right: 0,
           bottom: 0,
@@ -118,6 +118,19 @@ export function Hero({ hero }: HeroProps) {
             <ArrowRight size={18} style={{ color: "#007AFF" }} />
           </a>
         </div>
+
+        <p
+          className="hero-enter-subjects"
+          style={{
+            marginTop: "16px",
+            fontSize: "13px",
+            color: "var(--color-text-secondary)",
+            letterSpacing: "0.01em",
+            marginBottom: "0",
+          }}
+        >
+          Mathematics, Physics, Chemistry, Biology, English, Accountancy, Economics, Computer Science
+        </p>
       </div>
 
       <HeroGallery items={hero.gallery} />

@@ -2,17 +2,22 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { UserRole } from "@/types";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
-import { ROLE_DISPLAY_NAMES, RegistrationRequest } from "@/lib/auth/authTypes";
+import { RegistrationRequest } from "@/lib/auth/authTypes";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { AlertCircle, Clock, Check } from "lucide-react";
+import { Clock, Check, Eye, EyeOff } from "lucide-react";
 
 export function RegisterForm() {
   const { register } = useAuth();
+  const searchParams = useSearchParams();
 
-  const [selectedRole, setSelectedRole] = useState<"student" | "parent" | "teacher" | "academy-admin">("student");
+  const queryRole = searchParams ? searchParams.get("role") : null;
+  const initialRole = queryRole === "parent" || queryRole === "student" ? queryRole : "student";
+
+  const [selectedRole, setSelectedRole] = useState<"student" | "parent">(initialRole);
+  const [isRoleSelectorOpen, setIsRoleSelectorOpen] = useState(false);
   const [name, setName] = useState("");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -24,18 +29,9 @@ export function RegisterForm() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [submittedRequest, setSubmittedRequest] = useState<RegistrationRequest | null>(null);
 
-  const isStaffRole = selectedRole === "academy-admin" || selectedRole === "teacher";
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
-
-    if (isStaffRole) {
-      setErrorMessage(
-        "Self-registration is restricted for institutional roles (Academy Admin, Teacher). Staff accounts must be provisioned directly by Academy Management."
-      );
-      return;
-    }
 
     if (!name.trim() || name.trim().length < 2) {
       setErrorMessage("Please enter your full legal name.");
@@ -80,36 +76,14 @@ export function RegisterForm() {
   return (
     <div
       style={{
-        paddingTop: "var(--space-12)",
-        paddingBottom: "var(--space-20)",
-        minHeight: "85vh",
+        paddingTop: "clamp(20px, 3vw, 36px)",
+        paddingBottom: "var(--space-16)",
+        minHeight: "80vh",
         display: "flex",
         alignItems: "center",
       }}
     >
-      <div className="container-narrow" style={{ maxWidth: "580px" }}>
-        <div
-          style={{
-            backgroundColor: "rgba(29, 29, 31, 0.04)",
-            border: "1px solid rgba(170, 170, 170, 0.35)",
-            borderRadius: "var(--radius-md)",
-            padding: "var(--space-3) var(--space-4)",
-            marginBottom: "var(--space-6)",
-            display: "flex",
-            alignItems: "flex-start",
-            gap: "var(--space-3)",
-          }}
-          role="note"
-          aria-label="Demo environment notice"
-        >
-          <AlertCircle size={16} aria-hidden="true" style={{ color: "#1D1D1F", flexShrink: 0, marginTop: "2px" }} />
-          <div style={{ fontSize: "var(--text-xs)", color: "var(--color-primary)", lineHeight: 1.5 }}>
-            <strong>DEMO REGISTRATION NOTICE:</strong> Registered accounts are saved to client-side
-            demo storage for prototype evaluation. Real student admissions and identity verification are
-            processed by the academy office at Park Circus.
-          </div>
-        </div>
-
+      <div className="container-narrow" style={{ maxWidth: "540px" }}>
         <Card padding="lg" style={{ boxShadow: "var(--shadow-md)" }}>
           {submittedRequest ? (
             <div style={{ textAlign: "center", padding: "var(--space-2) 0" }}>
@@ -151,19 +125,20 @@ export function RegisterForm() {
                   letterSpacing: "-0.02em",
                 }}
               >
-                Registration Submitted
+                Application Submitted Successfully
               </h1>
 
               <p
                 style={{
                   fontSize: "var(--text-xs)",
                   color: "var(--color-neutral-dark)",
-                  lineHeight: 1.6,
-                  maxWidth: "480px",
-                  margin: "0 auto var(--space-5)",
+                  maxWidth: "440px",
+                  margin: "0 auto var(--space-6)",
+                  lineHeight: 1.5,
                 }}
               >
-                Thank you, <strong>{submittedRequest.name}</strong>. Your account application has been received and is currently awaiting approval by the Academy Administrator.
+                Your registration application has been logged into the demo enrollment queue. In production,
+                the Academy Admin inspects student credentials and activates academic access.
               </p>
 
               <div
@@ -172,76 +147,42 @@ export function RegisterForm() {
                   border: "1px solid var(--color-border)",
                   borderRadius: "var(--radius-md)",
                   padding: "var(--space-4)",
-                  marginBottom: "var(--space-5)",
                   textAlign: "left",
                   fontSize: "var(--text-xs)",
+                  marginBottom: "var(--space-5)",
                 }}
               >
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-3)" }}>
                   <div>
-                    <span style={{ color: "var(--color-neutral-dark)", display: "block", marginBottom: "2px" }}>
-                      Application ID:
-                    </span>
-                    <strong style={{ fontFamily: "monospace", fontSize: "var(--text-xs)" }}>
+                    <span style={{ color: "var(--color-neutral-dark)", display: "block" }}>Application ID</span>
+                    <strong style={{ fontFamily: "var(--font-mono)", fontSize: "11px" }}>
                       {submittedRequest.id}
                     </strong>
                   </div>
                   <div>
-                    <span style={{ color: "var(--color-neutral-dark)", display: "block", marginBottom: "2px" }}>
-                      Requested Role:
-                    </span>
-                    <strong style={{ textTransform: "capitalize" }}>
-                      {submittedRequest.role === "student" ? "Student" : "Parent / Guardian"}
-                    </strong>
+                    <span style={{ color: "var(--color-neutral-dark)", display: "block" }}>Target Role</span>
+                    <strong style={{ textTransform: "capitalize" }}>{submittedRequest.role}</strong>
                   </div>
                   <div>
-                    <span style={{ color: "var(--color-neutral-dark)", display: "block", marginBottom: "2px" }}>
-                      Registered Identifier:
-                    </span>
-                    <strong>{submittedRequest.identifier}</strong>
+                    <span style={{ color: "var(--color-neutral-dark)", display: "block" }}>Full Name</span>
+                    <strong>{submittedRequest.name}</strong>
                   </div>
                   <div>
-                    <span style={{ color: "var(--color-neutral-dark)", display: "block", marginBottom: "2px" }}>
-                      Submission Time:
-                    </span>
-                    <span>{submittedRequest.submittedAt}</span>
+                    <span style={{ color: "var(--color-neutral-dark)", display: "block" }}>Identifier</span>
+                    <span style={{ fontFamily: "var(--font-mono)" }}>{submittedRequest.identifier}</span>
                   </div>
                   {submittedRequest.classGrade && (
                     <div>
-                      <span style={{ color: "var(--color-neutral-dark)", display: "block", marginBottom: "2px" }}>
-                        Class / Grade:
-                      </span>
-                      <span>{submittedRequest.classGrade}</span>
+                      <span style={{ color: "var(--color-neutral-dark)", display: "block" }}>Class / Division</span>
+                      <strong>{submittedRequest.classGrade}</strong>
                     </div>
                   )}
                   {submittedRequest.wardName && (
                     <div>
-                      <span style={{ color: "var(--color-neutral-dark)", display: "block", marginBottom: "2px" }}>
-                        Linked Student (Ward):
-                      </span>
-                      <span>{submittedRequest.wardName}</span>
+                      <span style={{ color: "var(--color-neutral-dark)", display: "block" }}>Student Ward</span>
+                      <strong>{submittedRequest.wardName}</strong>
                     </div>
                   )}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  backgroundColor: "rgba(29, 29, 31, 0.04)",
-                  border: "1px solid rgba(170, 170, 170, 0.35)",
-                  borderRadius: "var(--radius-md)",
-                  padding: "var(--space-3) var(--space-4)",
-                  marginBottom: "var(--space-5)",
-                  textAlign: "left",
-                  fontSize: "var(--text-xs)",
-                  color: "var(--color-primary)",
-                  lineHeight: 1.5,
-                }}
-                role="note"
-              >
-                <strong>Admin Approval Required:</strong> In accordance with ArousH Academy policy, newly registered student and parent accounts cannot sign in until an Academy Administrator reviews and authorizes the application.
-                <div style={{ marginTop: "var(--space-2)", color: "var(--color-neutral-dark)" }}>
-                  <em>Demo Verification:</em> Log in as Academy Admin (<code>admin@aroushacademy.in</code> / <code>admin2026</code>) and navigate to <strong>Registration Approvals</strong> to approve this application. Once approved, you can return to the sign-in screen and log in with this account.
                 </div>
               </div>
 
@@ -298,7 +239,7 @@ export function RegisterForm() {
                   fontSize: "var(--text-xs)",
                   color: "var(--color-neutral-dark)",
                   textAlign: "center",
-                  marginBottom: "var(--space-6)",
+                  marginBottom: "var(--space-4)",
                   lineHeight: 1.5,
                 }}
               >
@@ -306,119 +247,88 @@ export function RegisterForm() {
               </p>
 
               <form onSubmit={handleSubmit} noValidate>
-            <div style={{ marginBottom: "var(--space-4)" }}>
-              <span
-                id="reg-role-label"
-                style={{
-                  display: "block",
-                  fontSize: "var(--text-xs)",
-                  fontWeight: 600,
-                  marginBottom: "var(--space-2)",
-                  color: "var(--color-primary)",
-                }}
-              >
-                Select Account Type
-              </span>
-              <div
-                role="radiogroup"
-                aria-labelledby="reg-role-label"
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(2, 1fr)",
-                  gap: "var(--space-2)",
-                }}
-              >
-                {(
-                  [
-                    { id: "student", label: "Student", desc: "For learners attending courses" },
-                    { id: "parent", label: "Parent / Guardian", desc: "For fee receipts & progress monitoring" },
-                    { id: "teacher", label: "Faculty / Teacher", desc: "Restricted staff registration" },
-                    { id: "academy-admin", label: "Academy Admin", desc: "Restricted administrative roster" },
-                  ] as const
-                ).map((item) => {
-                  const isSelected = selectedRole === item.id;
-                  const isRestricted = item.id === "teacher" || item.id === "academy-admin";
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={isSelected}
-                      onClick={() => {
-                        setSelectedRole(item.id);
-                        setErrorMessage(null);
-                      }}
-                      style={{
-                        padding: "8px 10px",
-                        borderRadius: "var(--radius-md)",
-                        border: `1px solid ${
-                          isSelected
-                            ? "#1D1D1F"
-                            : "var(--color-border)"
-                        }`,
-                        backgroundColor: isSelected
-                          ? "#1D1D1F"
-                          : "var(--color-surface-muted)",
-                        color: isSelected
-                          ? "#FFFFFF"
-                          : "var(--color-primary)",
-                        fontSize: "var(--text-xs)",
-                        textAlign: "left",
-                        cursor: "pointer",
-                        transition: "all var(--transition-fast)",
-                      }}
-                    >
-                      <div style={{ fontWeight: 600, display: "flex", justifyContent: "space-between" }}>
-                        <span style={{ color: isSelected ? "#FFFFFF" : "#1D1D1F" }}>{item.label}</span>
-                        {isRestricted && (
-                          <span style={{ fontSize: "10px", opacity: 0.8, color: isSelected ? "#FFFFFF" : "var(--color-text-secondary)" }}>Restricted</span>
-                        )}
-                        {isSelected && !isRestricted && (
-                          <Check size={14} aria-hidden="true" style={{ color: "#FFFFFF" }} />
-                        )}
-                      </div>
-                      <div style={{ fontSize: "10px", color: isSelected ? "#E5E5EA" : "var(--color-neutral-dark)", marginTop: "2px" }}>
-                        {item.desc}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {isStaffRole ? (
-              <div
-                style={{
-                  backgroundColor: "rgba(29, 29, 31, 0.04)",
-                  border: "1px solid rgba(170, 170, 170, 0.35)",
-                  borderRadius: "var(--radius-md)",
-                  padding: "var(--space-4)",
-                  marginBottom: "var(--space-5)",
-                }}
-              >
-                <div style={{ fontWeight: 600, fontSize: "var(--text-sm)", color: "var(--color-primary)", marginBottom: "var(--space-1)" }}>
-                  Institutional Account Provisioning Required
-                </div>
-                <p style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", lineHeight: 1.5, marginBottom: "var(--space-3)" }}>
-                  Public self-registration is strictly restricted for <strong>{ROLE_DISPLAY_NAMES[selectedRole as UserRole]}</strong> accounts.
-                  Faculty and administrative staff credentials must be provisioned directly by Academy Management at the Park Circus center.
-                </p>
-                <div style={{ display: "flex", gap: "var(--space-2)" }}>
-                  <Button
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: "var(--space-3)",
+                    padding: "6px 10px",
+                    borderRadius: "var(--radius-md)",
+                    backgroundColor: "var(--color-surface-muted)",
+                  }}
+                >
+                  <span style={{ fontSize: "var(--text-xs)", color: "#1D1D1F" }}>
+                    Account Type: <strong data-testid="selected-reg-role">{selectedRole === "parent" ? "Parent / Guardian" : "Student"}</strong>
+                  </span>
+                  <button
                     type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setSelectedRole("student")}
+                    onClick={() => setIsRoleSelectorOpen((prev) => !prev)}
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      color: "#1D1D1F",
+                      textDecoration: "underline",
+                      textDecorationColor: "#007AFF",
+                      textUnderlineOffset: "2px",
+                      cursor: "pointer",
+                    }}
                   >
-                    Switch to Student Registration
-                  </Button>
-                  <Button href="/login" variant="ghost" size="sm">
-                    Open Staff Demo Sign In &rarr;
-                  </Button>
+                    Change role
+                  </button>
                 </div>
-              </div>
-            ) : (
-              <>
+
+                {isRoleSelectorOpen && (
+                  <div
+                    role="radiogroup"
+                    aria-label="Select Account Type"
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "var(--space-2)",
+                      marginBottom: "var(--space-4)",
+                    }}
+                  >
+                    {[
+                      { id: "student", label: "Student", desc: "For learners attending courses" },
+                      { id: "parent", label: "Parent / Guardian", desc: "For progress & fee records" },
+                    ].map((item) => {
+                      const isSelected = selectedRole === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          role="radio"
+                          aria-checked={isSelected}
+                          onClick={() => {
+                            setSelectedRole(item.id as "student" | "parent");
+                            setIsRoleSelectorOpen(false);
+                            setErrorMessage(null);
+                          }}
+                          style={{
+                            padding: "8px 10px",
+                            borderRadius: "var(--radius-md)",
+                            border: `1px solid ${isSelected ? "#1D1D1F" : "var(--color-border)"}`,
+                            backgroundColor: isSelected ? "#1D1D1F" : "var(--color-surface-muted)",
+                            color: isSelected ? "#FFFFFF" : "var(--color-primary)",
+                            fontSize: "var(--text-xs)",
+                            textAlign: "left",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <div style={{ fontWeight: 600, display: "flex", justifyContent: "space-between" }}>
+                            <span style={{ color: isSelected ? "#FFFFFF" : "#1D1D1F" }}>{item.label}</span>
+                            {isSelected && <Check size={14} aria-hidden="true" style={{ color: "#FFFFFF" }} />}
+                          </div>
+                          <div style={{ fontSize: "10px", color: isSelected ? "#E5E5EA" : "var(--color-neutral-dark)", marginTop: "2px" }}>
+                            {item.desc}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
                 <div style={{ marginBottom: "var(--space-3)" }}>
                   <label
                     htmlFor="reg-name"
@@ -465,7 +375,7 @@ export function RegisterForm() {
                       color: "var(--color-primary)",
                     }}
                   >
-                    Email Address or 10-Digit Mobile Number
+                    Email Address or 10-Digit Mobile Phone
                   </label>
                   <input
                     id="reg-identifier"
@@ -476,7 +386,7 @@ export function RegisterForm() {
                     required
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder="e.g. zayd.student@gmail.com or 09883033445"
+                    placeholder="e.g. zayd.mansoor@gmail.com or 9830012345"
                     style={{
                       width: "100%",
                       padding: "10px 14px",
@@ -502,10 +412,11 @@ export function RegisterForm() {
                         color: "var(--color-primary)",
                       }}
                     >
-                      Enrolling Class / Grade
+                      Target Academic Standard / Grade
                     </label>
                     <select
                       id="reg-class"
+                      name="classGrade"
                       value={classGrade}
                       onChange={(e) => setClassGrade(e.target.value)}
                       style={{
@@ -519,10 +430,14 @@ export function RegisterForm() {
                         outline: "none",
                       }}
                     >
-                      <option value="Class IX">Class IX (ICSE / CBSE)</option>
-                      <option value="Class X">Class X (ICSE / CBSE)</option>
-                      <option value="Class XI">Class XI (Science / Commerce)</option>
-                      <option value="Class XII">Class XII (Science / Commerce)</option>
+                      <option value="Class V">Class V (Middle School Foundation)</option>
+                      <option value="Class VI">Class VI (Middle School Foundation)</option>
+                      <option value="Class VII">Class VII (Middle School Foundation)</option>
+                      <option value="Class VIII">Class VIII (Foundation Final Year)</option>
+                      <option value="Class IX">Class IX (Board Foundation)</option>
+                      <option value="Class X">Class X (Secondary Board Intensive)</option>
+                      <option value="Class XI">Class XI (Higher Secondary Stream)</option>
+                      <option value="Class XII">Class XII (Senior Secondary Board)</option>
                     </select>
                   </div>
                 )}
@@ -539,14 +454,16 @@ export function RegisterForm() {
                         color: "var(--color-primary)",
                       }}
                     >
-                      Enrolled Student / Ward Name
+                      Student Ward Name
                     </label>
                     <input
                       id="reg-ward"
+                      name="wardName"
                       type="text"
+                      required
                       value={wardName}
                       onChange={(e) => setWardName(e.target.value)}
-                      placeholder="e.g. Taha Rahman"
+                      placeholder="e.g. Arjun Das (Class X)"
                       style={{
                         width: "100%",
                         padding: "10px 14px",
@@ -572,7 +489,7 @@ export function RegisterForm() {
                       color: "var(--color-primary)",
                     }}
                   >
-                    Password (min 6 characters)
+                    Account Password (Min 6 characters)
                   </label>
                   <div style={{ position: "relative" }}>
                     <input
@@ -583,10 +500,10 @@ export function RegisterForm() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Create a secure password"
+                      placeholder="Create secure password"
                       style={{
                         width: "100%",
-                        padding: "10px 42px 10px 14px",
+                        padding: "10px 38px 10px 14px",
                         borderRadius: "var(--radius-md)",
                         border: "1px solid var(--color-border)",
                         backgroundColor: "var(--color-surface)",
@@ -601,23 +518,22 @@ export function RegisterForm() {
                       aria-label={showPassword ? "Hide password" : "Show password"}
                       style={{
                         position: "absolute",
-                        right: "10px",
+                        right: "12px",
                         top: "50%",
                         transform: "translateY(-50%)",
                         color: "var(--color-neutral-dark)",
-                        fontSize: "12px",
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
                         padding: "4px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
-                      {showPassword ? "Hide" : "Show"}
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
                 </div>
 
-                <div style={{ marginBottom: "var(--space-4)" }}>
+                <div style={{ marginBottom: "var(--space-3)" }}>
                   <label
                     htmlFor="reg-confirm-password"
                     style={{
@@ -628,7 +544,7 @@ export function RegisterForm() {
                       color: "var(--color-primary)",
                     }}
                   >
-                    Confirm Password
+                    Confirm Account Password
                   </label>
                   <input
                     id="reg-confirm-password"
@@ -638,7 +554,7 @@ export function RegisterForm() {
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Repeat your password"
+                    placeholder="Repeat chosen password"
                     style={{
                       width: "100%",
                       padding: "10px 14px",
@@ -656,13 +572,13 @@ export function RegisterForm() {
                   <div
                     style={{
                       backgroundColor: "rgba(255, 59, 48, 0.08)",
-                      border: "1px solid rgba(255, 59, 48, 0.25)",
+                      border: "1px solid rgba(255, 59, 48, 0.3)",
                       borderRadius: "var(--radius-md)",
-                      padding: "var(--space-2) var(--space-3)",
+                      padding: "var(--space-3)",
                       marginBottom: "var(--space-4)",
                       fontSize: "var(--text-xs)",
-                      color: "#D32F2F",
-                      lineHeight: 1.4,
+                      color: "var(--color-danger)",
+                      lineHeight: 1.5,
                     }}
                     role="alert"
                   >
@@ -678,26 +594,23 @@ export function RegisterForm() {
                     disabled={isSubmitting}
                     style={{ width: "100%" }}
                   >
-                    {isSubmitting
-                      ? "Creating Demo Account..."
-                      : `Register as ${selectedRole === "student" ? "Student" : "Parent"}`}
+                    {isSubmitting ? "Submitting Application..." : "Submit Enrollment Application"}
                   </Button>
                 </div>
-              </>
-            )}
-          </form>
+              </form>
             </>
           )}
 
           <div
             style={{
               borderTop: "1px solid var(--color-border)",
-              marginTop: "var(--space-5)",
               paddingTop: "var(--space-4)",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
               fontSize: "var(--text-xs)",
+              flexWrap: "wrap",
+              gap: "var(--space-2)",
             }}
           >
             <Link href="/" style={{ color: "var(--color-neutral-dark)" }}>

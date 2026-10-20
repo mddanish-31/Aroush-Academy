@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   BookOpen,
   Building2,
@@ -27,16 +27,15 @@ import type { NavItem } from "@/content/types";
 import { MotionToggle } from "@/lib/motion/MotionProvider";
 
 const LOGIN_ROLES = [
-  { role: "student", label: "Student Portal", desc: "Schedules, results, roadmaps" },
-  { role: "parent", label: "Parent Portal", desc: "Attendance logs and fee records" },
-  { role: "teacher", label: "Faculty Workspace", desc: "Marks entry and attendance" },
-  { role: "academy-admin", label: "Academy Admin", desc: "Central administration" },
+  { role: "academy-admin", label: "Academy Admin", desc: "Central administration", icon: Building2 },
+  { role: "teacher", label: "Teacher Portal", desc: "Marks entry and attendance", icon: BookMarked },
+  { role: "student", label: "Student Workspace", desc: "Schedules, results, roadmaps", icon: GraduationCap },
+  { role: "parent", label: "Parent Oversight", desc: "Attendance logs and fee records", icon: Users },
 ] as const;
 
 const REGISTER_ROLES = [
-  { role: "student", label: "Student Account", desc: "Course enrollment" },
-  { role: "parent", label: "Parent Account", desc: "Progress monitoring" },
-  { role: "teacher", label: "Faculty Request", desc: "Staff authorization" },
+  { role: "student", label: "Student Account", desc: "Course enrollment and roadmaps", icon: GraduationCap },
+  { role: "parent", label: "Parent Account", desc: "Progress monitoring and fee records", icon: Users },
 ] as const;
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -54,7 +53,6 @@ const ICON_MAP: Record<string, LucideIcon> = {
 };
 
 export function Header() {
-  const router = useRouter();
   const pathname = usePathname();
   const [prevPathname, setPrevPathname] = useState(pathname);
   const { user, isAuthenticated, logout } = useAuth();
@@ -63,9 +61,11 @@ export function Header() {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [mobileAccordion, setMobileAccordion] = useState<Record<string, boolean>>({
     about: false,
-    programs: true,
+    programs: false,
     "why-aroush": false,
     admissions: false,
+    login: false,
+    register: false,
   });
 
   if (prevPathname !== pathname) {
@@ -80,6 +80,7 @@ export function Header() {
   const drawerRef = useRef<HTMLDivElement | null>(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const authTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const authOpenedByHoverRef = useRef<boolean>(false);
 
   const closeDropdown = useCallback(() => {
     setActiveDropdown(null);
@@ -105,7 +106,9 @@ export function Header() {
           closeDropdown();
           trigger?.focus();
         } else if (authDropdown) {
+          const trigger = document.getElementById(`auth-trigger-${authDropdown}`);
           setAuthDropdown(null);
+          trigger?.focus();
         }
       }
     };
@@ -129,15 +132,26 @@ export function Header() {
   const handleAuthMouseEnter = (menu: "login" | "register") => {
     if (authTimeoutRef.current) clearTimeout(authTimeoutRef.current);
     if (typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches) {
+      authOpenedByHoverRef.current = true;
       setAuthDropdown(menu);
     }
   };
 
   const handleAuthMouseLeave = () => {
+    authOpenedByHoverRef.current = false;
     if (authTimeoutRef.current) clearTimeout(authTimeoutRef.current);
     authTimeoutRef.current = setTimeout(() => {
       setAuthDropdown(null);
     }, 180);
+  };
+
+  const handleAuthClick = (menu: "login" | "register") => {
+    if (authOpenedByHoverRef.current) {
+      authOpenedByHoverRef.current = false;
+      setAuthDropdown(menu);
+    } else {
+      setAuthDropdown((prev) => (prev === menu ? null : menu));
+    }
   };
 
   useEffect(() => {
@@ -490,12 +504,21 @@ export function Header() {
                 onMouseEnter={() => handleAuthMouseEnter("login")}
                 onMouseLeave={handleAuthMouseLeave}
               >
-                <Link
-                  href="/login"
+                <button
+                  type="button"
+                  id="auth-trigger-login"
                   className="btn-ghost"
                   style={{ fontSize: "var(--text-sm)", display: "inline-flex", alignItems: "center", gap: "4px" }}
                   aria-expanded={authDropdown === "login"}
-                  aria-haspopup="true"
+                  aria-controls="auth-dropdown-login"
+                  aria-haspopup="menu"
+                  onClick={() => handleAuthClick("login")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") {
+                      e.preventDefault();
+                      setAuthDropdown("login");
+                    }
+                  }}
                 >
                   <span>Log In</span>
                   <ChevronDown
@@ -506,9 +529,12 @@ export function Header() {
                       transition: "transform 200ms ease-out",
                     }}
                   />
-                </Link>
+                </button>
 
                 <div
+                  id="auth-dropdown-login"
+                  role="menu"
+                  aria-label="Log In Portals"
                   className="nav-dropdown-panel"
                   data-state={authDropdown === "login" ? "open" : "closed"}
                   aria-hidden={authDropdown !== "login"}
@@ -516,7 +542,7 @@ export function Header() {
                     position: "absolute",
                     top: "calc(100% + 8px)",
                     right: 0,
-                    width: "250px",
+                    width: "280px",
                     backgroundColor: "#FFFFFF",
                     borderRadius: "16px",
                     border: "1px solid rgba(170, 170, 170, 0.35)",
@@ -540,42 +566,58 @@ export function Header() {
                   >
                     Select Portal Role
                   </div>
-                  {LOGIN_ROLES.map((item) => (
-                    <button
-                      key={item.role}
-                      type="button"
-                      role="menuitem"
-                      onClick={() => {
-                        setAuthDropdown(null);
-                        router.push(`/login?role=${item.role}`);
-                      }}
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "2px",
-                        padding: "8px 10px",
-                        borderRadius: "8px",
-                        border: "none",
-                        backgroundColor: "transparent",
-                        textAlign: "left",
-                        cursor: "pointer",
-                        transition: "background-color 150ms ease-out",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = "#F5F5F7";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "transparent";
-                      }}
-                    >
-                      <span style={{ fontSize: "13px", fontWeight: 600, color: "#1D1D1F" }}>
-                        {item.label}
-                      </span>
-                      <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>
-                        {item.desc}
-                      </span>
-                    </button>
-                  ))}
+                  {LOGIN_ROLES.map((item) => {
+                    const IconComponent = item.icon;
+                    return (
+                      <Link
+                        key={item.role}
+                        href={`/login?role=${item.role}`}
+                        role="menuitem"
+                        onClick={() => setAuthDropdown(null)}
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: "10px",
+                          padding: "8px 10px",
+                          borderRadius: "8px",
+                          textDecoration: "none",
+                          color: "#1D1D1F",
+                          transition: "background-color 150ms ease-out",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = "#F5F5F7";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = "transparent";
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: "28px",
+                            height: "28px",
+                            borderRadius: "6px",
+                            backgroundColor: "rgba(0, 122, 255, 0.08)",
+                            color: "#007AFF",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                            marginTop: "2px",
+                          }}
+                        >
+                          <IconComponent size={15} strokeWidth={2} />
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                          <span style={{ fontSize: "13px", fontWeight: 600, color: "#1D1D1F" }}>
+                            {item.label}
+                          </span>
+                          <span style={{ fontSize: "11px", color: "var(--color-text-secondary)", lineHeight: 1.4 }}>
+                            {item.desc}
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -584,12 +626,21 @@ export function Header() {
                 onMouseEnter={() => handleAuthMouseEnter("register")}
                 onMouseLeave={handleAuthMouseLeave}
               >
-                <Link
-                  href="/register"
+                <button
+                  type="button"
+                  id="auth-trigger-register"
                   className="btn-primary"
                   style={{ fontSize: "var(--text-sm)", display: "inline-flex", alignItems: "center", gap: "4px" }}
                   aria-expanded={authDropdown === "register"}
-                  aria-haspopup="true"
+                  aria-controls="auth-dropdown-register"
+                  aria-haspopup="menu"
+                  onClick={() => handleAuthClick("register")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") {
+                      e.preventDefault();
+                      setAuthDropdown("register");
+                    }
+                  }}
                 >
                   <span>Sign Up</span>
                   <ChevronDown
@@ -600,9 +651,12 @@ export function Header() {
                       transition: "transform 200ms ease-out",
                     }}
                   />
-                </Link>
+                </button>
 
                 <div
+                  id="auth-dropdown-register"
+                  role="menu"
+                  aria-label="Sign Up Portals"
                   className="nav-dropdown-panel"
                   data-state={authDropdown === "register" ? "open" : "closed"}
                   aria-hidden={authDropdown !== "register"}
@@ -610,7 +664,7 @@ export function Header() {
                     position: "absolute",
                     top: "calc(100% + 8px)",
                     right: 0,
-                    width: "250px",
+                    width: "280px",
                     backgroundColor: "#FFFFFF",
                     borderRadius: "16px",
                     border: "1px solid rgba(170, 170, 170, 0.35)",
@@ -634,42 +688,58 @@ export function Header() {
                   >
                     Select Registration Role
                   </div>
-                  {REGISTER_ROLES.map((item) => (
-                    <button
-                      key={item.role}
-                      type="button"
-                      role="menuitem"
-                      onClick={() => {
-                        setAuthDropdown(null);
-                        router.push(`/register?role=${item.role}`);
-                      }}
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "2px",
-                        padding: "8px 10px",
-                        borderRadius: "8px",
-                        border: "none",
-                        backgroundColor: "transparent",
-                        textAlign: "left",
-                        cursor: "pointer",
-                        transition: "background-color 150ms ease-out",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = "#F5F5F7";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "transparent";
-                      }}
-                    >
-                      <span style={{ fontSize: "13px", fontWeight: 600, color: "#1D1D1F" }}>
-                        {item.label}
-                      </span>
-                      <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>
-                        {item.desc}
-                      </span>
-                    </button>
-                  ))}
+                  {REGISTER_ROLES.map((item) => {
+                    const IconComponent = item.icon;
+                    return (
+                      <Link
+                        key={item.role}
+                        href={`/register?role=${item.role}`}
+                        role="menuitem"
+                        onClick={() => setAuthDropdown(null)}
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: "10px",
+                          padding: "8px 10px",
+                          borderRadius: "8px",
+                          textDecoration: "none",
+                          color: "#1D1D1F",
+                          transition: "background-color 150ms ease-out",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = "#F5F5F7";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = "transparent";
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: "28px",
+                            height: "28px",
+                            borderRadius: "6px",
+                            backgroundColor: "rgba(0, 122, 255, 0.08)",
+                            color: "#007AFF",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                            marginTop: "2px",
+                          }}
+                        >
+                          <IconComponent size={15} strokeWidth={2} />
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                          <span style={{ fontSize: "13px", fontWeight: 600, color: "#1D1D1F" }}>
+                            {item.label}
+                          </span>
+                          <span style={{ fontSize: "11px", color: "var(--color-text-secondary)", lineHeight: 1.4 }}>
+                            {item.desc}
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -715,6 +785,7 @@ export function Header() {
           left: 0,
           right: 0,
           bottom: 0,
+          height: "calc(100vh - 72px)",
           backgroundColor: "#FFFFFF",
           borderTop: "1px solid rgba(170, 170, 170, 0.35)",
           padding: "var(--space-6)",
@@ -877,63 +948,173 @@ export function Header() {
                 </button>
               </>
             ) : (
-              <>
-                <Link
-                  href="/login"
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className="btn-secondary"
-                  style={{ width: "100%", textAlign: "center" }}
-                >
-                  Log In
-                </Link>
-                <Link
-                  href="/register"
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className="btn-primary"
-                  style={{ width: "100%", textAlign: "center" }}
-                >
-                  Sign Up
-                </Link>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "6px" }}>
-                  <div
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setMobileAccordion((prev) => ({ ...prev, login: !prev.login }))
+                    }
+                    aria-expanded={!!mobileAccordion.login}
+                    aria-controls="mobile-accordion-login"
                     style={{
-                      fontSize: "11px",
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "10px 14px",
+                      borderRadius: "8px",
+                      border: "1px solid rgba(170, 170, 170, 0.35)",
+                      backgroundColor: "transparent",
+                      color: "#1D1D1F",
+                      fontSize: "14px",
                       fontWeight: 600,
-                      color: "var(--color-text-secondary)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.06em",
+                      cursor: "pointer",
                     }}
                   >
-                    Direct Role Portals
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
-                    {LOGIN_ROLES.map((item) => (
-                      <button
-                        key={`mob-${item.role}`}
-                        type="button"
-                        onClick={() => {
-                          setMobileDrawerOpen(false);
-                          router.push(`/login?role=${item.role}`);
-                        }}
-                        style={{
-                          padding: "8px 10px",
-                          borderRadius: "8px",
-                          border: "1px solid rgba(170, 170, 170, 0.35)",
-                          backgroundColor: "#F5F5F7",
-                          color: "#1D1D1F",
-                          fontSize: "12px",
-                          fontWeight: 600,
-                          textAlign: "left",
-                          cursor: "pointer",
-                        }}
-                      >
-                        {item.label}
-                      </button>
-                    ))}
+                    <span>Log In</span>
+                    <ChevronDown
+                      size={16}
+                      style={{
+                        transform: mobileAccordion.login ? "rotate(180deg)" : "rotate(0deg)",
+                        transition: "transform 200ms ease-out",
+                      }}
+                    />
+                  </button>
+                  <div
+                    id="mobile-accordion-login"
+                    className="drawer-accordion-content"
+                    data-state={mobileAccordion.login ? "open" : "closed"}
+                    style={{ paddingLeft: "4px", paddingRight: "4px", marginTop: "4px" }}
+                  >
+                    {LOGIN_ROLES.map((item) => {
+                      const IconComponent = item.icon;
+                      return (
+                        <Link
+                          key={`mob-login-${item.role}`}
+                          href={`/login?role=${item.role}`}
+                          onClick={() => setMobileDrawerOpen(false)}
+                          style={{
+                            display: "flex",
+                            alignItems: "flex-start",
+                            gap: "10px",
+                            padding: "8px 10px",
+                            borderRadius: "8px",
+                            textDecoration: "none",
+                            color: "#1D1D1F",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "28px",
+                              height: "28px",
+                              borderRadius: "6px",
+                              backgroundColor: "rgba(0, 122, 255, 0.08)",
+                              color: "#007AFF",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                              marginTop: "2px",
+                            }}
+                          >
+                            <IconComponent size={14} />
+                          </div>
+                          <div style={{ display: "flex", flexDirection: "column" }}>
+                            <span style={{ fontSize: "14px", fontWeight: 600 }}>{item.label}</span>
+                            <span style={{ fontSize: "12px", color: "var(--color-text-secondary)" }}>
+                              {item.desc}
+                            </span>
+                          </div>
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
-              </>
+
+                <div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setMobileAccordion((prev) => ({ ...prev, register: !prev.register }))
+                    }
+                    aria-expanded={!!mobileAccordion.register}
+                    aria-controls="mobile-accordion-register"
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "10px 14px",
+                      borderRadius: "8px",
+                      backgroundColor: "#1D1D1F",
+                      color: "#FFFFFF",
+                      fontSize: "14px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <span>Sign Up</span>
+                    <ChevronDown
+                      size={16}
+                      style={{
+                        transform: mobileAccordion.register ? "rotate(180deg)" : "rotate(0deg)",
+                        transition: "transform 200ms ease-out",
+                        color: "#FFFFFF",
+                      }}
+                    />
+                  </button>
+                  <div
+                    id="mobile-accordion-register"
+                    className="drawer-accordion-content"
+                    data-state={mobileAccordion.register ? "open" : "closed"}
+                    style={{ paddingLeft: "4px", paddingRight: "4px", marginTop: "4px" }}
+                  >
+                    {REGISTER_ROLES.map((item) => {
+                      const IconComponent = item.icon;
+                      return (
+                        <Link
+                          key={`mob-reg-${item.role}`}
+                          href={`/register?role=${item.role}`}
+                          onClick={() => setMobileDrawerOpen(false)}
+                          style={{
+                            display: "flex",
+                            alignItems: "flex-start",
+                            gap: "10px",
+                            padding: "8px 10px",
+                            borderRadius: "8px",
+                            textDecoration: "none",
+                            color: "#1D1D1F",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "28px",
+                              height: "28px",
+                              borderRadius: "6px",
+                              backgroundColor: "rgba(0, 122, 255, 0.08)",
+                              color: "#007AFF",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                              marginTop: "2px",
+                            }}
+                          >
+                            <IconComponent size={14} />
+                          </div>
+                          <div style={{ display: "flex", flexDirection: "column" }}>
+                            <span style={{ fontSize: "14px", fontWeight: 600 }}>{item.label}</span>
+                            <span style={{ fontSize: "12px", color: "var(--color-text-secondary)" }}>
+                              {item.desc}
+                            </span>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </div>
