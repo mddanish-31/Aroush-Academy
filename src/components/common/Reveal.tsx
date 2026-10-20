@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { useMotion } from "@/lib/motion/MotionProvider";
 
 interface RevealProps {
   children: React.ReactNode;
@@ -10,10 +11,14 @@ interface RevealProps {
 }
 
 export function Reveal({ children, delay = 0, className = "", style = {} }: RevealProps) {
+  const { motion } = useMotion();
+  const isReduced = motion === "reduced";
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    if (isReduced) return;
+
     const node = ref.current;
     if (!node) return;
 
@@ -34,19 +39,21 @@ export function Reveal({ children, delay = 0, className = "", style = {} }: Reve
 
     observer.observe(node);
     return () => observer.disconnect();
-  }, []);
+  }, [isReduced]);
+
+  const shown = isReduced || isVisible;
 
   return (
     <div
       ref={ref}
-      className={className}
+      className={`reveal-item ${className}`.trim()}
       style={{
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? "translateY(0)" : "translateY(12px)",
-        transitionProperty: "opacity, transform",
-        transitionDuration: "350ms",
+        opacity: shown ? 1 : 0,
+        transform: shown ? "translateY(0)" : "translateY(12px)",
+        transitionProperty: isReduced ? "none" : "opacity, transform",
+        transitionDuration: isReduced ? "0ms" : "350ms",
         transitionTimingFunction: "ease-out",
-        transitionDelay: `${delay}ms`,
+        transitionDelay: isReduced ? "0ms" : `${delay}ms`,
         ...style,
       }}
     >

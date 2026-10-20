@@ -6,8 +6,8 @@ import { UserRole } from "@/types";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { ROLE_DISPLAY_NAMES, RegistrationRequest } from "@/lib/auth/authTypes";
 import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { AlertCircle, Clock, Check } from "lucide-react";
 
 export function RegisterForm() {
   const { register } = useAuth();
@@ -66,9 +66,6 @@ export function RegisterForm() {
       });
 
       if (res.success && res.request) {
-        // Truthful Admin Approval Workflow:
-        // Do NOT automatically authenticate or redirect to dashboard.
-        // Show pending confirmation screen.
         setSubmittedRequest(res.request);
       } else {
         setErrorMessage(res.error || "Registration failed. Please check the inputs.");
@@ -91,11 +88,10 @@ export function RegisterForm() {
       }}
     >
       <div className="container-narrow" style={{ maxWidth: "580px" }}>
-        {/* Unmistakable Demo Warning Banner */}
         <div
           style={{
-            backgroundColor: "rgba(255, 149, 0, 0.08)",
-            border: "1px solid rgba(255, 149, 0, 0.3)",
+            backgroundColor: "rgba(29, 29, 31, 0.04)",
+            border: "1px solid rgba(170, 170, 170, 0.35)",
             borderRadius: "var(--radius-md)",
             padding: "var(--space-3) var(--space-4)",
             marginBottom: "var(--space-6)",
@@ -106,9 +102,7 @@ export function RegisterForm() {
           role="note"
           aria-label="Demo environment notice"
         >
-          <span style={{ fontSize: "16px", lineHeight: 1 }} aria-hidden="true">
-            ⚠️
-          </span>
+          <AlertCircle size={16} aria-hidden="true" style={{ color: "#1D1D1F", flexShrink: 0, marginTop: "2px" }} />
           <div style={{ fontSize: "var(--text-xs)", color: "var(--color-primary)", lineHeight: 1.5 }}>
             <strong>DEMO REGISTRATION NOTICE:</strong> Registered accounts are saved to client-side
             demo storage for prototype evaluation. Real student admissions and identity verification are
@@ -119,10 +113,18 @@ export function RegisterForm() {
         <Card padding="lg" style={{ boxShadow: "var(--shadow-md)" }}>
           {submittedRequest ? (
             <div style={{ textAlign: "center", padding: "var(--space-2) 0" }}>
-              <div style={{ display: "flex", justifyContent: "center", marginBottom: "var(--space-3)" }}>
-                <Badge variant="warning" size="md">
-                  Status: Pending Academy Admin Approval
-                </Badge>
+              <div
+                style={{
+                  textAlign: "center",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "var(--color-text-secondary)",
+                  marginBottom: "var(--space-3)",
+                }}
+              >
+                Status: Pending Academy Admin Approval
               </div>
 
               <div
@@ -130,17 +132,15 @@ export function RegisterForm() {
                   width: "56px",
                   height: "56px",
                   borderRadius: "50%",
-                  backgroundColor: "rgba(255, 149, 0, 0.12)",
-                  color: "var(--color-warning)",
+                  backgroundColor: "rgba(29, 29, 31, 0.06)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "26px",
                   margin: "0 auto var(--space-4)",
                 }}
                 aria-hidden="true"
               >
-                ⏳
+                <Clock size={28} style={{ color: "#1D1D1F" }} />
               </div>
 
               <h1
@@ -166,7 +166,6 @@ export function RegisterForm() {
                 Thank you, <strong>{submittedRequest.name}</strong>. Your account application has been received and is currently awaiting approval by the Academy Administrator.
               </p>
 
-              {/* Applicant Details Summary */}
               <div
                 style={{
                   backgroundColor: "var(--color-surface-muted)",
@@ -226,11 +225,10 @@ export function RegisterForm() {
                 </div>
               </div>
 
-              {/* Truthful Administrative Notice */}
               <div
                 style={{
-                  backgroundColor: "rgba(0, 113, 227, 0.06)",
-                  border: "1px solid rgba(0, 113, 227, 0.2)",
+                  backgroundColor: "rgba(29, 29, 31, 0.04)",
+                  border: "1px solid rgba(170, 170, 170, 0.35)",
                   borderRadius: "var(--radius-md)",
                   padding: "var(--space-3) var(--space-4)",
                   marginBottom: "var(--space-5)",
@@ -247,10 +245,9 @@ export function RegisterForm() {
                 </div>
               </div>
 
-              {/* Navigation Action Buttons */}
               <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
                 <Button href="/login" variant="primary" size="md" style={{ width: "100%" }}>
-                  Proceed to Sign In Page →
+                  Proceed to Sign In Page &rarr;
                 </Button>
                 <Button
                   type="button"
@@ -271,10 +268,18 @@ export function RegisterForm() {
             </div>
           ) : (
             <>
-              <div style={{ display: "flex", justifyContent: "center", marginBottom: "var(--space-3)" }}>
-                <Badge variant="accent" size="md">
-                  ArousH Academy &bull; Student & Guardian Enrollment
-                </Badge>
+              <div
+                style={{
+                  textAlign: "center",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "var(--color-text-secondary)",
+                  marginBottom: "var(--space-2)",
+                }}
+              >
+                ArousH Academy &bull; Student & Guardian Enrollment
               </div>
 
               <h1
@@ -301,7 +306,6 @@ export function RegisterForm() {
               </p>
 
               <form onSubmit={handleSubmit} noValidate>
-            {/* Account Type Selector */}
             <div style={{ marginBottom: "var(--space-4)" }}>
               <span
                 id="reg-role-label"
@@ -349,20 +353,14 @@ export function RegisterForm() {
                         borderRadius: "var(--radius-md)",
                         border: `1px solid ${
                           isSelected
-                            ? isRestricted
-                              ? "var(--color-warning)"
-                              : "var(--color-accent)"
+                            ? "#1D1D1F"
                             : "var(--color-border)"
                         }`,
                         backgroundColor: isSelected
-                          ? isRestricted
-                            ? "rgba(255, 149, 0, 0.08)"
-                            : "var(--color-accent-subtle)"
+                          ? "#1D1D1F"
                           : "var(--color-surface-muted)",
                         color: isSelected
-                          ? isRestricted
-                            ? "var(--color-warning)"
-                            : "var(--color-accent)"
+                          ? "#FFFFFF"
                           : "var(--color-primary)",
                         fontSize: "var(--text-xs)",
                         textAlign: "left",
@@ -371,12 +369,15 @@ export function RegisterForm() {
                       }}
                     >
                       <div style={{ fontWeight: 600, display: "flex", justifyContent: "space-between" }}>
-                        <span>{item.label}</span>
+                        <span style={{ color: isSelected ? "#FFFFFF" : "#1D1D1F" }}>{item.label}</span>
                         {isRestricted && (
-                          <span style={{ fontSize: "10px", opacity: 0.8 }}>Restricted</span>
+                          <span style={{ fontSize: "10px", opacity: 0.8, color: isSelected ? "#FFFFFF" : "var(--color-text-secondary)" }}>Restricted</span>
+                        )}
+                        {isSelected && !isRestricted && (
+                          <Check size={14} aria-hidden="true" style={{ color: "#FFFFFF" }} />
                         )}
                       </div>
-                      <div style={{ fontSize: "10px", color: "var(--color-neutral-dark)", marginTop: "2px" }}>
+                      <div style={{ fontSize: "10px", color: isSelected ? "#E5E5EA" : "var(--color-neutral-dark)", marginTop: "2px" }}>
                         {item.desc}
                       </div>
                     </button>
@@ -385,12 +386,11 @@ export function RegisterForm() {
               </div>
             </div>
 
-            {/* RESTRICTED NOTICE IF TEACHER OR ADMIN SELECTED */}
             {isStaffRole ? (
               <div
                 style={{
-                  backgroundColor: "rgba(255, 149, 0, 0.08)",
-                  border: "1px solid rgba(255, 149, 0, 0.3)",
+                  backgroundColor: "rgba(29, 29, 31, 0.04)",
+                  border: "1px solid rgba(170, 170, 170, 0.35)",
                   borderRadius: "var(--radius-md)",
                   padding: "var(--space-4)",
                   marginBottom: "var(--space-5)",
@@ -413,14 +413,12 @@ export function RegisterForm() {
                     Switch to Student Registration
                   </Button>
                   <Button href="/login" variant="ghost" size="sm">
-                    Open Staff Demo Sign In →
+                    Open Staff Demo Sign In &rarr;
                   </Button>
                 </div>
               </div>
             ) : (
-              /* ACTIVE STUDENT / PARENT REGISTRATION FIELDS */
               <>
-                {/* Full Name */}
                 <div style={{ marginBottom: "var(--space-3)" }}>
                   <label
                     htmlFor="reg-name"
@@ -456,7 +454,6 @@ export function RegisterForm() {
                   />
                 </div>
 
-                {/* Email or Mobile Number */}
                 <div style={{ marginBottom: "var(--space-3)" }}>
                   <label
                     htmlFor="reg-identifier"
@@ -493,7 +490,6 @@ export function RegisterForm() {
                   />
                 </div>
 
-                {/* Role Specific Additional Fields */}
                 {selectedRole === "student" && (
                   <div style={{ marginBottom: "var(--space-3)" }}>
                     <label
@@ -565,7 +561,6 @@ export function RegisterForm() {
                   </div>
                 )}
 
-                {/* Password Fields */}
                 <div style={{ marginBottom: "var(--space-3)" }}>
                   <label
                     htmlFor="reg-password"
@@ -657,7 +652,6 @@ export function RegisterForm() {
                   />
                 </div>
 
-                {/* Error Banner */}
                 {errorMessage && (
                   <div
                     style={{
@@ -676,7 +670,6 @@ export function RegisterForm() {
                   </div>
                 )}
 
-                {/* Submit Action */}
                 <div style={{ marginBottom: "var(--space-4)" }}>
                   <Button
                     type="submit"
@@ -696,7 +689,6 @@ export function RegisterForm() {
             </>
           )}
 
-          {/* Bottom Navigation Links */}
           <div
             style={{
               borderTop: "1px solid var(--color-border)",
@@ -709,12 +701,21 @@ export function RegisterForm() {
             }}
           >
             <Link href="/" style={{ color: "var(--color-neutral-dark)" }}>
-              ← Public Home
+              &larr; Public Home
             </Link>
             <div>
               <span style={{ color: "var(--color-neutral-dark)" }}>Already registered? </span>
-              <Link href="/login" style={{ fontWeight: 600, color: "var(--color-accent)" }}>
-                Sign In →
+              <Link
+                href="/login"
+                style={{
+                  fontWeight: 600,
+                  color: "#1D1D1F",
+                  textDecoration: "underline",
+                  textDecorationColor: "#007AFF",
+                  textUnderlineOffset: "3px",
+                }}
+              >
+                Sign In &rarr;
               </Link>
             </div>
           </div>

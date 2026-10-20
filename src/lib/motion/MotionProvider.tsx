@@ -1,7 +1,6 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useSyncExternalStore } from "react";
-import { SlidersHorizontal } from "lucide-react";
 
 export type MotionMode = "full" | "reduced";
 
@@ -86,30 +85,58 @@ export function useMotion() {
 export function MotionToggle({ className }: { className?: string }) {
   const { motion, toggleMotion } = useMotion();
   const isReduced = motion === "reduced";
+  const isMotionOn = !isReduced;
 
   return (
     <button
       type="button"
+      role="switch"
+      aria-checked={isMotionOn}
+      aria-label={isMotionOn ? "Turn animations off" : "Turn animations on"}
       onClick={toggleMotion}
-      aria-pressed={isReduced}
-      aria-label={isReduced ? "Reduced motion active. Click to enable full animations." : "Full animations active. Click to reduce motion."}
-      title={isReduced ? "Motion: reduced" : "Motion: full"}
       className={className}
       style={{
         display: "inline-flex",
         alignItems: "center",
-        justifyContent: "center",
-        width: "36px",
-        height: "36px",
-        borderRadius: "var(--radius-md)",
-        border: "1px solid rgba(170, 170, 170, 0.4)",
-        backgroundColor: isReduced ? "rgba(29, 29, 31, 0.08)" : "transparent",
-        color: isReduced ? "var(--color-accent)" : "var(--color-primary)",
+        gap: "8px",
+        background: "transparent",
+        border: "none",
+        padding: "4px 6px",
+        borderRadius: "8px",
         cursor: "pointer",
-        transition: "all var(--transition-fast)",
+        color: "#1D1D1F",
+        fontSize: "13px",
+        fontWeight: 500,
+        userSelect: "none",
       }}
     >
-      <SlidersHorizontal size={16} strokeWidth={2} />
+      <span>Motion</span>
+      <span
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          width: "32px",
+          height: "18px",
+          backgroundColor: isMotionOn ? "#1D1D1F" : "rgba(170, 170, 170, 0.4)",
+          borderRadius: "9px",
+          position: "relative",
+          transition: "background-color 150ms ease-out",
+        }}
+      >
+        <span
+          style={{
+            position: "absolute",
+            top: "2px",
+            left: isMotionOn ? "16px" : "2px",
+            width: "14px",
+            height: "14px",
+            borderRadius: "50%",
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 1px 2px rgba(0, 0, 0, 0.2)",
+            transition: "left 150ms ease-out",
+          }}
+        />
+      </span>
     </button>
   );
 }

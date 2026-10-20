@@ -83,3 +83,68 @@ export interface HeroContent {
   secondaryCta: HeroCta;
   gallery: MediaItem[];
 }
+
+export interface TeachingPillar {
+  id: string;
+  number: string;
+  title: string;
+  summary: string;
+}
+
+export interface CourseDivision {
+  id: string;
+  classes: string;
+  title: string;
+  description: string;
+  boards: string;
+  subjects: string[];
+  mediaKey: "foundation" | "secondaryScience" | "higherSecondaryStreams";
+  ctaLabel: string;
+}
+
+export interface FeatureItem {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+}
+
+export interface FacultyItem {
+  id: string;
+  name: string;
+  role: string;
+  subjects: string;
+  bio: string;
+  initials: string;
+}
+
+export interface RoleItem {
+  id: string;
+  role: string;
+  title: string;
+  description: string;
+  href: string;
+}
+
+export interface ProcessStep {
+  number: string;
+  title: string;
+  description: string;
+}
+
+export interface FaqItem {
+  id: string;
+  category: string;
+  question: string;
+  answer: string;
+}
+
+export interface LandingContent {
+  pillars: TeachingPillar[];
+  courses: CourseDivision[];
+  features: FeatureItem[];
+  faculty: FacultyItem[];
+  roles: RoleItem[];
+  timeline: ProcessStep[];
+  faqs: FaqItem[];
+}

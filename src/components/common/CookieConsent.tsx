@@ -122,25 +122,28 @@ export function CookieConsent() {
 
   return (
     <>
-      {isBannerVisible && (
-        <aside
-          role="region"
-          aria-label="Cookie Preferences"
-          style={{
-            position: "fixed",
-            bottom: "var(--space-4)",
-            left: "var(--space-4)",
-            right: "var(--space-4)",
-            maxWidth: "760px",
-            margin: "0 auto",
-            backgroundColor: "#FFFFFF",
-            border: "1px solid rgba(170, 170, 170, 0.4)",
-            borderRadius: "16px",
-            boxShadow: "0 12px 32px rgba(0, 0, 0, 0.08)",
-            padding: "var(--space-5)",
-            zIndex: 90,
-          }}
-        >
+      <aside
+        role="region"
+        aria-label="Cookie Preferences"
+        className="cookie-banner"
+        data-state={isBannerVisible ? "open" : "closed"}
+        aria-hidden={!isBannerVisible}
+        style={{
+          display: isBannerVisible ? "block" : "none",
+          position: "fixed",
+          bottom: "var(--space-4)",
+          left: "var(--space-4)",
+          right: "var(--space-4)",
+          maxWidth: "760px",
+          margin: "0 auto",
+          backgroundColor: "#FFFFFF",
+          border: "1px solid rgba(170, 170, 170, 0.4)",
+          borderRadius: "16px",
+          boxShadow: "0 12px 32px rgba(0, 0, 0, 0.08)",
+          padding: "var(--space-5)",
+          zIndex: 90,
+        }}
+      >
           <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "var(--space-2)" }}>
               <h3 style={{ fontSize: "var(--text-base)", fontWeight: 600, color: "#1D1D1F" }}>
@@ -195,27 +198,29 @@ export function CookieConsent() {
             </div>
           </div>
         </aside>
-      )}
 
-      {isModalOpen && (
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cookie-preferences-title"
+        className="cookie-modal-overlay"
+        data-state={isModalOpen ? "open" : "closed"}
+        aria-hidden={!isModalOpen}
+        style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "rgba(0, 0, 0, 0.45)",
+          backdropFilter: "blur(6px)",
+          WebkitBackdropFilter: "blur(6px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "var(--space-4)",
+          zIndex: 100,
+        }}
+      >
         <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="cookie-preferences-title"
-          style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.45)",
-            backdropFilter: "blur(6px)",
-            WebkitBackdropFilter: "blur(6px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "var(--space-4)",
-            zIndex: 100,
-          }}
-        >
-          <div
+          className="cookie-modal-card"
             style={{
               backgroundColor: "#FFFFFF",
               borderRadius: "16px",
@@ -367,7 +372,6 @@ export function CookieConsent() {
             </div>
           </div>
         </div>
-      )}
     </>
   );
 }

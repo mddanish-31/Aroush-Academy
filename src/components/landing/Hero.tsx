@@ -11,14 +11,37 @@ export function Hero({ hero }: HeroProps) {
   return (
     <section
       style={{
-        paddingTop: "clamp(48px, 8vw, 96px)",
-        paddingBottom: "clamp(40px, 6vw, 72px)",
+        position: "relative",
+        paddingTop: "clamp(24px, 3.5vw, 36px)",
+        paddingBottom: "clamp(24px, 3vw, 36px)",
         backgroundColor: "#F5F5F7",
         overflow: "hidden",
       }}
     >
       <div
+        aria-hidden="true"
         style={{
+          position: "absolute",
+          top: "clamp(340px, 48vw, 420px)",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          pointerEvents: "none",
+          backgroundImage: `
+            radial-gradient(circle, rgba(29, 29, 31, 0.08) 1.5px, transparent 1.5px),
+            linear-gradient(to right, rgba(29, 29, 31, 0.045) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(29, 29, 31, 0.045) 1px, transparent 1px)
+          `,
+          backgroundSize: "48px 48px, 48px 48px, 48px 48px",
+          backgroundPosition: "-0.5px -0.5px, 0 0, 0 0",
+          maskImage: "radial-gradient(ellipse 70% 60% at 50% 35%, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 65%, transparent 100%)",
+          WebkitMaskImage: "radial-gradient(ellipse 70% 60% at 50% 35%, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 65%, transparent 100%)",
+        }}
+      />
+      <div
+        style={{
+          position: "relative",
+          zIndex: 1,
           maxWidth: "1280px",
           margin: "0 auto",
           padding: "0 24px",
@@ -29,26 +52,27 @@ export function Hero({ hero }: HeroProps) {
           className="hero-enter-headline"
           style={{
             fontFamily: "var(--font-display)",
-            fontSize: "clamp(2.5rem, 6.5vw, 5.25rem)",
-            lineHeight: 1.02,
-            textWrap: "balance",
-            maxWidth: "16ch",
+            fontWeight: 600,
+            fontSize: "clamp(2.25rem, 5.2vw, 4.5rem)",
+            lineHeight: 1.06,
+            letterSpacing: "-0.015em",
+            maxWidth: "24ch",
             color: "#1D1D1F",
-            fontWeight: 700,
-            margin: "0 auto 20px",
+            margin: "0 auto 14px",
           }}
         >
-          {hero.headline}
+          <span style={{ display: "inline-block" }}>Clear the concept.</span>{" "}
+          <span style={{ display: "inline-block" }}>Then decode the question.</span>
         </h1>
 
         <p
           className="hero-enter-subheadline"
           style={{
-            maxWidth: "56ch",
+            maxWidth: "60ch",
             color: "rgba(29, 29, 31, 0.72)",
-            fontSize: "clamp(1.05rem, 2vw, 1.25rem)",
-            lineHeight: 1.5,
-            margin: "0 auto 36px",
+            fontSize: "clamp(0.95rem, 1.5vw, 1.125rem)",
+            lineHeight: 1.45,
+            margin: "0 auto 20px",
           }}
         >
           {hero.subheadline}
@@ -61,16 +85,16 @@ export function Hero({ hero }: HeroProps) {
             alignItems: "center",
             justifyContent: "center",
             flexWrap: "wrap",
-            gap: "20px",
+            gap: "16px",
           }}
         >
           <a
             href={hero.primaryCta.href}
             className="btn-primary"
             style={{
-              padding: "14px 28px",
+              padding: "11px 24px",
               borderRadius: "10px",
-              fontSize: "16px",
+              fontSize: "15px",
               fontWeight: 600,
             }}
           >
@@ -84,10 +108,10 @@ export function Hero({ hero }: HeroProps) {
               display: "inline-flex",
               alignItems: "center",
               gap: "6px",
-              fontSize: "16px",
+              fontSize: "15px",
               fontWeight: 600,
               textDecoration: "none",
-              padding: "12px 16px",
+              padding: "10px 14px",
             }}
           >
             <span>{hero.secondaryCta.label}</span>

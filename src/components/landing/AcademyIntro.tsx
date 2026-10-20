@@ -1,141 +1,154 @@
 import React from "react";
-import { Phone } from "lucide-react";
-import { Card } from "../ui/Card";
-import { Badge } from "../ui/Badge";
-import { Button } from "../ui/Button";
-import { teachingPillars, academyCenterInfo } from "@/data/homepageContent";
+import Image from "next/image";
+import { Reveal } from "@/components/common/Reveal";
+import { MEDIA } from "@/content/media";
+import { landingContent } from "@/content/landing";
 
 export function AcademyIntro() {
-  return (
-    <section id="about" style={{ padding: "var(--space-16) 0", backgroundColor: "var(--color-surface)" }}>
-      {/* Anchor for backward compatibility with #academy links */}
-      <span id="academy" style={{ display: "block", position: "relative", top: "-80px", visibility: "hidden" }} />
-      <div className="container">
-        {/* Section Heading */}
-        <div style={{ textAlign: "center", marginBottom: "var(--space-12)" }}>
-          <Badge variant="accent" size="sm">
-            Inside ArousH Academy &bull; Park Circus
-          </Badge>
-          <h2
-            style={{
-              fontSize: "clamp(1.85rem, 4vw, 2.75rem)",
-              letterSpacing: "-0.025em",
-              marginTop: "var(--space-3)",
-              marginBottom: "var(--space-3)",
-            }}
-          >
-            Clear the concept. Understand the logic.
-          </h2>
-          <p style={{ maxWidth: "680px", margin: "0 auto", fontSize: "var(--text-base)", color: "var(--color-neutral-dark)", lineHeight: 1.6 }}>
-            The learning center at 1/1 Samsul Huda Road, Park Circus, combines rigorous classroom teaching, dedicated subject specialists, and structured academic preparation for school and board examinations.
-          </p>
-        </div>
+  const campusImage = MEDIA.campus[0];
 
-        {/* 6 Teaching Method Cards */}
+  return (
+    <section
+      id="about"
+      style={{
+        backgroundColor: "#FFFFFF",
+        padding: "clamp(64px, 8vw, 112px) 0",
+        borderTop: "1px solid rgba(170, 170, 170, 0.3)",
+        borderBottom: "1px solid rgba(170, 170, 170, 0.3)",
+      }}
+    >
+      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 24px" }}>
+        <Reveal>
+          <div style={{ marginBottom: "clamp(36px, 5vw, 64px)" }}>
+            <span
+              style={{
+                fontSize: "12px",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "var(--color-text-secondary)",
+                fontWeight: 600,
+                display: "inline-block",
+                marginBottom: "12px",
+              }}
+            >
+              Academic Ethos
+            </span>
+            <h2
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "clamp(2rem, 4.5vw, 3.25rem)",
+                lineHeight: 1.08,
+                color: "#1D1D1F",
+                fontWeight: 700,
+                maxWidth: "24ch",
+                margin: 0,
+              }}
+            >
+              Mastering the underlying principle before tackling question papers.
+            </h2>
+          </div>
+        </Reveal>
+
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "var(--space-6)",
-            marginBottom: "var(--space-12)",
+            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            gap: "clamp(36px, 6vw, 72px)",
+            alignItems: "start",
           }}
         >
-          {teachingPillars.map((pillar) => (
-            <Card key={pillar.id} padding="lg">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-3)" }}>
-                <span style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--color-accent)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  {pillar.tag}
-                </span>
-                <span style={{ color: "var(--color-neutral)", fontSize: "14px" }}>✦</span>
+          <Reveal delay={60}>
+            <div style={{ position: "sticky", top: "100px" }}>
+              <div
+                style={{
+                  borderRadius: "16px",
+                  overflow: "hidden",
+                  backgroundColor: "#E5E5EA",
+                  aspectRatio: "4 / 3",
+                  position: "relative",
+                }}
+              >
+                <Image
+                  src={campusImage.url}
+                  alt={campusImage.alt}
+                  width={campusImage.width}
+                  height={campusImage.height}
+                  sizes="(max-width: 768px) 100vw, 540px"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    display: "block",
+                  }}
+                />
               </div>
-              <h3 style={{ fontSize: "var(--text-lg)", marginBottom: "var(--space-2)" }}>
-                {pillar.title}
-              </h3>
-              <p style={{ fontSize: "var(--text-sm)", color: "var(--color-neutral-dark)", lineHeight: 1.6, margin: 0 }}>
-                {pillar.summary}
+              <p
+                style={{
+                  fontSize: "13px",
+                  color: "var(--color-text-secondary)",
+                  marginTop: "12px",
+                  lineHeight: 1.5,
+                }}
+              >
+                In-person study environment at Park Circus center, equipped for focused batch instruction.
               </p>
-            </Card>
-          ))}
-        </div>
-
-        {/* Center Details Banner */}
-        <Card
-          padding="lg"
-          style={{
-            backgroundColor: "var(--color-surface-muted)",
-            border: "1px solid var(--color-border)",
-          }}
-        >
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-              gap: "var(--space-6)",
-              alignItems: "center",
-            }}
-          >
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "var(--space-2)" }}>
-                <Badge variant="neutral" size="sm">
-                  Physical Campus
-                </Badge>
-                <span style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)" }}>
-                  Walking distance from Quest Mall
-                </span>
-              </div>
-              <h4 style={{ fontSize: "var(--text-xl)", marginBottom: "var(--space-2)" }}>
-                {academyCenterInfo.centerName}
-              </h4>
-              <p style={{ fontSize: "var(--text-sm)", color: "var(--color-neutral-dark)", lineHeight: 1.6, marginBottom: "var(--space-4)" }}>
-                {academyCenterInfo.address}
-              </p>
-              <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap" }}>
-                <Button href={`tel:${academyCenterInfo.phones[0]}`} variant="secondary" size="sm">
-                  <Phone size={14} style={{ marginRight: "6px" }} />
-                  Call {academyCenterInfo.phones[0]}
-                </Button>
-                <Button href="#enquiry" variant="accent" size="sm">
-                  Send Admission Inquiry
-                </Button>
-              </div>
             </div>
+          </Reveal>
 
-            {/* Operating Hours Mini-Grid */}
-            <div
-              style={{
-                backgroundColor: "var(--color-surface)",
-                padding: "var(--space-5)",
-                borderRadius: "var(--radius-lg)",
-                border: "1px solid var(--color-border)",
-              }}
-            >
-              <span style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--color-neutral-dark)", fontWeight: 600 }}>
-                Center Operating Hours
-              </span>
-              <ul style={{ listStyle: "none", marginTop: "var(--space-3)", display: "flex", flexDirection: "column", gap: "6px" }}>
-                {academyCenterInfo.hoursSummary.map((h, i) => (
-                  <li
-                    key={i}
+          <Reveal delay={120}>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {landingContent.pillars.map((pillar, idx) => (
+                <div
+                  key={pillar.id}
+                  style={{
+                    padding: "24px 0",
+                    borderTop: idx === 0 ? "1px solid rgba(170, 170, 170, 0.3)" : "none",
+                    borderBottom: "1px solid rgba(170, 170, 170, 0.3)",
+                    display: "grid",
+                    gridTemplateColumns: "40px 1fr",
+                    gap: "16px",
+                  }}
+                >
+                  <span
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      fontSize: "var(--text-xs)",
-                      color: "var(--color-primary)",
-                      paddingBottom: "4px",
-                      borderBottom: "1px solid var(--color-border-subtle)",
+                      fontFamily: "var(--font-display)",
+                      fontSize: "18px",
+                      color: "var(--color-text-secondary)",
+                      fontWeight: 600,
+                      lineHeight: 1.4,
                     }}
                   >
-                    <span style={{ fontWeight: 500 }}>{h.days}</span>
-                    <span style={{ color: "var(--color-neutral-dark)" }}>{h.time}</span>
-                  </li>
-                ))}
-              </ul>
-              <div style={{ fontSize: "10px", color: "var(--color-neutral)", marginTop: "8px" }}>
-                Batch-specific hours allocated upon admission verification.
-              </div>
+                    {pillar.number}
+                  </span>
+                  <div>
+                    <h3
+                      style={{
+                        fontFamily: "var(--font-display)",
+                        fontSize: "18px",
+                        fontWeight: 600,
+                        color: "#1D1D1F",
+                        margin: "0 0 6px 0",
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      {pillar.title}
+                    </h3>
+                    <p
+                      style={{
+                        fontSize: "14px",
+                        lineHeight: 1.6,
+                        color: "var(--color-text-secondary)",
+                        margin: 0,
+                      }}
+                    >
+                      {pillar.summary}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-        </Card>
+          </Reveal>
+        </div>
       </div>
     </section>
   );

@@ -23,319 +23,396 @@ const TILE_CONFIGS = [
 export function HeroGallery({ items }: HeroGalleryProps) {
   const { motion } = useMotion();
   const isReduced = motion === "reduced";
-  const [isPaused, setIsPaused] = useState(false);
-  const [isInteracting, setIsInteracting] = useState(false);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
-  const updateScrollState = useCallback(() => {
-    if (!viewportRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = viewportRef.current;
-    setCanScrollLeft(scrollLeft > 10);
-    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10);
+  const [isManualPaused, setIsManualPaused] = useState(false);
+  const [isUserPaused, setIsUserPaused] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isInView, setIsInView] = useState(true);
+  const [isTabHidden, setIsTabHidden] = useState(false);
+
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const pointerDownRef = useRef(false);
+  const startXRef = useRef(0);
+  const startScrollLeftRef = useRef(0);
+  const hasDraggedRef = useRef(false);
+  const resumeTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isPointerOverRef = useRef(false);
+
+  const pauseAndScheduleResume = useCallback(() => {
+    setIsUserPaused(true);
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    resumeTimerRef.current = setTimeout(() => {
+      if (!isPointerOverRef.current && !pointerDownRef.current) {
+        setIsUserPaused(false);
+      }
+    }, 2500);
+  }, []);
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      setIsTabHidden(document.hidden);
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, []);
 
   useEffect(() => {
     const el = viewportRef.current;
-    if (!el) return;
-    updateScrollState();
-    el.addEventListener("scroll", updateScrollState, { passive: true });
-    return () => el.removeEventListener("scroll", updateScrollState);
-  }, [updateScrollState]);
-
-  useEffect(() => {
-    if (typeof IntersectionObserver === "undefined") return;
+    if (!el || typeof IntersectionObserver === "undefined") return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          const video = entry.target as HTMLVideoElement;
-          if (entry.isIntersecting && !isReduced) {
-            video.play().catch(() => {});
-          } else {
-            video.pause();
-          }
+          setIsInView(entry.isIntersecting);
         });
       },
-      { threshold: 0.25 }
+      { threshold: 0.1 }
     );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
-    const currentVideos = videoRefs.current.filter(Boolean) as HTMLVideoElement[];
-    currentVideos.forEach((v) => observer.observe(v));
+  useEffect(() => {
+    if (isReduced) return;
+    const el = viewportRef.current;
+    if (!el) return;
+
+    let lastTime = performance.now();
+    let accumulatedFraction = 0;
+    let animId: number;
+
+    const tick = (now: number) => {
+      const deltaSec = (now - lastTime) / 1000;
+      lastTime = now;
+
+      const canDrift =
+        !isManualPaused &&
+        !isUserPaused &&
+        !isDragging &&
+        isInView &&
+        !isTabHidden;
+
+      if (canDrift) {
+        accumulatedFraction += 30 * deltaSec;
+        const step = Math.floor(accumulatedFraction);
+        if (step > 0) {
+          el.scrollLeft += step;
+          accumulatedFraction -= step;
+        }
+      }
+
+      animId = requestAnimationFrame(tick);
+    };
+
+    animId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animId);
+  }, [isReduced, isManualPaused, isUserPaused, isDragging, isInView, isTabHidden]);
+
+  useEffect(() => {
+    const el = viewportRef.current;
+    const track = trackRef.current;
+    if (!el || !track) return;
+
+    let debounceTimer: NodeJS.Timeout | null = null;
+
+    const checkRecenter = () => {
+      if (pointerDownRef.current) return;
+      if (track.children.length < items.length * 2) return;
+      const secondSet = track.children[items.length] as HTMLElement;
+      if (!secondSet) return;
+      const setWidth = secondSet.offsetLeft;
+      if (setWidth <= 0) return;
+
+      if (el.scrollLeft >= setWidth * 2 - 50) {
+        el.scrollLeft -= setWidth;
+      } else if (el.scrollLeft < 50) {
+        el.scrollLeft += setWidth;
+      }
+    };
+
+    el.addEventListener("scrollend", checkRecenter);
+
+    const onScroll = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(checkRecenter, 180);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+
+    const initTimer = setTimeout(() => {
+      if (track.children.length >= items.length * 2) {
+        const secondSet = track.children[items.length] as HTMLElement;
+        if (secondSet && secondSet.offsetLeft > 0 && el.scrollLeft < 100) {
+          el.scrollLeft = secondSet.offsetLeft;
+        }
+      }
+    }, 50);
 
     return () => {
-      currentVideos.forEach((v) => observer.unobserve(v));
+      el.removeEventListener("scrollend", checkRecenter);
+      el.removeEventListener("scroll", onScroll);
+      if (debounceTimer) clearTimeout(debounceTimer);
+      clearTimeout(initTimer);
     };
-  }, [isReduced]);
+  }, [items.length]);
 
-  const handleScroll = (direction: "left" | "right") => {
-    if (!viewportRef.current) return;
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    const el = viewportRef.current;
+    if (!el) return;
+
+    pointerDownRef.current = true;
+    startXRef.current = e.clientX;
+    startScrollLeftRef.current = el.scrollLeft;
+    hasDraggedRef.current = false;
+    setIsDragging(true);
+    setIsUserPaused(true);
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+
+    try {
+      el.setPointerCapture(e.pointerId);
+    } catch {
+    }
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!pointerDownRef.current) return;
+    const el = viewportRef.current;
+    if (!el) return;
+
+    const dx = e.clientX - startXRef.current;
+    if (Math.abs(dx) > 3) {
+      hasDraggedRef.current = true;
+    }
+    el.scrollLeft = startScrollLeftRef.current - dx;
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (pointerDownRef.current) {
+      pointerDownRef.current = false;
+      setIsDragging(false);
+      const el = viewportRef.current;
+      if (el) {
+        try {
+          el.releasePointerCapture(e.pointerId);
+        } catch {
+        }
+      }
+      pauseAndScheduleResume();
+    }
+  };
+
+  const handleWheel = () => {
+    pauseAndScheduleResume();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const el = viewportRef.current;
+    if (!el) return;
+
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      el.scrollBy({ left: 240, behavior: isReduced ? "auto" : "smooth" });
+      pauseAndScheduleResume();
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      el.scrollBy({ left: -240, behavior: isReduced ? "auto" : "smooth" });
+      pauseAndScheduleResume();
+    }
+  };
+
+  const handleScrollButton = (direction: "left" | "right") => {
+    const el = viewportRef.current;
+    if (!el) return;
     const distance = 340;
-    viewportRef.current.scrollBy({
+    el.scrollBy({
       left: direction === "left" ? -distance : distance,
       behavior: isReduced ? "auto" : "smooth",
     });
+    pauseAndScheduleResume();
   };
 
-  const shouldPauseDrift = isPaused || isInteracting;
+  const renderTiles = (isClone: boolean, keyPrefix: string) => {
+    return items.map((item, index) => {
+      const cfg = TILE_CONFIGS[index % TILE_CONFIGS.length];
+      return (
+        <div
+          key={`${keyPrefix}-${item.id}`}
+          className="hero-gallery-item"
+          aria-hidden={isClone ? "true" : undefined}
+          inert={isClone ? true : undefined}
+          style={{
+            width: `${cfg.width}px`,
+            paddingTop: `${cfg.topOffset}px`,
+          }}
+        >
+          <div
+            style={{
+              width: `${cfg.width}px`,
+              height: `${cfg.height}px`,
+              borderRadius: "20px",
+              overflow: "hidden",
+              backgroundColor: "#E5E5EA",
+              position: "relative",
+            }}
+          >
+            <Image
+              src={item.url}
+              alt={isClone ? "" : item.alt}
+              width={cfg.width}
+              height={cfg.height}
+              preload={!isClone && index < 2}
+              loading={!isClone && index < 2 ? "eager" : "lazy"}
+              draggable={false}
+              sizes="(max-width: 768px) 300px, 420px"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+                userSelect: "none",
+                pointerEvents: "none",
+              }}
+            />
+          </div>
+          {item.caption && (
+            <div
+              style={{
+                fontSize: "14px",
+                color: "rgba(29, 29, 31, 0.72)",
+                marginTop: "10px",
+                padding: "0 4px",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                maxWidth: `${cfg.width}px`,
+              }}
+            >
+              {item.caption}
+            </div>
+          )}
+        </div>
+      );
+    });
+  };
 
   return (
-    <div className="hero-enter-gallery" style={{ marginTop: "clamp(32px, 5vw, 56px)" }}>
+    <div className="hero-enter-gallery" style={{ marginTop: "clamp(20px, 3.5vw, 32px)" }}>
       <div
         style={{
           display: "flex",
           justifyContent: "flex-end",
           alignItems: "center",
           maxWidth: "1280px",
-          margin: "0 auto 12px",
+          margin: "0 auto 10px",
           padding: "0 24px",
           gap: "8px",
         }}
       >
-        {isReduced ? (
-          <div style={{ display: "inline-flex", gap: "8px" }}>
-            <button
-              type="button"
-              onClick={() => handleScroll("left")}
-              disabled={!canScrollLeft}
-              aria-label="Scroll gallery left"
-              style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "8px",
-                border: "1px solid rgba(170, 170, 170, 0.4)",
-                backgroundColor: "#FFFFFF",
-                color: "#1D1D1F",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: canScrollLeft ? "pointer" : "not-allowed",
-                opacity: canScrollLeft ? 1 : 0.4,
-              }}
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <button
-              type="button"
-              onClick={() => handleScroll("right")}
-              disabled={!canScrollRight}
-              aria-label="Scroll gallery right"
-              style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "8px",
-                border: "1px solid rgba(170, 170, 170, 0.4)",
-                backgroundColor: "#FFFFFF",
-                color: "#1D1D1F",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: canScrollRight ? "pointer" : "not-allowed",
-                opacity: canScrollRight ? 1 : 0.4,
-              }}
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setIsPaused(!isPaused)}
-            aria-label={isPaused ? "Resume gallery animation" : "Pause gallery animation"}
-            aria-pressed={isPaused}
-            style={{
-              height: "32px",
-              padding: "0 12px",
-              borderRadius: "8px",
-              border: "1px solid rgba(170, 170, 170, 0.4)",
-              backgroundColor: "#FFFFFF",
-              color: "#1D1D1F",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              fontSize: "13px",
-              fontWeight: 500,
-              cursor: "pointer",
-            }}
-          >
-            {isPaused ? <Play size={14} /> : <Pause size={14} />}
-            <span>{isPaused ? "Play" : "Pause"}</span>
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => setIsManualPaused(!isManualPaused)}
+          aria-label={isManualPaused ? "Resume gallery animation" : "Pause gallery animation"}
+          aria-pressed={isManualPaused}
+          style={{
+            height: "32px",
+            padding: "0 12px",
+            borderRadius: "8px",
+            border: "1px solid rgba(170, 170, 170, 0.4)",
+            backgroundColor: "#FFFFFF",
+            color: "#1D1D1F",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            fontSize: "13px",
+            fontWeight: 500,
+            cursor: "pointer",
+          }}
+        >
+          {isManualPaused ? <Play size={14} /> : <Pause size={14} />}
+          <span>{isManualPaused ? "Play" : "Pause"}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleScrollButton("left")}
+          aria-label="Scroll gallery left"
+          style={{
+            width: "32px",
+            height: "32px",
+            borderRadius: "8px",
+            border: "1px solid rgba(170, 170, 170, 0.4)",
+            backgroundColor: "#FFFFFF",
+            color: "#1D1D1F",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+          }}
+        >
+          <ChevronLeft size={16} />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleScrollButton("right")}
+          aria-label="Scroll gallery right"
+          style={{
+            width: "32px",
+            height: "32px",
+            borderRadius: "8px",
+            border: "1px solid rgba(170, 170, 170, 0.4)",
+            backgroundColor: "#FFFFFF",
+            color: "#1D1D1F",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+          }}
+        >
+          <ChevronRight size={16} />
+        </button>
       </div>
 
       <div
         ref={viewportRef}
         role="region"
         aria-label="Photo gallery"
-        className={`hero-gallery-viewport ${isReduced ? "is-reduced-motion" : ""}`}
-        onTouchStart={() => setIsInteracting(true)}
-        onTouchEnd={() => setIsInteracting(false)}
-        onWheel={() => {
-          setIsInteracting(true);
-          setTimeout(() => setIsInteracting(false), 800);
+        tabIndex={0}
+        className={`hero-gallery-viewport ${isDragging ? "is-dragging" : ""}`}
+        style={{
+          touchAction: "pan-x pan-y pinch-zoom",
+          overscrollBehaviorX: "contain",
+        }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onPointerEnter={() => {
+          isPointerOverRef.current = true;
+          setIsUserPaused(true);
+        }}
+        onPointerLeave={() => {
+          isPointerOverRef.current = false;
+          pauseAndScheduleResume();
+        }}
+        onFocus={() => setIsUserPaused(true)}
+        onBlur={() => pauseAndScheduleResume()}
+        onWheel={handleWheel}
+        onTouchStart={() => setIsUserPaused(true)}
+        onTouchEnd={() => pauseAndScheduleResume()}
+        onKeyDown={handleKeyDown}
+        onClickCapture={(e) => {
+          if (hasDraggedRef.current) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
         }}
       >
-        <div
-          className={`hero-gallery-track ${shouldPauseDrift ? "is-paused" : ""}`}
-          style={{
-            animationPlayState: shouldPauseDrift ? "paused" : "running",
-          }}
-        >
-          {items.map((item, index) => {
-            const cfg = TILE_CONFIGS[index % TILE_CONFIGS.length];
-            return (
-              <div
-                key={item.id}
-                className="hero-gallery-item"
-                style={{
-                  width: `${cfg.width}px`,
-                  paddingTop: `${cfg.topOffset}px`,
-                }}
-              >
-                <div
-                  style={{
-                    width: `${cfg.width}px`,
-                    height: `${cfg.height}px`,
-                    borderRadius: "20px",
-                    overflow: "hidden",
-                    backgroundColor: "#E5E5EA",
-                    position: "relative",
-                  }}
-                >
-                  {item.kind === "video" && item.video ? (
-                    <video
-                      ref={(el) => {
-                        videoRefs.current[index] = el;
-                      }}
-                      src={item.video.src}
-                      poster={item.posterUrl}
-                      muted
-                      loop
-                      playsInline
-                      preload="metadata"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        display: "block",
-                      }}
-                    />
-                  ) : (
-                    <Image
-                      src={item.url}
-                      alt={item.alt}
-                      width={cfg.width}
-                      height={cfg.height}
-                      preload={index < 3}
-                      loading={index < 3 ? "eager" : "lazy"}
-                      sizes="(max-width: 768px) 300px, 420px"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        display: "block",
-                      }}
-                    />
-                  )}
-                </div>
-                {item.caption && (
-                  <div
-                    style={{
-                      fontSize: "14px",
-                      color: "rgba(29, 29, 31, 0.72)",
-                      marginTop: "10px",
-                      padding: "0 4px",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      maxWidth: `${cfg.width}px`,
-                    }}
-                  >
-                    {item.caption}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-
-          {!isReduced &&
-            items.map((item, index) => {
-              const cfg = TILE_CONFIGS[index % TILE_CONFIGS.length];
-              return (
-                <div
-                  key={`dup-${item.id}`}
-                  className="hero-gallery-item"
-                  aria-hidden="true"
-                  inert
-                  style={{
-                    width: `${cfg.width}px`,
-                    paddingTop: `${cfg.topOffset}px`,
-                  }}
-                >
-                  <div
-                    style={{
-                      width: `${cfg.width}px`,
-                      height: `${cfg.height}px`,
-                      borderRadius: "20px",
-                      overflow: "hidden",
-                      backgroundColor: "#E5E5EA",
-                      position: "relative",
-                    }}
-                  >
-                    {item.kind === "video" && item.video ? (
-                      <video
-                        src={item.video.src}
-                        poster={item.posterUrl}
-                        muted
-                        loop
-                        playsInline
-                        preload="metadata"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          display: "block",
-                        }}
-                      />
-                    ) : (
-                      <Image
-                        src={item.url}
-                        alt=""
-                        width={cfg.width}
-                        height={cfg.height}
-                        loading="lazy"
-                        sizes="(max-width: 768px) 300px, 420px"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          display: "block",
-                        }}
-                      />
-                    )}
-                  </div>
-                  {item.caption && (
-                    <div
-                      style={{
-                        fontSize: "14px",
-                        color: "rgba(29, 29, 31, 0.72)",
-                        marginTop: "10px",
-                        padding: "0 4px",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        maxWidth: `${cfg.width}px`,
-                      }}
-                    >
-                      {item.caption}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+        <div ref={trackRef} className="hero-gallery-track">
+          {renderTiles(false, "orig")}
+          {renderTiles(true, "copy1")}
+          {renderTiles(true, "copy2")}
         </div>
       </div>
     </div>

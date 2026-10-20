@@ -1,156 +1,122 @@
 import React from "react";
-import { Card } from "../ui/Card";
-import { Badge } from "../ui/Badge";
-import { Button } from "../ui/Button";
-import { OnboardingStep } from "@/types";
-
-const STEPS: OnboardingStep[] = [
-  {
-    stepNumber: 1,
-    title: "Admission Enquiry & Consultation",
-    tagline: "Academic Assessment at Park Circus",
-    description:
-      "Submit an online inquiry or visit our center near Quest Mall to discuss the student's current school, board syllabus, and specific subject requirements.",
-    keyOutcomes: [
-      "School syllabus and board focus evaluated",
-      "Direct consultation with Azhar Sir",
-      "Batch schedule and availability options",
-    ],
-  },
-  {
-    stepNumber: 2,
-    title: "Batch & Board Alignment",
-    tagline: "Targeted Classroom Environment",
-    description:
-      "Students are enrolled in appropriate Class V-XII batches strictly mapped to their respective board curriculum (ICSE, CBSE, or West Bengal Board).",
-    keyOutcomes: [
-      "Board-specific batch scheduling",
-      "Subject enrollment and study material access",
-      "Student registration and timetable mapping",
-    ],
-  },
-  {
-    stepNumber: 3,
-    title: "Concept-First Classroom Learning",
-    tagline: "Dedicated Subject Specialists",
-    description:
-      "Weekly classes emphasize conceptual understanding and formula derivation first, supported by intensive dual-faculty mathematics three days a week.",
-    keyOutcomes: [
-      "Separate subject specialist for every paper",
-      "Dual-faculty mathematics coaching",
-      "Dedicated doubt-clearing sessions",
-    ],
-  },
-  {
-    stepNumber: 4,
-    title: "Monthly Mock Tests & Progress",
-    tagline: "Continuous Exam Readiness",
-    description:
-      "Scheduled monthly examinations simulate real board conditions, identifying weak chapters early with transparent performance visibility for parents.",
-    keyOutcomes: [
-      "Board-pattern monthly test papers",
-      "Structured chapter revision cycles",
-      "Regular parent communication on progress",
-    ],
-  },
-];
+import { Reveal } from "@/components/common/Reveal";
+import { landingContent } from "@/content/landing";
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" style={{ padding: "var(--space-16) 0" }}>
-      <div className="container">
-        <div style={{ textAlign: "center", marginBottom: "var(--space-12)" }}>
-          <Badge variant="accent" size="sm">
-            Student Journey &bull; Classes V-XII
-          </Badge>
-          <h2
+    <section
+      id="mock-tests"
+      style={{
+        backgroundColor: "#FFFFFF",
+        padding: "clamp(64px, 8vw, 112px) 0",
+        borderTop: "1px solid rgba(170, 170, 170, 0.3)",
+        borderBottom: "1px solid rgba(170, 170, 170, 0.3)",
+      }}
+    >
+      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 24px" }}>
+        <Reveal>
+          <div style={{ marginBottom: "clamp(36px, 5vw, 64px)" }}>
+            <span
+              style={{
+                fontSize: "12px",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "var(--color-text-secondary)",
+                fontWeight: 600,
+                display: "inline-block",
+                marginBottom: "12px",
+              }}
+            >
+              Academic Trajectory
+            </span>
+            <h2
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "clamp(2rem, 4.5vw, 3.25rem)",
+                lineHeight: 1.08,
+                color: "#1D1D1F",
+                fontWeight: 700,
+                maxWidth: "24ch",
+                margin: 0,
+              }}
+            >
+              A measured, four-stage progression from induction to examination.
+            </h2>
+          </div>
+        </Reveal>
+
+        <Reveal delay={60}>
+          <div
             style={{
-              fontSize: "clamp(1.85rem, 4vw, 2.75rem)",
-              letterSpacing: "-0.02em",
-              marginTop: "var(--space-3)",
-              marginBottom: "var(--space-3)",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: "32px",
+              position: "relative",
             }}
           >
-            How students learn and succeed in four steps.
-          </h2>
-          <p style={{ maxWidth: "640px", margin: "0 auto", fontSize: "var(--text-base)", color: "var(--color-neutral-dark)", lineHeight: 1.6 }}>
-            A disciplined, supportive path from initial academic evaluation to board examination excellence under Azhar Sir.
-          </p>
-        </div>
-
-        {/* 4-Step Progressive Timeline Cards */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-            gap: "var(--space-6)",
-            marginBottom: "var(--space-10)",
-          }}
-        >
-          {STEPS.map((step) => (
-            <Card key={step.stepNumber} padding="lg" style={{ position: "relative" }}>
+            {landingContent.timeline.map((step) => (
               <div
+                key={step.number}
                 style={{
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: "var(--space-4)",
+                  flexDirection: "column",
+                  position: "relative",
+                  paddingTop: "24px",
+                  borderTop: "1px solid rgba(170, 170, 170, 0.35)",
                 }}
               >
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "-5px",
+                    left: "0",
+                    width: "9px",
+                    height: "9px",
+                    borderRadius: "50%",
+                    backgroundColor: "#1D1D1F",
+                  }}
+                />
+
                 <span
                   style={{
-                    width: "36px",
-                    height: "36px",
-                    borderRadius: "var(--radius-full)",
-                    backgroundColor: "var(--color-primary)",
-                    color: "var(--color-surface)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
+                    fontFamily: "var(--font-display)",
+                    fontSize: "28px",
                     fontWeight: 700,
-                    fontSize: "var(--text-sm)",
+                    color: "#1D1D1F",
+                    lineHeight: 1,
+                    marginBottom: "12px",
                   }}
                 >
-                  0{step.stepNumber}
+                  {step.number}
                 </span>
-                <span style={{ fontSize: "var(--text-xs)", color: "var(--color-accent)", fontWeight: 600 }}>
-                  Phase {step.stepNumber}
-                </span>
+
+                <h3
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "18px",
+                    fontWeight: 600,
+                    color: "#1D1D1F",
+                    margin: "0 0 8px 0",
+                    lineHeight: 1.25,
+                  }}
+                >
+                  {step.title}
+                </h3>
+
+                <p
+                  style={{
+                    fontSize: "14px",
+                    lineHeight: 1.6,
+                    color: "var(--color-text-secondary)",
+                    margin: 0,
+                  }}
+                >
+                  {step.description}
+                </p>
               </div>
-
-              <h3 style={{ fontSize: "var(--text-lg)", marginBottom: "var(--space-2)" }}>
-                {step.title}
-              </h3>
-              <p style={{ fontSize: "var(--text-xs)", color: "var(--color-accent)", fontWeight: 500, marginBottom: "var(--space-3)" }}>
-                {step.tagline}
-              </p>
-              <p style={{ fontSize: "var(--text-sm)", color: "var(--color-neutral-dark)", lineHeight: 1.6, marginBottom: "var(--space-4)" }}>
-                {step.description}
-              </p>
-
-              <div style={{ borderTop: "1px solid var(--color-border-subtle)", paddingTop: "var(--space-3)" }}>
-                <span style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--color-neutral-dark)" }}>
-                  Key Milestones
-                </span>
-                <ul style={{ listStyle: "none", marginTop: "6px", display: "flex", flexDirection: "column", gap: "6px" }}>
-                  {step.keyOutcomes.map((out, idx) => (
-                    <li key={idx} style={{ fontSize: "var(--text-xs)", color: "var(--color-primary)", display: "flex", alignItems: "flex-start", gap: "6px" }}>
-                      <span style={{ color: "var(--color-success)", fontSize: "12px", lineHeight: "14px" }}>✓</span>
-                      <span>{out}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </Card>
-          ))}
-        </div>
-
-        {/* Transition CTA */}
-        <div style={{ textAlign: "center" }}>
-          <Button href="#enquiry" variant="accent" size="md">
-            Inquire About Admissions Today →
-          </Button>
-        </div>
+            ))}
+          </div>
+        </Reveal>
       </div>
     </section>
   );

@@ -16,7 +16,7 @@ export default function PrivacyPage() {
     <div style={{ paddingTop: "var(--space-12)", paddingBottom: "var(--space-16)" }}>
       <div className="container-narrow">
         <div style={{ marginBottom: "var(--space-8)" }}>
-          <span style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--color-accent-blue)", fontWeight: 600 }}>
+          <span style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--color-text-secondary)", fontWeight: 600 }}>
             Student and Parent Privacy
           </span>
           <h1
@@ -83,9 +83,11 @@ export default function PrivacyPage() {
           <Link
             href="/"
             style={{
-              color: "var(--color-accent-blue)",
+              color: "#1D1D1F",
               fontSize: "var(--text-sm)",
-              textDecoration: "none",
+              textDecoration: "underline",
+              textDecorationColor: "#007AFF",
+              textUnderlineOffset: "3px",
               fontWeight: 600,
             }}
           >

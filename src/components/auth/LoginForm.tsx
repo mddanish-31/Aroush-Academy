@@ -12,8 +12,8 @@ import {
   ROLE_DESCRIPTIONS,
 } from "@/lib/auth/authTypes";
 import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Check, AlertCircle } from "lucide-react";
 
 const ROLES_ORDER: UserRole[] = ["academy-admin", "teacher", "student", "parent"];
 
@@ -34,13 +34,11 @@ export function LoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Forgot password sub-state
   const [isForgotPasswordView, setIsForgotPasswordView] = useState(false);
   const [resetIdentifier, setResetIdentifier] = useState("");
   const [resetMessage, setResetMessage] = useState<string | null>(null);
   const [isResetSubmitting, setIsResetSubmitting] = useState(false);
 
-  // Pre-fill fields when user selects a role demo pill
   const handleSelectRolePill = (role: UserRole) => {
     setChosenRole(role);
     const demo = DEMO_ACCOUNTS[role];
@@ -133,11 +131,10 @@ export function LoginForm() {
       }}
     >
       <div className="container-narrow" style={{ maxWidth: "560px" }}>
-        {/* Unmistakable Demo Warning Banner */}
         <div
           style={{
-            backgroundColor: "rgba(255, 149, 0, 0.08)",
-            border: "1px solid rgba(255, 149, 0, 0.3)",
+            backgroundColor: "rgba(29, 29, 31, 0.04)",
+            border: "1px solid rgba(170, 170, 170, 0.35)",
             borderRadius: "var(--radius-md)",
             padding: "var(--space-3) var(--space-4)",
             marginBottom: "var(--space-6)",
@@ -148,9 +145,7 @@ export function LoginForm() {
           role="note"
           aria-label="Demo environment notice"
         >
-          <span style={{ fontSize: "16px", lineHeight: 1 }} aria-hidden="true">
-            ⚠️
-          </span>
+          <AlertCircle size={16} aria-hidden="true" style={{ color: "#1D1D1F", flexShrink: 0, marginTop: "2px" }} />
           <div style={{ fontSize: "var(--text-xs)", color: "var(--color-primary)", lineHeight: 1.5 }}>
             <strong>DEMO ENVIRONMENT NOTICE:</strong> This frontend preview uses a client-side mock
             authentication adapter. No real credentials, JWTs, or encrypted server sessions are in use.
@@ -159,11 +154,18 @@ export function LoginForm() {
         </div>
 
         <Card padding="lg" style={{ boxShadow: "var(--shadow-md)" }}>
-          {/* Header Badge */}
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: "var(--space-3)" }}>
-            <Badge variant="accent" size="md">
-              ArousH Academy &bull; Identity Gateway
-            </Badge>
+          <div
+            style={{
+              textAlign: "center",
+              fontSize: "12px",
+              fontWeight: 600,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "var(--color-text-secondary)",
+              marginBottom: "var(--space-2)",
+            }}
+          >
+            ArousH Academy &bull; Identity Gateway
           </div>
 
           <h1
@@ -191,7 +193,6 @@ export function LoginForm() {
               : "Access role-tailored dashboards for Academy Administration, Teachers, Students, and Parents."}
           </p>
 
-          {/* If already authenticated, show current session indicator */}
           {isAuthenticated && user && !isForgotPasswordView && (
             <div
               style={{
@@ -214,12 +215,11 @@ export function LoginForm() {
                 </div>
               </div>
               <Button href={ROLE_DEFAULT_ROUTES[user.role]} variant="accent" size="sm">
-                Open Dashboard →
+                Open Dashboard &rarr;
               </Button>
             </div>
           )}
 
-          {/* FORGOT PASSWORD VIEW */}
           {isForgotPasswordView ? (
             <form onSubmit={handleResetSubmit} noValidate>
               <div style={{ marginBottom: "var(--space-4)" }}>
@@ -299,14 +299,12 @@ export function LoginForm() {
                     cursor: "pointer",
                   }}
                 >
-                  ← Return to Sign In
+                  &larr; Return to Sign In
                 </button>
               </div>
             </form>
           ) : (
-            /* STANDARD SIGN-IN VIEW */
             <form onSubmit={handleSubmit} noValidate>
-              {/* Role Selection Tabs */}
               <div style={{ marginBottom: "var(--space-4)" }}>
                 <span
                   id="role-select-label"
@@ -341,9 +339,9 @@ export function LoginForm() {
                         style={{
                           padding: "8px 10px",
                           borderRadius: "var(--radius-md)",
-                          border: `1px solid ${isSelected ? "var(--color-accent)" : "var(--color-border)"}`,
-                          backgroundColor: isSelected ? "var(--color-accent-subtle)" : "var(--color-surface-muted)",
-                          color: isSelected ? "var(--color-accent)" : "var(--color-primary)",
+                          border: `1px solid ${isSelected ? "#1D1D1F" : "var(--color-border)"}`,
+                          backgroundColor: isSelected ? "#1D1D1F" : "var(--color-surface-muted)",
+                          color: isSelected ? "#FFFFFF" : "var(--color-primary)",
                           fontSize: "var(--text-xs)",
                           fontWeight: isSelected ? 600 : 500,
                           textAlign: "left",
@@ -354,8 +352,10 @@ export function LoginForm() {
                           justifyContent: "space-between",
                         }}
                       >
-                        <span>{ROLE_DISPLAY_NAMES[r]}</span>
-                        {isSelected && <span style={{ fontSize: "12px" }}>✓</span>}
+                        <span style={{ color: isSelected ? "#FFFFFF" : "#1D1D1F" }}>
+                          {ROLE_DISPLAY_NAMES[r]}
+                        </span>
+                        {isSelected && <Check size={14} aria-hidden="true" style={{ color: "#FFFFFF" }} />}
                       </button>
                     );
                   })}
@@ -371,7 +371,6 @@ export function LoginForm() {
                 </div>
               </div>
 
-              {/* Identifier Input */}
               <div style={{ marginBottom: "var(--space-3)" }}>
                 <label
                   htmlFor="signin-identifier"
@@ -408,7 +407,6 @@ export function LoginForm() {
                 />
               </div>
 
-              {/* Password Input with Visibility Toggle */}
               <div style={{ marginBottom: "var(--space-3)" }}>
                 <div
                   style={{
@@ -433,7 +431,9 @@ export function LoginForm() {
                     onClick={() => setIsForgotPasswordView(true)}
                     style={{
                       fontSize: "11px",
-                      color: "var(--color-accent)",
+                      color: "#1D1D1F",
+                      textDecoration: "underline",
+                      textDecorationColor: "#007AFF",
                       background: "none",
                       border: "none",
                       cursor: "pointer",
@@ -486,7 +486,6 @@ export function LoginForm() {
                 </div>
               </div>
 
-              {/* Error Message */}
               {errorMessage && (
                 <div
                   style={{
@@ -505,7 +504,6 @@ export function LoginForm() {
                 </div>
               )}
 
-              {/* Submit Button */}
               <div style={{ marginBottom: "var(--space-4)" }}>
                 <Button
                   type="submit"
@@ -518,7 +516,6 @@ export function LoginForm() {
                 </Button>
               </div>
 
-              {/* One-Click Demo Role Launcher */}
               <div
                 style={{
                   borderTop: "1px solid var(--color-border)",
@@ -568,7 +565,7 @@ export function LoginForm() {
                         }}
                       >
                         <span style={{ fontWeight: 600 }}>{demo.user.name}</span>
-                        <span style={{ fontSize: "10px", color: "var(--color-neutral-dark)" }}>
+                        <span style={{ fontSize: "10px", color: "#48484A" }}>
                           {ROLE_DISPLAY_NAMES[r]} &bull; {demo.demoPassword}
                         </span>
                       </button>
@@ -579,7 +576,6 @@ export function LoginForm() {
             </form>
           )}
 
-          {/* Bottom Navigation Links */}
           <div
             style={{
               borderTop: "1px solid var(--color-border)",
@@ -592,12 +588,21 @@ export function LoginForm() {
             }}
           >
             <Link href="/" style={{ color: "var(--color-neutral-dark)" }}>
-              ← Public Home
+              &larr; Public Home
             </Link>
             <div>
               <span style={{ color: "var(--color-neutral-dark)" }}>New student or guardian? </span>
-              <Link href="/register" style={{ fontWeight: 600, color: "var(--color-accent)" }}>
-                Register Here →
+              <Link
+                href="/register"
+                style={{
+                  fontWeight: 600,
+                  color: "#1D1D1F",
+                  textDecoration: "underline",
+                  textDecorationColor: "#007AFF",
+                  textUnderlineOffset: "3px",
+                }}
+              >
+                Register Here &rarr;
               </Link>
             </div>
           </div>

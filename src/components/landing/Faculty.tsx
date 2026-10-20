@@ -1,99 +1,148 @@
 import React from "react";
-import { Card } from "../ui/Card";
-import { Badge } from "../ui/Badge";
-import { facultyMembers } from "@/data/homepageContent";
+import { Reveal } from "@/components/common/Reveal";
+import { landingContent } from "@/content/landing";
 
 export function Faculty() {
   return (
-    <section id="faculty" style={{ padding: "var(--space-16) 0", backgroundColor: "var(--color-surface)" }}>
-      <div className="container">
-        {/* Section Header */}
-        <div style={{ textAlign: "center", marginBottom: "var(--space-12)" }}>
-          <Badge variant="neutral" size="sm">
-            Subject Specialists
-          </Badge>
-          <h2
-            style={{
-              fontSize: "clamp(1.85rem, 4vw, 2.75rem)",
-              letterSpacing: "-0.025em",
-              marginTop: "var(--space-3)",
-              marginBottom: "var(--space-3)",
-            }}
-          >
-            The people at the board.
-          </h2>
-          <p style={{ maxWidth: "620px", margin: "0 auto", fontSize: "var(--text-base)", color: "var(--color-neutral-dark)" }}>
-            No single instructor carries the whole syllabus. Every discipline is taught by teachers who specialize strictly in that paper.
-          </p>
-        </div>
+    <section
+      id="faculty"
+      style={{
+        backgroundColor: "#F5F5F7",
+        padding: "clamp(64px, 8vw, 112px) 0",
+      }}
+    >
+      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 24px" }}>
+        <Reveal>
+          <div style={{ marginBottom: "clamp(36px, 5vw, 64px)" }}>
+            <span
+              style={{
+                fontSize: "12px",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "var(--color-text-secondary)",
+                fontWeight: 600,
+                display: "inline-block",
+                marginBottom: "12px",
+              }}
+            >
+              Academic Faculty
+            </span>
+            <h2
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "clamp(2rem, 4.5vw, 3.25rem)",
+                lineHeight: 1.08,
+                color: "#1D1D1F",
+                fontWeight: 700,
+                maxWidth: "24ch",
+                margin: 0,
+              }}
+            >
+              Dedicated mentors with separate specialists for each paper.
+            </h2>
+          </div>
+        </Reveal>
 
-        {/* Faculty Grid */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: "var(--space-6)",
+            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+            gap: "24px",
           }}
         >
-          {facultyMembers.map((member) => (
-            <Card key={member.id} padding="lg">
-              <div style={{ display: "flex", alignItems: "center", gap: "var(--space-4)", marginBottom: "var(--space-4)" }}>
-                {/* Monogram Fallback Avatar */}
+          {landingContent.faculty.map((member, idx) => (
+            <Reveal key={member.id} delay={idx * 60}>
+              <div
+                style={{
+                  backgroundColor: "#FFFFFF",
+                  borderRadius: "16px",
+                  border: "1px solid rgba(170, 170, 170, 0.3)",
+                  padding: "28px 24px",
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                }}
+              >
                 <div
                   style={{
-                    width: "52px",
-                    height: "52px",
-                    borderRadius: "var(--radius-full)",
-                    backgroundColor: "var(--color-primary)",
-                    color: "var(--color-surface)",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
-                    fontWeight: 700,
-                    fontSize: "var(--text-base)",
-                    flexShrink: 0,
-                    boxShadow: "var(--shadow-sm)",
+                    gap: "14px",
+                    marginBottom: "16px",
                   }}
                 >
-                  {member.avatarText}
-                </div>
-
-                <div>
-                  <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--color-primary)", margin: 0 }}>
-                    {member.name}
-                  </h3>
-                  <div style={{ fontSize: "var(--text-xs)", color: "var(--color-accent)", fontWeight: 500, marginTop: "2px" }}>
-                    {member.role}
+                  <div
+                    style={{
+                      width: "48px",
+                      height: "48px",
+                      borderRadius: "50%",
+                      backgroundColor: "#F5F5F7",
+                      border: "1px solid rgba(170, 170, 170, 0.4)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontFamily: "var(--font-display)",
+                      fontSize: "16px",
+                      fontWeight: 700,
+                      color: "#1D1D1F",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {member.initials}
+                  </div>
+                  <div>
+                    <h3
+                      style={{
+                        fontFamily: "var(--font-display)",
+                        fontSize: "18px",
+                        fontWeight: 700,
+                        color: "#1D1D1F",
+                        margin: "0 0 2px 0",
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {member.name}
+                    </h3>
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        color: "var(--color-text-secondary)",
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      {member.role}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div style={{ marginBottom: "var(--space-3)" }}>
-                <span style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-neutral-dark)" }}>
-                  Subject Discipline
-                </span>
-                <div style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--color-primary)", marginTop: "2px" }}>
+                <div
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: "#1D1D1F",
+                    marginBottom: "8px",
+                    paddingBottom: "8px",
+                    borderBottom: "1px solid rgba(170, 170, 170, 0.2)",
+                  }}
+                >
                   {member.subjects}
                 </div>
-              </div>
 
-              <p style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", lineHeight: 1.65, margin: 0 }}>
-                {member.bio}
-              </p>
-
-              <div style={{ marginTop: "var(--space-4)", paddingTop: "var(--space-3)", borderTop: "1px solid var(--color-border-subtle)" }}>
-                <Badge variant="neutral" size="sm">
-                  {member.tag}
-                </Badge>
+                <p
+                  style={{
+                    fontSize: "13px",
+                    lineHeight: 1.6,
+                    color: "var(--color-text-secondary)",
+                    margin: 0,
+                    flexGrow: 1,
+                  }}
+                >
+                  {member.bio}
+                </p>
               </div>
-            </Card>
+            </Reveal>
           ))}
         </div>
-
-        {/* Descriptive Footer Notice */}
-        <p style={{ textAlign: "center", fontSize: "12px", color: "var(--color-neutral-dark)", marginTop: "var(--space-8)" }}>
-          Our academic model pairs dedicated subject specialists with Azhar Sir&apos;s conceptual foundation across all batches.
-        </p>
       </div>
     </section>
   );

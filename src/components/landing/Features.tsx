@@ -1,67 +1,121 @@
 import React from "react";
-import { Card } from "../ui/Card";
-import { Badge } from "../ui/Badge";
-import { platformFeatures } from "@/data/homepageContent";
+import {
+  BookOpen,
+  Users,
+  Compass,
+  CheckCircle2,
+  HelpCircle,
+  ClipboardCheck,
+  LucideIcon,
+} from "lucide-react";
+import { Reveal } from "@/components/common/Reveal";
+import { landingContent } from "@/content/landing";
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  BookOpen,
+  Users,
+  Compass,
+  CheckCircle2,
+  HelpCircle,
+  ClipboardCheck,
+};
 
 export function Features() {
   return (
-    <section id="features" style={{ padding: "var(--space-16) 0" }}>
-      {/* Anchor for #why-us */}
-      <span id="why-us" style={{ display: "block", position: "relative", top: "-80px", visibility: "hidden" }} />
-      <div className="container">
-        <div style={{ textAlign: "center", marginBottom: "var(--space-10)" }}>
-          <Badge variant="accent" size="sm">
-            Why Choose AROUSH Academy
-          </Badge>
-          <h2
+    <section
+      id="method"
+      style={{
+        backgroundColor: "#FFFFFF",
+        padding: "clamp(64px, 8vw, 112px) 0",
+        borderTop: "1px solid rgba(170, 170, 170, 0.3)",
+        borderBottom: "1px solid rgba(170, 170, 170, 0.3)",
+      }}
+    >
+      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 24px" }}>
+        <Reveal>
+          <div style={{ marginBottom: "clamp(36px, 5vw, 64px)" }}>
+            <span
+              style={{
+                fontSize: "12px",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "var(--color-text-secondary)",
+                fontWeight: 600,
+                display: "inline-block",
+                marginBottom: "12px",
+              }}
+            >
+              Academic Framework
+            </span>
+            <h2
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "clamp(2rem, 4.5vw, 3.25rem)",
+                lineHeight: 1.08,
+                color: "#1D1D1F",
+                fontWeight: 700,
+                maxWidth: "24ch",
+                margin: 0,
+              }}
+            >
+              Systematic teaching architecture designed for long-term retention.
+            </h2>
+          </div>
+        </Reveal>
+
+        <Reveal delay={60}>
+          <dl
             style={{
-              fontSize: "clamp(1.85rem, 4vw, 2.75rem)",
-              letterSpacing: "-0.02em",
-              marginTop: "var(--space-3)",
-              marginBottom: "var(--space-3)",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+              gap: "clamp(24px, 4vw, 48px)",
+              margin: 0,
             }}
           >
-            Academic discipline. Dedicated mentorship.
-          </h2>
-          <p style={{ maxWidth: "640px", margin: "0 auto", fontSize: "var(--text-base)", color: "var(--color-neutral-dark)" }}>
-            Six core educational principles designed to give school and board exam students conceptual clarity, structured practice, and genuine confidence.
-          </p>
-        </div>
+            {landingContent.features.map((feat) => {
+              const Icon = ICON_MAP[feat.icon] || BookOpen;
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            gap: "var(--space-6)",
-          }}
-        >
-          {platformFeatures.map((item) => (
-            <Card key={item.id} padding="lg">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-4)" }}>
-                <span
+              return (
+                <div
+                  key={feat.id}
                   style={{
-                    fontSize: "var(--text-xs)",
-                    fontWeight: 600,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.06em",
-                    color: "var(--color-accent)",
+                    paddingBottom: "28px",
+                    borderBottom: "1px solid rgba(170, 170, 170, 0.3)",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "10px",
                   }}
                 >
-                  {item.category}
-                </span>
-                <Badge variant="neutral" size="sm">
-                  {item.tag}
-                </Badge>
-              </div>
-              <h3 style={{ fontSize: "var(--text-xl)", marginBottom: "var(--space-2)" }}>
-                {item.title}
-              </h3>
-              <p style={{ fontSize: "var(--text-sm)", lineHeight: 1.65, color: "var(--color-neutral-dark)", margin: 0 }}>
-                {item.description}
-              </p>
-            </Card>
-          ))}
-        </div>
+                  <dt
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontSize: "18px",
+                      fontWeight: 600,
+                      color: "#1D1D1F",
+                      margin: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                    }}
+                  >
+                    <Icon size={18} strokeWidth={2} style={{ color: "#007AFF" }} />
+                    <span>{feat.title}</span>
+                  </dt>
+                  <dd
+                    style={{
+                      fontSize: "14px",
+                      lineHeight: 1.6,
+                      color: "var(--color-text-secondary)",
+                      margin: 0,
+                    }}
+                  >
+                    {feat.description}
+                  </dd>
+                </div>
+              );
+            })}
+          </dl>
+        </Reveal>
       </div>
     </section>
   );

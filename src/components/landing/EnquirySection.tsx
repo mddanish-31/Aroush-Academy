@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { Phone, MapPin, ClipboardCheck, AlertCircle } from "lucide-react";
-import { Card } from "../ui/Card";
-import { Badge } from "../ui/Badge";
-import { Button } from "../ui/Button";
-import { academyCenterInfo } from "@/data/homepageContent";
+import { Phone, Mail, MapPin, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Reveal } from "@/components/common/Reveal";
+import { submitEnquiry } from "@/content/enquiry";
+import type { EnquiryResult } from "@/content/enquiry";
+import { siteSettings } from "@/content/site";
 
 export function EnquirySection() {
   const [formData, setFormData] = useState({
@@ -14,376 +14,515 @@ export function EnquirySection() {
     targetClass: "Class IX",
     targetBoard: "ICSE",
     notes: "",
+    honeypot: "",
   });
-  const [errorMessage, setErrorMessage] = useState("");
-  const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitResult, setSubmitResult] = useState<EnquiryResult | null>(null);
+
+  const validate = () => {
+    const nextErrors: Record<string, string> = {};
+    const name = formData.studentName.trim();
+    const phone = formData.contactNumber.trim().replace(/\D/g, "");
+
+    if (!name || name.length < 2) {
+      nextErrors.studentName = "Please enter the student's full name (at least 2 characters).";
+    }
+
+    if (!phone || phone.length < 10) {
+      nextErrors.contactNumber = "Please enter a valid phone number (at least 10 digits).";
+    }
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage("");
-    const cleanName = formData.studentName.trim();
-    const cleanPhone = formData.contactNumber.trim();
+    setSubmitResult(null);
 
-    if (!cleanName || cleanName.length < 2) {
-      setErrorMessage("Please enter the student's full name (at least 2 characters).");
+    if (!validate()) {
       return;
     }
 
-    const digitsOnly = cleanPhone.replace(/\D/g, "");
-    if (digitsOnly.length < 10) {
-      setErrorMessage("Please enter a valid phone number (at least 10 digits).");
-      return;
+    setIsSubmitting(true);
+    try {
+      const res = await submitEnquiry(formData);
+      setSubmitResult(res);
+    } catch {
+      setSubmitResult({
+        success: false,
+        fallbackNeeded: true,
+        message: "An unexpected error occurred. Please contact our admissions desk directly by phone or email.",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setSubmitted(true);
   };
 
   return (
-    <section id="enquiry" style={{ padding: "var(--space-16) 0" }}>
-      {/* Anchor for #contact */}
+    <section
+      id="enquiry"
+      style={{
+        backgroundColor: "#FFFFFF",
+        padding: "clamp(64px, 8vw, 112px) 0",
+        borderTop: "1px solid rgba(170, 170, 170, 0.3)",
+        borderBottom: "1px solid rgba(170, 170, 170, 0.3)",
+      }}
+    >
       <span id="contact" style={{ display: "block", position: "relative", top: "-80px", visibility: "hidden" }} />
-      <div className="container">
-        <div style={{ textAlign: "center", marginBottom: "var(--space-12)" }}>
-          <Badge variant="accent" size="sm">
-            Admissions &bull; Park Circus Campus
-          </Badge>
-          <h2
-            style={{
-              fontSize: "clamp(1.85rem, 4vw, 2.75rem)",
-              letterSpacing: "-0.02em",
-              marginTop: "var(--space-3)",
-              marginBottom: "var(--space-3)",
-            }}
-          >
-            Come and see a class before you decide.
-          </h2>
-          <p style={{ maxWidth: "640px", margin: "0 auto", fontSize: "var(--text-base)", color: "var(--color-neutral-dark)", lineHeight: 1.6 }}>
-            Walk in during our weekly operating hours, call Azhar Sir directly, or submit student details below to check batch availability.
-          </p>
-        </div>
+      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 24px" }}>
+        <Reveal>
+          <div style={{ marginBottom: "clamp(36px, 5vw, 64px)" }}>
+            <span
+              style={{
+                fontSize: "12px",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "var(--color-text-secondary)",
+                fontWeight: 600,
+                display: "inline-block",
+                marginBottom: "12px",
+              }}
+            >
+              Admissions Enquiry
+            </span>
+            <h2
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "clamp(2rem, 4.5vw, 3.25rem)",
+                lineHeight: 1.08,
+                color: "#1D1D1F",
+                fontWeight: 700,
+                maxWidth: "24ch",
+                margin: 0,
+              }}
+            >
+              Come and observe a lecture before making a decision.
+            </h2>
+          </div>
+        </Reveal>
 
         <div
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            gap: "var(--space-8)",
+            gap: "clamp(36px, 6vw, 64px)",
             alignItems: "start",
           }}
         >
-          {/* Left Column: Direct Campus Details */}
-          <Card padding="lg" style={{ backgroundColor: "var(--color-surface)" }}>
-            <h3 style={{ fontSize: "var(--text-xl)", marginBottom: "var(--space-4)" }}>
-              Direct Academy Contact
-            </h3>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)", marginBottom: "var(--space-6)" }}>
-              <div>
-                <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-neutral-dark)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                  Campus Address
-                </span>
-                <p style={{ fontSize: "var(--text-sm)", color: "var(--color-primary)", marginTop: "3px", lineHeight: 1.5 }}>
-                  {academyCenterInfo.address}
-                </p>
-                <span style={{ fontSize: "var(--text-xs)", color: "var(--color-accent)", fontWeight: 500, display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                  <MapPin size={12} /> {academyCenterInfo.landmark}
-                </span>
-              </div>
-
-              <div>
-                <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-neutral-dark)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                  Direct Phone Lines
-                </span>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--space-2)", marginTop: "4px" }}>
-                  {academyCenterInfo.phones.map((phone, i) => (
-                    <a
-                      key={i}
-                      href={`tel:${phone.replace(/\s+/g, "")}`}
-                      style={{
-                        fontSize: "var(--text-sm)",
-                        fontWeight: 600,
-                        color: "var(--color-primary)",
-                        padding: "6px 12px",
-                        backgroundColor: "var(--color-surface-muted)",
-                        borderRadius: "var(--radius-sm)",
-                        border: "1px solid var(--color-border)",
-                        textDecoration: "none",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "6px",
-                      }}
-                    >
-                      <Phone size={12} /> {phone}
-                    </a>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-neutral-dark)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                  Email Communications
-                </span>
-                <p style={{ fontSize: "var(--text-sm)", color: "var(--color-primary)", marginTop: "3px" }}>
-                  <a href={`mailto:${academyCenterInfo.emails[0]}`} style={{ color: "var(--color-accent)" }}>
-                    {academyCenterInfo.emails[0]}
-                  </a>
-                </p>
-              </div>
-            </div>
-
-            <div
-              style={{
-                padding: "var(--space-3) var(--space-4)",
-                backgroundColor: "var(--color-surface-muted)",
-                borderRadius: "var(--radius-md)",
-                border: "1px solid var(--color-border)",
-                fontSize: "var(--text-xs)",
-                color: "var(--color-neutral-dark)",
-                lineHeight: 1.5,
-              }}
-            >
-              Classes V-XII &bull; ICSE, CBSE &amp; West Bengal Board &bull; Maths 3 days/week with dual teachers.
-            </div>
-          </Card>
-
-          {/* Right Column: Admission Inquiry Form */}
-          <Card padding="lg">
-            <h3 style={{ fontSize: "var(--text-xl)", marginBottom: "var(--space-1)" }}>
-              Admission &amp; Batch Inquiry
-            </h3>
-            <p style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", marginBottom: "var(--space-5)" }}>
-              Leave student details below to check batch timing options and syllabus schedules.
-            </p>
-
-            {submitted ? (
-              <div
+          <Reveal delay={60}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+              <p
                 style={{
-                  padding: "var(--space-6)",
-                  backgroundColor: "rgba(52, 199, 89, 0.08)",
-                  borderRadius: "var(--radius-md)",
-                  border: "1px solid rgba(52, 199, 89, 0.25)",
-                  textAlign: "center",
+                  fontSize: "15px",
+                  lineHeight: 1.6,
+                  color: "var(--color-text-secondary)",
+                  margin: 0,
                 }}
               >
-                <ClipboardCheck size={36} style={{ color: "#34C759", margin: "0 auto" }} />
-                <h4 style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--color-primary)", marginTop: "var(--space-2)", marginBottom: "var(--space-1)" }}>
-                  Inquiry Details Recorded
-                </h4>
-                <p style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", lineHeight: 1.5, marginBottom: "var(--space-4)" }}>
-                  Thank you, <strong>{formData.studentName}</strong>. Your inquiry for <strong>{formData.targetClass} ({formData.targetBoard})</strong> has been registered in this browser session.
-                </p>
+                In-person academic consultations are held at our Park Circus campus with Azhar Sir to review syllabus requirements and discuss student goals.
+              </p>
 
-                <div
-                  style={{
-                    padding: "var(--space-3) var(--space-4)",
-                    backgroundColor: "var(--color-surface)",
-                    borderRadius: "var(--radius-sm)",
-                    border: "1px solid var(--color-border)",
-                    fontSize: "11px",
-                    color: "var(--color-neutral-dark)",
-                    textAlign: "left",
-                    lineHeight: 1.5,
-                    marginBottom: "var(--space-4)",
-                  }}
-                >
-                  <strong style={{ color: "var(--color-primary)", display: "block", marginBottom: "2px" }}>
-                    Next Step for Admissions:
-                  </strong>
-                  To confirm immediate batch availability or consult with Azhar Sir directly, please contact our admissions office:
+              <div
+                style={{
+                  padding: "24px",
+                  borderRadius: "16px",
+                  backgroundColor: "#F5F5F7",
+                  border: "1px solid rgba(170, 170, 170, 0.3)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "16px",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+                  <MapPin size={18} style={{ color: "#007AFF", flexShrink: 0, marginTop: "2px" }} />
+                  <div>
+                    <span style={{ fontSize: "12px", fontWeight: 600, color: "#1D1D1F", display: "block", marginBottom: "2px" }}>
+                      Campus Location
+                    </span>
+                    <span style={{ fontSize: "14px", color: "var(--color-text-secondary)", lineHeight: 1.5, display: "block" }}>
+                      {siteSettings.address}
+                    </span>
+                  </div>
                 </div>
 
-                <div style={{ display: "flex", gap: "var(--space-2)", justifyContent: "center", flexWrap: "wrap", marginBottom: "var(--space-4)" }}>
-                  <Button href="tel:09883005641" variant="accent" size="sm">
-                    <Phone size={14} style={{ marginRight: "6px" }} /> Call 098830 05641
-                  </Button>
-                  <Button href="tel:8240816226" variant="secondary" size="sm">
-                    <Phone size={14} style={{ marginRight: "6px" }} /> Call 82408 16226
-                  </Button>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+                  <Phone size={18} style={{ color: "#007AFF", flexShrink: 0, marginTop: "2px" }} />
+                  <div>
+                    <span style={{ fontSize: "12px", fontWeight: 600, color: "#1D1D1F", display: "block", marginBottom: "2px" }}>
+                      Direct Contact Numbers
+                    </span>
+                    <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "2px" }}>
+                      <a
+                        href={`tel:${siteSettings.phone.replace(/\s/g, "")}`}
+                        style={{ fontSize: "14px", color: "#1D1D1F", fontWeight: 600, textDecoration: "underline" }}
+                      >
+                        {siteSettings.phone}
+                      </a>
+                      {siteSettings.phoneSecondary && (
+                        <a
+                          href={`tel:${siteSettings.phoneSecondary.replace(/\s/g, "")}`}
+                          style={{ fontSize: "14px", color: "#1D1D1F", fontWeight: 600, textDecoration: "underline" }}
+                        >
+                          {siteSettings.phoneSecondary}
+                        </a>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSubmitted(false);
-                    setFormData({
-                      studentName: "",
-                      contactNumber: "",
-                      targetClass: "Class IX",
-                      targetBoard: "ICSE",
-                      notes: "",
-                    });
-                  }}
-                  style={{
-                    fontSize: "var(--text-xs)",
-                    color: "var(--color-accent)",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    textDecoration: "underline",
-                  }}
-                >
-                  Submit another inquiry
-                </button>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+                  <Mail size={18} style={{ color: "#007AFF", flexShrink: 0, marginTop: "2px" }} />
+                  <div>
+                    <span style={{ fontSize: "12px", fontWeight: 600, color: "#1D1D1F", display: "block", marginBottom: "2px" }}>
+                      Email Admissions Desk
+                    </span>
+                    <a
+                      href={`mailto:${siteSettings.email}`}
+                      style={{ fontSize: "14px", color: "#1D1D1F", fontWeight: 600, textDecoration: "underline", display: "block", marginTop: "2px" }}
+                    >
+                      {siteSettings.email}
+                    </a>
+                  </div>
+                </div>
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
-                {errorMessage && (
+            </div>
+          </Reveal>
+
+          <Reveal delay={120}>
+            <div
+              style={{
+                backgroundColor: "#F5F5F7",
+                borderRadius: "16px",
+                border: "1px solid rgba(170, 170, 170, 0.3)",
+                padding: "clamp(24px, 4vw, 36px)",
+              }}
+            >
+              {submitResult ? (
+                <div
+                  role="status"
+                  aria-live="polite"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "16px",
+                  }}
+                >
                   <div
                     style={{
-                      padding: "8px 12px",
-                      backgroundColor: "rgba(255, 59, 48, 0.1)",
-                      border: "1px solid rgba(255, 59, 48, 0.3)",
-                      borderRadius: "var(--radius-sm)",
-                      fontSize: "var(--text-xs)",
-                      color: "#D70015",
-                      fontWeight: 500,
                       display: "flex",
                       alignItems: "center",
-                      gap: "6px",
+                      gap: "10px",
+                      color: submitResult.success ? "#1D1D1F" : "#1D1D1F",
+                      fontWeight: 600,
+                      fontSize: "16px",
                     }}
                   >
-                    <AlertCircle size={14} /> {errorMessage}
+                    {submitResult.success ? (
+                      <CheckCircle2 size={20} style={{ color: "#007AFF" }} />
+                    ) : (
+                      <AlertCircle size={20} style={{ color: "#007AFF" }} />
+                    )}
+                    <span>{submitResult.success ? "Enquiry Received" : "Notice"}</span>
                   </div>
-                )}
 
-                <div>
-                  <label htmlFor="student-name" style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--color-primary)", display: "block", marginBottom: "4px" }}>
-                    Student Full Name *
-                  </label>
-                  <input
-                    id="student-name"
-                    type="text"
-                    required
-                    placeholder="e.g. Taha Rahman"
-                    value={formData.studentName}
-                    onChange={(e) => setFormData({ ...formData, studentName: e.target.value })}
+                  <p
                     style={{
-                      width: "100%",
-                      padding: "10px 14px",
-                      borderRadius: "var(--radius-md)",
-                      border: "1px solid var(--color-border)",
-                      fontSize: "var(--text-sm)",
-                      backgroundColor: "var(--color-surface)",
-                      color: "var(--color-primary)",
-                      outline: "none",
+                      fontSize: "14px",
+                      lineHeight: 1.6,
+                      color: "var(--color-text-secondary)",
+                      margin: 0,
                     }}
-                  />
-                </div>
+                  >
+                    {submitResult.message}
+                  </p>
 
-                <div>
-                  <label htmlFor="contact-num" style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--color-primary)", display: "block", marginBottom: "4px" }}>
-                    Parent / Contact Phone Number *
-                  </label>
-                  <input
-                    id="contact-num"
-                    type="tel"
-                    required
-                    placeholder="e.g. 098830 05641"
-                    value={formData.contactNumber}
-                    onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSubmitResult(null);
+                      setFormData({
+                        studentName: "",
+                        contactNumber: "",
+                        targetClass: "Class IX",
+                        targetBoard: "ICSE",
+                        notes: "",
+                        honeypot: "",
+                      });
+                    }}
                     style={{
-                      width: "100%",
-                      padding: "10px 14px",
-                      borderRadius: "var(--radius-md)",
-                      border: "1px solid var(--color-border)",
-                      fontSize: "var(--text-sm)",
-                      backgroundColor: "var(--color-surface)",
-                      color: "var(--color-primary)",
-                      outline: "none",
+                      alignSelf: "flex-start",
+                      fontSize: "14px",
+                      fontWeight: 600,
+                      color: "#1D1D1F",
+                      background: "none",
+                      border: "none",
+                      padding: 0,
+                      textDecoration: "underline",
+                      cursor: "pointer",
+                      marginTop: "8px",
                     }}
-                  />
+                  >
+                    Submit another enquiry
+                  </button>
                 </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-3)" }}>
-                  <div>
-                    <label htmlFor="target-class" style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--color-primary)", display: "block", marginBottom: "4px" }}>
-                      Academic Class
-                    </label>
-                    <select
-                      id="target-class"
-                      value={formData.targetClass}
-                      onChange={(e) => setFormData({ ...formData, targetClass: e.target.value })}
-                      style={{
-                        width: "100%",
-                        padding: "10px 12px",
-                        borderRadius: "var(--radius-md)",
-                        border: "1px solid var(--color-border)",
-                        fontSize: "var(--text-sm)",
-                        backgroundColor: "var(--color-surface)",
-                        color: "var(--color-primary)",
-                        outline: "none",
-                      }}
-                    >
-                      <option value="Class V">Class V</option>
-                      <option value="Class VI">Class VI</option>
-                      <option value="Class VII">Class VII</option>
-                      <option value="Class VIII">Class VIII</option>
-                      <option value="Class IX">Class IX</option>
-                      <option value="Class X">Class X</option>
-                      <option value="Class XI">Class XI</option>
-                      <option value="Class XII">Class XII</option>
-                    </select>
+              ) : (
+                <form onSubmit={handleSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+                  <div style={{ position: "absolute", left: "-9999px", opacity: 0 }} aria-hidden="true">
+                    <label htmlFor="enquiry-website">Leave blank</label>
+                    <input
+                      id="enquiry-website"
+                      type="text"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={formData.honeypot}
+                      onChange={(e) => setFormData({ ...formData, honeypot: e.target.value })}
+                    />
                   </div>
 
                   <div>
-                    <label htmlFor="target-board" style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--color-primary)", display: "block", marginBottom: "4px" }}>
-                      Education Board
-                    </label>
-                    <select
-                      id="target-board"
-                      value={formData.targetBoard}
-                      onChange={(e) => setFormData({ ...formData, targetBoard: e.target.value })}
+                    <label
+                      htmlFor="student-name"
                       style={{
-                        width: "100%",
-                        padding: "10px 12px",
-                        borderRadius: "var(--radius-md)",
-                        border: "1px solid var(--color-border)",
-                        fontSize: "var(--text-sm)",
-                        backgroundColor: "var(--color-surface)",
-                        color: "var(--color-primary)",
-                        outline: "none",
+                        display: "block",
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        color: "#1D1D1F",
+                        marginBottom: "6px",
                       }}
                     >
-                      <option value="ICSE">ICSE</option>
-                      <option value="CBSE">CBSE</option>
-                      <option value="West Bengal Board">West Bengal Board</option>
-                    </select>
+                      Student Full Name *
+                    </label>
+                    <input
+                      id="student-name"
+                      type="text"
+                      required
+                      placeholder="e.g. Farhan Ahmed"
+                      value={formData.studentName}
+                      aria-invalid={!!errors.studentName}
+                      aria-describedby={errors.studentName ? "student-name-error" : undefined}
+                      onChange={(e) => {
+                        setFormData({ ...formData, studentName: e.target.value });
+                        if (errors.studentName) {
+                          setErrors({ ...errors, studentName: "" });
+                        }
+                      }}
+                      style={{
+                        width: "100%",
+                        height: "42px",
+                        padding: "0 14px",
+                        borderRadius: "8px",
+                        border: errors.studentName ? "1.5px solid #1D1D1F" : "1px solid rgba(170, 170, 170, 0.5)",
+                        backgroundColor: "#FFFFFF",
+                        color: "#1D1D1F",
+                        fontSize: "14px",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                    {errors.studentName && (
+                      <span
+                        id="student-name-error"
+                        role="alert"
+                        style={{
+                          fontSize: "12px",
+                          color: "#1D1D1F",
+                          fontWeight: 500,
+                          marginTop: "4px",
+                          display: "block",
+                        }}
+                      >
+                        {errors.studentName}
+                      </span>
+                    )}
                   </div>
-                </div>
 
-                <div>
-                  <label htmlFor="notes" style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--color-primary)", display: "block", marginBottom: "4px" }}>
-                    Subjects Needed / Preferred Timings
-                  </label>
-                  <textarea
-                    id="notes"
-                    rows={3}
-                    placeholder="e.g. Interested in Maths 3-day batch and Science mock tests..."
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  <div>
+                    <label
+                      htmlFor="contact-number"
+                      style={{
+                        display: "block",
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        color: "#1D1D1F",
+                        marginBottom: "6px",
+                      }}
+                    >
+                      Parent / Guardian Contact Number *
+                    </label>
+                    <input
+                      id="contact-number"
+                      type="tel"
+                      required
+                      placeholder="10-digit mobile number"
+                      value={formData.contactNumber}
+                      aria-invalid={!!errors.contactNumber}
+                      aria-describedby={errors.contactNumber ? "contact-number-error" : undefined}
+                      onChange={(e) => {
+                        setFormData({ ...formData, contactNumber: e.target.value });
+                        if (errors.contactNumber) {
+                          setErrors({ ...errors, contactNumber: "" });
+                        }
+                      }}
+                      style={{
+                        width: "100%",
+                        height: "42px",
+                        padding: "0 14px",
+                        borderRadius: "8px",
+                        border: errors.contactNumber ? "1.5px solid #1D1D1F" : "1px solid rgba(170, 170, 170, 0.5)",
+                        backgroundColor: "#FFFFFF",
+                        color: "#1D1D1F",
+                        fontSize: "14px",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                    {errors.contactNumber && (
+                      <span
+                        id="contact-number-error"
+                        role="alert"
+                        style={{
+                          fontSize: "12px",
+                          color: "#1D1D1F",
+                          fontWeight: 500,
+                          marginTop: "4px",
+                          display: "block",
+                        }}
+                      >
+                        {errors.contactNumber}
+                      </span>
+                    )}
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                    <div>
+                      <label
+                        htmlFor="target-class"
+                        style={{
+                          display: "block",
+                          fontSize: "13px",
+                          fontWeight: 600,
+                          color: "#1D1D1F",
+                          marginBottom: "6px",
+                        }}
+                      >
+                        Target Class
+                      </label>
+                      <select
+                        id="target-class"
+                        value={formData.targetClass}
+                        onChange={(e) => setFormData({ ...formData, targetClass: e.target.value })}
+                        style={{
+                          width: "100%",
+                          height: "42px",
+                          padding: "0 10px",
+                          borderRadius: "8px",
+                          border: "1px solid rgba(170, 170, 170, 0.5)",
+                          backgroundColor: "#FFFFFF",
+                          color: "#1D1D1F",
+                          fontSize: "14px",
+                          boxSizing: "border-box",
+                        }}
+                      >
+                        <option value="Class V">Class V</option>
+                        <option value="Class VI">Class VI</option>
+                        <option value="Class VII">Class VII</option>
+                        <option value="Class VIII">Class VIII</option>
+                        <option value="Class IX">Class IX</option>
+                        <option value="Class X">Class X</option>
+                        <option value="Class XI">Class XI</option>
+                        <option value="Class XII">Class XII</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="target-board"
+                        style={{
+                          display: "block",
+                          fontSize: "13px",
+                          fontWeight: 600,
+                          color: "#1D1D1F",
+                          marginBottom: "6px",
+                        }}
+                      >
+                        Board
+                      </label>
+                      <select
+                        id="target-board"
+                        value={formData.targetBoard}
+                        onChange={(e) => setFormData({ ...formData, targetBoard: e.target.value })}
+                        style={{
+                          width: "100%",
+                          height: "42px",
+                          padding: "0 10px",
+                          borderRadius: "8px",
+                          border: "1px solid rgba(170, 170, 170, 0.5)",
+                          backgroundColor: "#FFFFFF",
+                          color: "#1D1D1F",
+                          fontSize: "14px",
+                          boxSizing: "border-box",
+                        }}
+                      >
+                        <option value="ICSE">ICSE</option>
+                        <option value="CBSE">CBSE</option>
+                        <option value="West Bengal Board">West Bengal Board</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="enquiry-notes"
+                      style={{
+                        display: "block",
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        color: "#1D1D1F",
+                        marginBottom: "6px",
+                      }}
+                    >
+                      Academic Focus / Notes (Optional)
+                    </label>
+                    <textarea
+                      id="enquiry-notes"
+                      rows={3}
+                      placeholder="e.g. Focus needed in ICSE Mathematics and Physics"
+                      value={formData.notes}
+                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                      style={{
+                        width: "100%",
+                        padding: "10px 14px",
+                        borderRadius: "8px",
+                        border: "1px solid rgba(170, 170, 170, 0.5)",
+                        backgroundColor: "#FFFFFF",
+                        color: "#1D1D1F",
+                        fontSize: "14px",
+                        resize: "vertical",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="btn-primary"
                     style={{
+                      height: "44px",
                       width: "100%",
-                      padding: "10px 14px",
-                      borderRadius: "var(--radius-md)",
-                      border: "1px solid var(--color-border)",
-                      fontSize: "var(--text-sm)",
-                      backgroundColor: "var(--color-surface)",
-                      color: "var(--color-primary)",
-                      outline: "none",
-                      fontFamily: "inherit",
+                      justifyContent: "center",
+                      fontSize: "15px",
+                      fontWeight: 600,
+                      marginTop: "6px",
                     }}
-                  />
-                </div>
-
-                <Button type="submit" variant="accent" size="md" style={{ width: "100%" }}>
-                  Submit Admission Inquiry
-                </Button>
-
-                <p style={{ fontSize: "11px", color: "var(--color-neutral-dark)", textAlign: "center", margin: 0 }}>
-                  Inquiries are reviewed directly by Azhar Sir and admissions staff at Park Circus.
-                </p>
-              </form>
-            )}
-          </Card>
+                  >
+                    {isSubmitting ? "Submitting..." : "Submit Admissions Enquiry"}
+                  </button>
+                </form>
+              )}
+            </div>
+          </Reveal>
         </div>
       </div>
     </section>

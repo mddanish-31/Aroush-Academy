@@ -1,4 +1,5 @@
 import React from "react";
+import { ChevronDown } from "lucide-react";
 import { FaqItem } from "@/types";
 
 export const metadata = {
@@ -69,15 +70,35 @@ const FAQ_ITEMS: FaqItem[] = [
 export default function FaqPage() {
   const categories = Array.from(new Set(FAQ_ITEMS.map((item) => item.category)));
 
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQ_ITEMS.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+
   return (
     <div style={{ paddingTop: "var(--space-12)", paddingBottom: "var(--space-16)" }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(faqJsonLd),
+        }}
+      />
       <div className="container-narrow">
         <div style={{ marginBottom: "var(--space-8)" }}>
-          <span style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--color-accent-blue)", fontWeight: 600 }}>
+          <span style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--color-text-secondary)", fontWeight: 600 }}>
             Admissions and Academic Guidance
           </span>
           <h1
             style={{
+              fontFamily: "var(--font-fraunces), serif",
               fontSize: "clamp(2rem, 4vw, 3rem)",
               letterSpacing: "-0.02em",
               marginTop: "var(--space-2)",
@@ -96,9 +117,10 @@ export default function FaqPage() {
             <div key={category}>
               <h2
                 style={{
+                  fontFamily: "var(--font-fraunces), serif",
                   fontSize: "var(--text-lg)",
                   fontWeight: 600,
-                  color: "var(--color-primary)",
+                  color: "#1D1D1F",
                   paddingBottom: "var(--space-2)",
                   borderBottom: "1px solid rgba(170, 170, 170, 0.35)",
                   marginBottom: "var(--space-4)",
@@ -132,7 +154,7 @@ export default function FaqPage() {
                       }}
                     >
                       <span>{item.question}</span>
-                      <span style={{ color: "var(--color-text-secondary)", fontSize: "var(--text-xs)", marginLeft: "var(--space-2)" }}>+</span>
+                      <ChevronDown size={16} style={{ color: "var(--color-text-secondary)", flexShrink: 0, marginLeft: "var(--space-2)" }} />
                     </summary>
 
                     <div style={{ marginTop: "var(--space-3)", paddingTop: "var(--space-3)", borderTop: "1px solid rgba(170, 170, 170, 0.2)", cursor: "default" }}>

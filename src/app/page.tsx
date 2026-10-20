@@ -5,7 +5,6 @@ import { Courses } from "@/components/landing/Courses";
 import { Features } from "@/components/landing/Features";
 import { Faculty } from "@/components/landing/Faculty";
 import { HowItWorks } from "@/components/landing/HowItWorks";
-import { RolesOverview } from "@/components/landing/RolesOverview";
 import { EnquirySection } from "@/components/landing/EnquirySection";
 import { FaqPreview } from "@/components/landing/FaqPreview";
 import { FinalCta } from "@/components/landing/FinalCta";
@@ -23,7 +22,6 @@ export default async function HomePage() {
       <Features />
       <Faculty />
       <HowItWorks />
-      <RolesOverview />
       <EnquirySection />
       <FaqPreview />
       {site.featureFlags.showPricing && <Pricing />}
@@ -31,3 +29,4 @@ export default async function HomePage() {
     </>
   );
 }
+

@@ -1,100 +1,56 @@
 import React from "react";
-import { Button } from "../ui/Button";
+import { Reveal } from "@/components/common/Reveal";
 
 export function FinalCta() {
   return (
-    <section style={{ padding: "var(--space-16) 0" }}>
-      <div className="container">
-        <div
-          style={{
-            backgroundColor: "var(--color-primary)",
-            borderRadius: "var(--radius-xl)",
-            padding: "clamp(var(--space-8), 6vw, var(--space-16))",
-            color: "var(--color-surface)",
-            textAlign: "center",
-            boxShadow: "var(--shadow-lg)",
-            border: "1px solid rgba(255, 255, 255, 0.08)",
-          }}
-        >
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "4px 14px",
-              backgroundColor: "rgba(255, 255, 255, 0.12)",
-              borderRadius: "var(--radius-full)",
-              fontSize: "var(--text-xs)",
-              fontWeight: 500,
-              color: "#FFFFFF",
-              marginBottom: "var(--space-4)",
-            }}
-          >
-            <span>●</span> Admissions Open &bull; Classes V-XII
-          </div>
-
+    <section
+      style={{
+        backgroundColor: "#FFFFFF",
+        padding: "clamp(64px, 8vw, 104px) 0",
+        borderTop: "1px solid rgba(170, 170, 170, 0.3)",
+      }}
+    >
+      <div style={{ maxWidth: "800px", margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
+        <Reveal>
           <h2
             style={{
-              fontSize: "clamp(2rem, 4.5vw, 3.25rem)",
+              fontFamily: "var(--font-display)",
+              fontSize: "clamp(2rem, 4vw, 3rem)",
+              lineHeight: 1.1,
+              color: "#1D1D1F",
               fontWeight: 700,
-              letterSpacing: "-0.03em",
-              color: "#FFFFFF",
-              lineHeight: 1.15,
-              marginBottom: "var(--space-4)",
-              maxWidth: "780px",
-              margin: "0 auto var(--space-4)",
+              margin: "0 0 16px 0",
             }}
           >
-            Build conceptual clarity and board exam confidence.
+            Start with conceptual clarity this academic year.
           </h2>
 
           <p
             style={{
-              fontSize: "clamp(1rem, 1.8vw, 1.15rem)",
-              color: "var(--color-neutral)",
-              maxWidth: "640px",
-              margin: "0 auto var(--space-8)",
+              fontSize: "16px",
               lineHeight: 1.6,
+              color: "var(--color-text-secondary)",
+              maxWidth: "540px",
+              margin: "0 auto 32px auto",
             }}
           >
-            Join ArousH Academy at Park Circus. Learn from dedicated subject specialists with intensive mathematics routines, monthly mock testing, and personal doubt resolution.
+            Schedule a consultation at our Park Circus campus and observe a lecture before enrolling.
           </p>
 
-          <div
+          <a
+            href="#enquiry"
+            className="btn-primary"
             style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "var(--space-3)",
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: "var(--space-8)",
+              padding: "14px 28px",
+              borderRadius: "10px",
+              fontSize: "16px",
+              fontWeight: 600,
+              display: "inline-flex",
             }}
           >
-            <Button href="#enquiry" variant="accent" size="lg">
-              Inquire for Admissions
-            </Button>
-            <Button href="tel:09883005641" variant="secondary" size="lg">
-              Call Azhar Sir (098830 05641)
-            </Button>
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "center",
-              gap: "var(--space-6)",
-              fontSize: "var(--text-xs)",
-              color: "var(--color-neutral)",
-              borderTop: "1px solid rgba(255, 255, 255, 0.12)",
-              paddingTop: "var(--space-6)",
-            }}
-          >
-            <span>✓ Classes V-XII &bull; ICSE, CBSE &amp; WB Board</span>
-            <span>✓ Maths 3 Days/Week with Dual Faculty</span>
-            <span>✓ 1/1 Samsul Huda Road, Park Circus</span>
-          </div>
-        </div>
+            Inquire for admissions
+          </a>
+        </Reveal>
       </div>
     </section>
   );

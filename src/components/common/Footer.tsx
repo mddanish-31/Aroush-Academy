@@ -4,6 +4,7 @@ import React, { useMemo } from "react";
 import Link from "next/link";
 import { Phone, Mail, MapPin } from "lucide-react";
 import { openCookiePreferences } from "./CookieConsent";
+import { MotionToggle } from "@/lib/motion/MotionProvider";
 import { siteSettings } from "@/content/site";
 import { MEDIA } from "@/content/media";
 
@@ -78,9 +79,9 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.08em", color: "#1D1D1F", fontWeight: 600, marginBottom: "var(--space-3)" }}>
+            <h3 style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.08em", color: "#1D1D1F", fontWeight: 600, marginBottom: "var(--space-3)" }}>
               Programs
-            </h4>
+            </h3>
             <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
               <li>
                 <Link href="/#courses-v-viii" className="nav-link" style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}>
@@ -106,9 +107,9 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.08em", color: "#1D1D1F", fontWeight: 600, marginBottom: "var(--space-3)" }}>
+            <h3 style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.08em", color: "#1D1D1F", fontWeight: 600, marginBottom: "var(--space-3)" }}>
               Academy
-            </h4>
+            </h3>
             <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
               <li>
                 <Link href="/#about" className="nav-link" style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}>
@@ -139,9 +140,9 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.08em", color: "#1D1D1F", fontWeight: 600, marginBottom: "var(--space-3)" }}>
+            <h3 style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.08em", color: "#1D1D1F", fontWeight: 600, marginBottom: "var(--space-3)" }}>
               Legal and Contact
-            </h4>
+            </h3>
             <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
               <li>
                 <Link href="/privacy" className="nav-link" style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}>
@@ -167,7 +168,7 @@ export function Footer() {
                     border: "none",
                     transition: "color 200ms ease-out",
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = "#007AFF")}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "#1D1D1F")}
                   onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-secondary)")}
                 >
                   Cookie Settings
@@ -196,10 +197,10 @@ export function Footer() {
               <li>
                 <a
                   href={`mailto:${siteSettings.email}`}
-                  style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "var(--text-sm)", color: "#007AFF", textDecoration: "none" }}
+                  style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "var(--text-sm)", color: "#1D1D1F", textDecoration: "none" }}
                 >
-                  <Mail size={14} />
-                  <span>Email Admissions</span>
+                  <Mail size={14} style={{ color: "#007AFF" }} />
+                  <span style={{ textDecoration: "underline", textDecorationColor: "#007AFF", textUnderlineOffset: "3px" }}>Email Admissions</span>
                 </a>
               </li>
             </ul>
@@ -221,6 +222,7 @@ export function Footer() {
         >
           <span>&copy; 2026 ArousH Academy (Azhar Sir). All rights reserved.</span>
           <span>Photos: Unsplash ({photoCredits})</span>
+          <MotionToggle />
         </div>
       </div>
     </footer>

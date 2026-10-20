@@ -22,6 +22,7 @@ const allMedia: MediaItem[] = [
 ];
 
 const ids = new Set<string>();
+const photoIds = new Set<string>();
 for (const item of allMedia) {
   if (!item.id || item.id.trim() === "") {
     error(`MediaItem has empty id: ${JSON.stringify(item)}`);
@@ -29,6 +30,18 @@ for (const item of allMedia) {
     error(`Duplicate MediaItem id: ${item.id}`);
   } else {
     ids.add(item.id);
+  }
+
+  const photoMatch = item.url.match(/photo-([a-zA-Z0-9-]+)/);
+  if (!photoMatch) {
+    error(`MediaItem ${item.id} URL does not contain an Unsplash photo id`);
+  } else {
+    const photoId = photoMatch[1];
+    if (photoIds.has(photoId)) {
+      error(`Duplicate Unsplash photo id detected: ${photoId} on MediaItem ${item.id}`);
+    } else {
+      photoIds.add(photoId);
+    }
   }
 
   if (!item.alt || item.alt.trim() === "") {
@@ -43,7 +56,7 @@ for (const item of allMedia) {
     error(`MediaItem ${item.id} isStock must be true`);
   }
 }
-success(`All ${allMedia.length} MediaItems have valid IDs, non-empty honest alt, Unsplash HTTPS URLs, and isStock: true.`);
+success(`All ${allMedia.length} MediaItems have valid unique IDs, distinct Unsplash photo IDs, honest alt, and isStock: true.`);
 
 const emDash = "\u2014";
 const enDash = "\u2013";

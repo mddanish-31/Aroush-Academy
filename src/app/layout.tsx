@@ -10,17 +10,15 @@ import { MEDIA } from "@/content/media";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
-  variable: "--font-display",
+  variable: "--font-fraunces",
   display: "swap",
   axes: ["opsz"],
-  fallback: ["Georgia", "serif"],
 });
 
 const manrope = Manrope({
   subsets: ["latin"],
-  variable: "--font-body",
+  variable: "--font-manrope",
   display: "swap",
-  fallback: ["-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
 });
 
 import { SITE_URL } from "@/lib/siteUrl";
@@ -110,6 +108,9 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        <noscript>
+          <style>{`.reveal-item { opacity: 1 !important; transform: none !important; }`}</style>
+        </noscript>
       </head>
       <body>
         <MotionProvider>
@@ -118,7 +119,9 @@ export default function RootLayout({
               Skip to content
             </a>
             <Header />
-            <main id="main-content">{children}</main>
+            <main id="main-content" tabIndex={-1}>
+              {children}
+            </main>
             <Footer />
             <CookieConsent />
           </AuthProvider>
