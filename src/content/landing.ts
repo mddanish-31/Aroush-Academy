@@ -53,7 +53,12 @@ export const landingContent: LandingContent = {
       description:
         "The entire school syllabus, subject by subject. Shaky fundamentals in middle school quietly turn into board exam struggles later, so these years emphasize conceptual grounding and problem-solving habits.",
       boards: "ICSE, CBSE & West Bengal Board",
-      subjects: ["Mathematics", "General Science", "English Language & Literature", "Social Sciences"],
+      subjects: [
+        { name: "Mathematics", verified: false },
+        { name: "General Science", verified: false },
+        { name: "English Language & Literature", verified: false },
+        { name: "Social Sciences", verified: false },
+      ],
       mediaKey: "foundation",
       ctaLabel: "Enquire about Class V-VIII",
     },
@@ -64,7 +69,14 @@ export const landingContent: LandingContent = {
       description:
         "Comprehensive board syllabus coverage with scheduled monthly mock tests, past paper dissection, and structured revision rounds built into routine classes so the final months remain calm.",
       boards: "ICSE, CBSE & West Bengal Board",
-      subjects: ["Mathematics", "Physics", "Chemistry", "Biology", "English", "Vernacular"],
+      subjects: [
+        { name: "Mathematics", verified: true },
+        { name: "Physics", verified: true },
+        { name: "Chemistry", verified: true },
+        { name: "Biology", verified: false },
+        { name: "English", verified: false },
+        { name: "Vernacular", verified: false },
+      ],
       mediaKey: "secondaryScience",
       ctaLabel: "Enquire about Class IX-X",
     },
@@ -75,7 +87,13 @@ export const landingContent: LandingContent = {
       description:
         "Specialized subject faculty for Commerce, Science, and Arts papers. Focuses on numerical clarity, ledger accuracy, conceptual theorems, and analytical long-answer decoding.",
       boards: "ICSE, CBSE & West Bengal Board",
-      subjects: ["Accountancy", "Economics", "Mathematics", "Computer Science", "Humanities Papers"],
+      subjects: [
+        { name: "Accountancy", verified: true },
+        { name: "Economics", verified: true },
+        { name: "Mathematics", verified: true },
+        { name: "Computer Science", verified: false },
+        { name: "Humanities Papers", verified: false },
+      ],
       mediaKey: "higherSecondaryStreams",
       ctaLabel: "Enquire about Class XI-XII",
     },

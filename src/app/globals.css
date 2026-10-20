@@ -679,20 +679,6 @@ button.btn-ghost:focus-visible {
   border-color: #1D1D1F !important;
 }
 
-.role-portal-link {
-  transition: border-color 150ms ease-out, background-color 150ms ease-out;
-}
-.role-portal-link:hover {
-  border-color: #1D1D1F !important;
-  background-color: rgba(29, 29, 31, 0.04) !important;
-}
-
-.container-narrow .badge-accent {
-  background-color: rgba(29, 29, 31, 0.08) !important;
-  color: #1D1D1F !important;
-  border-color: rgba(29, 29, 31, 0.15) !important;
-}
-
 .container-narrow button[role="radio"][aria-checked="true"] {
   background-color: #1D1D1F !important;
   color: #FFFFFF !important;

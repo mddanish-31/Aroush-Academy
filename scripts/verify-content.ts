@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { MEDIA } from "../src/content/media";
 import type { MediaItem } from "../src/content/types";
+import { landingContent } from "../src/content/landing";
 
 let failed = false;
 
@@ -57,6 +58,17 @@ for (const item of allMedia) {
   }
 }
 success(`All ${allMedia.length} MediaItems have valid unique IDs, distinct Unsplash photo IDs, honest alt, and isStock: true.`);
+
+let subjectCount = 0;
+for (const course of landingContent.courses) {
+  for (const subject of course.subjects) {
+    subjectCount++;
+    if (typeof subject.verified !== "boolean") {
+      error(`Subject "${subject.name}" in course "${course.id}" must have an explicit verified boolean flag.`);
+    }
+  }
+}
+success(`All ${subjectCount} subjects across all courses have an explicit verified boolean flag.`);
 
 const emDash = "\u2014";
 const enDash = "\u2013";

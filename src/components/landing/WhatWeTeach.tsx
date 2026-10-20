@@ -76,63 +76,107 @@ export function WhatWeTeach() {
               </div>
 
               <div style={{ display: "flex", flexDirection: "column" }}>
-                {course.subjects.map((subject) => (
-                  <Link
-                    key={`${course.id}-${subject}`}
-                    href={`#${course.id}`}
-                    className="what-we-teach-row"
-                    data-subject={subject}
-                    data-course={course.id}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "clamp(16px, 2.2vw, 24px) 0",
-                      borderBottom: "1px solid rgba(170, 170, 170, 0.35)",
-                      textDecoration: "none",
-                      transition: "transform 200ms ease-out",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontFamily: "var(--font-display)",
-                        fontSize: "clamp(24px, 3.2vw, 42px)",
-                        fontWeight: 600,
-                        color: "#1D1D1F",
-                        lineHeight: 1.15,
-                      }}
-                    >
-                      {subject}
-                    </span>
-
-                    <div
+                {(() => {
+                  const verifiedList = course.subjects.filter((s) => s.verified);
+                  if (verifiedList.length === 0) {
+                    return (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          padding: "clamp(16px, 2.2vw, 24px) 0",
+                          borderBottom: "1px solid rgba(170, 170, 170, 0.35)",
+                          flexWrap: "wrap",
+                          gap: "12px",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: "15px",
+                            color: "var(--color-text-secondary)",
+                          }}
+                        >
+                          {course.classes}
+                        </span>
+                        <a
+                          href="#enquiry"
+                          style={{
+                            fontSize: "15px",
+                            fontWeight: 600,
+                            color: "#1D1D1F",
+                            textDecoration: "underline",
+                            textDecorationColor: "#007AFF",
+                            textUnderlineOffset: "3px",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          <span>Ask us about this class</span>
+                          <ArrowRight size={16} style={{ color: "#007AFF" }} />
+                        </a>
+                      </div>
+                    );
+                  }
+                  return verifiedList.map((subject) => (
+                    <Link
+                      key={`${course.id}-${subject.name}`}
+                      href={`#${course.id}`}
+                      className="what-we-teach-row"
+                      data-subject={subject.name}
+                      data-course={course.id}
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        gap: "12px",
-                        flexShrink: 0,
+                        justifyContent: "space-between",
+                        padding: "clamp(16px, 2.2vw, 24px) 0",
+                        borderBottom: "1px solid rgba(170, 170, 170, 0.35)",
+                        textDecoration: "none",
+                        transition: "transform 200ms ease-out",
                       }}
                     >
                       <span
-                        className="what-we-teach-meta"
                         style={{
-                          fontSize: "13px",
-                          color: "var(--color-text-secondary)",
+                          fontFamily: "var(--font-display)",
+                          fontSize: "clamp(24px, 3.2vw, 42px)",
+                          fontWeight: 600,
+                          color: "#1D1D1F",
+                          lineHeight: 1.15,
                         }}
                       >
-                        {course.classes}
+                        {subject.name}
                       </span>
-                      <ArrowRight
-                        size={18}
-                        className="what-we-teach-arrow"
+
+                      <div
                         style={{
-                          color: "#007AFF",
-                          transition: "transform 200ms ease-out, opacity 200ms ease-out",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                          flexShrink: 0,
                         }}
-                      />
-                    </div>
-                  </Link>
-                ))}
+                      >
+                        <span
+                          className="what-we-teach-meta"
+                          style={{
+                            fontSize: "13px",
+                            color: "var(--color-text-secondary)",
+                          }}
+                        >
+                          {course.classes}
+                        </span>
+                        <ArrowRight
+                          size={18}
+                          className="what-we-teach-arrow"
+                          style={{
+                            color: "#007AFF",
+                            transition: "transform 200ms ease-out, opacity 200ms ease-out",
+                          }}
+                        />
+                      </div>
+                    </Link>
+                  ));
+                })()}
               </div>
             </div>
           ))}

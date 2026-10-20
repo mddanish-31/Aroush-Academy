@@ -2,12 +2,20 @@ import React from "react";
 import { ArrowRight } from "lucide-react";
 import { HeroGallery } from "./HeroGallery";
 import type { HeroContent } from "@/content/types";
+import { landingContent } from "@/content/landing";
 
 interface HeroProps {
   hero: HeroContent;
 }
 
 export function Hero({ hero }: HeroProps) {
+  const verifiedSubjects = Array.from(
+    new Set(
+      landingContent.courses.flatMap((c) =>
+        c.subjects.filter((s) => s.verified).map((s) => s.name)
+      )
+    )
+  ).join(", ");
   return (
     <section
       style={{
@@ -129,7 +137,7 @@ export function Hero({ hero }: HeroProps) {
             marginBottom: "0",
           }}
         >
-          Mathematics, Physics, Chemistry, Biology, English, Accountancy, Economics, Computer Science
+          {verifiedSubjects}
         </p>
       </div>
 

@@ -91,13 +91,18 @@ export interface TeachingPillar {
   summary: string;
 }
 
+export interface CourseSubject {
+  name: string;
+  verified: boolean;
+}
+
 export interface CourseDivision {
   id: string;
   classes: string;
   title: string;
   description: string;
   boards: string;
-  subjects: string[];
+  subjects: CourseSubject[];
   mediaKey: "foundation" | "secondaryScience" | "higherSecondaryStreams";
   ctaLabel: string;
 }

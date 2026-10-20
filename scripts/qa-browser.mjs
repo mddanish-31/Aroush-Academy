@@ -983,6 +983,14 @@ async function run() {
         `What we teach section renders directly after hero (next section id="${sectionAfterHero.id}")`
       );
 
+      const verifiedSubjectNames = ["Mathematics", "Physics", "Chemistry", "Accountancy", "Economics"];
+      const unverifiedSubjectNames = ["Biology", "Computer Science", "Humanities Papers", "General Science", "Social Sciences", "Vernacular"];
+
+      const heroSubjectsText = await teachPage.locator(".hero-enter-subjects").textContent();
+      const heroHasOnlyVerified = verifiedSubjectNames.some((s) => heroSubjectsText.includes(s)) &&
+        unverifiedSubjectNames.every((s) => !heroSubjectsText.includes(s));
+      assert(heroHasOnlyVerified, `Hero line contains only verified subjects and no unverified subjects: "${heroSubjectsText?.trim()}"`);
+
       const rowsData = await teachPage.evaluate(() => {
         const rows = Array.from(document.querySelectorAll("#what-we-teach .what-we-teach-row"));
         return rows.map((r) => ({
@@ -993,9 +1001,47 @@ async function run() {
         }));
       });
 
-      assert(rowsData.length >= 12, `What we teach renders index rows (found ${rowsData.length} rows)`);
+      assert(rowsData.length === 6, `What we teach renders only verified subject rows (expected 6, found ${rowsData.length})`);
+      const allRowsVerified = rowsData.every((r) => verifiedSubjectNames.includes(r.subject) && !unverifiedSubjectNames.includes(r.subject));
+      assert(allRowsVerified, `All rows in What we teach belong to verified subjects: ${rowsData.map((r) => r.subject).join(", ")}`);
       const allTargetsValid = rowsData.every((r) => r.targetExists);
       assert(allTargetsValid, "Every row in What we teach links to an existing section target id in Courses");
+
+      const foundationEnquiry = await teachPage.evaluate(() => {
+        const teachText = document.querySelector("#what-we-teach")?.textContent || "";
+        const coursesText = document.querySelector("#courses")?.textContent || "";
+        return {
+          teachHasClassRange: teachText.includes("Class V-VIII"),
+          teachHasAskLink: teachText.includes("Ask us about this class"),
+          coursesHasClassRange: coursesText.includes("Class V-VIII"),
+          coursesHasAskLink: coursesText.includes("Ask us about this class"),
+        };
+      });
+      assert(
+        foundationEnquiry.teachHasClassRange && foundationEnquiry.teachHasAskLink,
+        "What we teach displays class range and plain Ask us about this class link for unverified division"
+      );
+      assert(
+        foundationEnquiry.coursesHasClassRange && foundationEnquiry.coursesHasAskLink,
+        "Courses displays class range and plain Ask us about this class link for unverified division"
+      );
+
+      const pageSubjectsHonesty = await teachPage.evaluate((unverified) => {
+        const teach = document.querySelector("#what-we-teach")?.textContent || "";
+        const courses = document.querySelector("#courses")?.textContent || "";
+        const hero = document.querySelector(".hero-enter-subjects")?.textContent || "";
+        const found = [];
+        for (const name of unverified) {
+          if (teach.includes(name) || courses.includes(name) || hero.includes(name)) {
+            found.push(name);
+          }
+        }
+        return found;
+      }, unverifiedSubjectNames);
+      assert(
+        pageSubjectsHonesty.length === 0,
+        `Zero unverified subjects found on / (unverified list checked: ${unverifiedSubjectNames.join(", ")}, found: ${pageSubjectsHonesty.join(", ") || "none"})`
+      );
 
       const shotTeach1440 = path.join(outputDir, `screenshot-what-we-teach-1440-${tag}.png`);
       const whatWeTeachLoc = teachPage.locator("#what-we-teach");
@@ -1162,6 +1208,87 @@ async function run() {
       await gridPage390.screenshot({ path: shotGrid390 });
       assert(fs.existsSync(shotGrid390), `Hero grid 390 screenshot saved: ${shotGrid390}`);
       await gridPage390.close();
+    }
+
+    console.log("\n--- Section 14: Mobile Touch Interactions (hasTouch: true, 390 viewport) ---");
+    {
+      const touchContext = await browser.newContext({
+        viewport: { width: 390, height: 844 },
+        hasTouch: true,
+      });
+      await touchContext.addInitScript(() => {
+        window.localStorage.setItem(
+          "aroushh_cookie_preferences_v1",
+          JSON.stringify({
+            necessary: true,
+            functional: false,
+            analytics: false,
+            marketing: false,
+            consented: true,
+          })
+        );
+      });
+      const touchPage = await touchContext.newPage();
+      await touchPage.goto(QA_URL, { waitUntil: "domcontentloaded" });
+      await touchPage.waitForTimeout(300);
+
+      const menuToggle = touchPage.locator("button.mobile-toggle");
+      await menuToggle.tap();
+      await touchPage.waitForTimeout(300);
+
+      const loginTrigger = touchPage.locator("#mobile-navigation-drawer button[aria-controls='mobile-accordion-login']");
+      await loginTrigger.tap();
+      await touchPage.waitForTimeout(250);
+      const loginPanel = touchPage.locator("#mobile-accordion-login");
+      const isLoginOpen = await loginPanel.getAttribute("data-state");
+      assert(isLoginOpen === "open", "Touch tap on Log In header trigger opens the panel");
+      assert(touchPage.url().replace(/\/$/, "") === QA_URL.replace(/\/$/, ""), `Touch tap on Log In header trigger does not navigate away from / (current url: ${touchPage.url()})`);
+
+      const teacherLoginItem = loginPanel.locator("a[href*='role=teacher']");
+      await teacherLoginItem.tap();
+      await touchPage.waitForURL("**/login?role=teacher");
+      assert(touchPage.url().includes("/login?role=teacher"), `Touch tap on role item in Log In panel navigated to /login?role=teacher (current: ${touchPage.url()})`);
+
+      await touchPage.goto(QA_URL, { waitUntil: "domcontentloaded" });
+      await touchPage.waitForTimeout(300);
+      await menuToggle.tap();
+      await touchPage.waitForTimeout(300);
+
+      const regTrigger = touchPage.locator("#mobile-navigation-drawer button[aria-controls='mobile-accordion-register']");
+      await regTrigger.tap();
+      await touchPage.waitForTimeout(250);
+      const regPanel = touchPage.locator("#mobile-accordion-register");
+      const isRegOpen = await regPanel.getAttribute("data-state");
+      assert(isRegOpen === "open", "Touch tap on Sign Up header trigger opens the panel");
+      assert(touchPage.url().replace(/\/$/, "") === QA_URL.replace(/\/$/, ""), `Touch tap on Sign Up header trigger does not navigate away from / (current url: ${touchPage.url()})`);
+
+      const parentRegItem = regPanel.locator("a[href*='role=parent']");
+      await parentRegItem.tap();
+      await touchPage.waitForURL("**/register?role=parent");
+      assert(touchPage.url().includes("/register?role=parent"), `Touch tap on role item in Sign Up panel navigated to /register?role=parent (current: ${touchPage.url()})`);
+
+      await touchPage.close();
+      await touchContext.close();
+    }
+
+    console.log("\n--- Section 15: Auth Mode & Demo Helper Check ---");
+    {
+      const authPage = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+      await authPage.goto(`${QA_URL}/login`, { waitUntil: "domcontentloaded" });
+      await authPage.waitForTimeout(300);
+
+      const demoDetails = authPage.locator("details");
+      const detailsCount = await demoDetails.count();
+
+      if (isProd) {
+        assert(detailsCount === 0, `In production build, demo helper details element is absent from DOM (found: ${detailsCount})`);
+      } else {
+        assert(detailsCount > 0, `In dev run with NEXT_PUBLIC_AUTH_MODE=demo, demo helper details element is present (found: ${detailsCount})`);
+        const isOpen = await demoDetails.evaluate((el) => el.open);
+        assert(!isOpen, "In dev run with NEXT_PUBLIC_AUTH_MODE=demo, demo helper details element is closed by default");
+      }
+
+      await authPage.close();
     }
   } finally {
     await browser.close();

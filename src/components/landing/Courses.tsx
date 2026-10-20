@@ -138,18 +138,52 @@ export function Courses() {
                       {course.title}
                     </h3>
 
-                    <div
-                      style={{
-                        fontFamily: "var(--font-display)",
-                        fontSize: "clamp(1.5rem, 2.5vw, 2.15rem)",
-                        fontWeight: 700,
-                        color: "#1D1D1F",
-                        lineHeight: 1.2,
-                        margin: "0 0 14px 0",
-                      }}
-                    >
-                      {course.subjects.join(", ")}
-                    </div>
+                    {(() => {
+                      const verifiedList = course.subjects.filter((s) => s.verified);
+                      if (verifiedList.length === 0) {
+                        return (
+                          <div
+                            style={{
+                              fontFamily: "var(--font-display)",
+                              fontSize: "clamp(1.2rem, 2vw, 1.6rem)",
+                              fontWeight: 600,
+                              color: "#1D1D1F",
+                              lineHeight: 1.2,
+                              margin: "0 0 14px 0",
+                            }}
+                          >
+                            <span style={{ color: "var(--color-text-secondary)", marginRight: "12px" }}>
+                              {course.classes}
+                            </span>
+                            <a
+                              href="#enquiry"
+                              style={{
+                                color: "#1D1D1F",
+                                textDecoration: "underline",
+                                textDecorationColor: "#007AFF",
+                                textUnderlineOffset: "3px",
+                              }}
+                            >
+                              Ask us about this class
+                            </a>
+                          </div>
+                        );
+                      }
+                      return (
+                        <div
+                          style={{
+                            fontFamily: "var(--font-display)",
+                            fontSize: "clamp(1.5rem, 2.5vw, 2.15rem)",
+                            fontWeight: 700,
+                            color: "#1D1D1F",
+                            lineHeight: 1.2,
+                            margin: "0 0 14px 0",
+                          }}
+                        >
+                          {verifiedList.map((s) => s.name).join(", ")}
+                        </div>
+                      );
+                    })()}
 
                     <p
                       style={{
