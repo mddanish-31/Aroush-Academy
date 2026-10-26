@@ -1,0 +1,382 @@
+{
+  "public_landing_390": {
+    "violationsCount": 0,
+    "incompleteCount": 1,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "label-content-name-mismatch",
+        "impact": "serious",
+        "description": "Ensure that elements labelled through their content must have their visible text as part of their accessible name",
+        "nodesCount": 1
+      }
+    ]
+  },
+  "login_390": {
+    "violationsCount": 0,
+    "incompleteCount": 2,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodesCount": 2
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "impact": "serious",
+        "description": "Ensure that elements labelled through their content must have their visible text as part of their accessible name",
+        "nodesCount": 1
+      }
+    ]
+  },
+  "register_390": {
+    "violationsCount": 0,
+    "incompleteCount": 2,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodesCount": 3
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "impact": "serious",
+        "description": "Ensure that elements labelled through their content must have their visible text as part of their accessible name",
+        "nodesCount": 1
+      }
+    ]
+  },
+  "public_landing_1440": {
+    "violationsCount": 0,
+    "incompleteCount": 2,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "nodesCount": 6
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "impact": "serious",
+        "description": "Ensure that elements labelled through their content must have their visible text as part of their accessible name",
+        "nodesCount": 2
+      }
+    ]
+  },
+  "login_1440": {
+    "violationsCount": 0,
+    "incompleteCount": 3,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "nodesCount": 6
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodesCount": 1
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "impact": "serious",
+        "description": "Ensure that elements labelled through their content must have their visible text as part of their accessible name",
+        "nodesCount": 2
+      }
+    ]
+  },
+  "register_1440": {
+    "violationsCount": 0,
+    "incompleteCount": 3,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "nodesCount": 6
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodesCount": 1
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "impact": "serious",
+        "description": "Ensure that elements labelled through their content must have their visible text as part of their accessible name",
+        "nodesCount": 2
+      }
+    ]
+  },
+  "dashboard_academy-admin_390": {
+    "violationsCount": 2,
+    "incompleteCount": 3,
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodesCount": 34,
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=playwright"
+      },
+      {
+        "id": "scrollable-region-focusable",
+        "impact": "serious",
+        "description": "Ensure elements that have scrollable content are accessible by keyboard in Safari",
+        "nodesCount": 2,
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/scrollable-region-focusable?application=playwright"
+      }
+    ],
+    "incomplete": [
+      {
+        "id": "aria-allowed-role",
+        "impact": "minor",
+        "description": "Ensure role attribute has an appropriate value for the element",
+        "nodesCount": 1
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodesCount": 47
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "impact": "serious",
+        "description": "Ensure that elements labelled through their content must have their visible text as part of their accessible name",
+        "nodesCount": 1
+      }
+    ]
+  },
+  "dashboard_academy-admin_1440": {
+    "violationsCount": 1,
+    "incompleteCount": 3,
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodesCount": 45,
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=playwright"
+      }
+    ],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "nodesCount": 4
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodesCount": 3
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "impact": "serious",
+        "description": "Ensure that elements labelled through their content must have their visible text as part of their accessible name",
+        "nodesCount": 2
+      }
+    ]
+  },
+  "dashboard_teacher_390": {
+    "violationsCount": 1,
+    "incompleteCount": 3,
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodesCount": 28,
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=playwright"
+      }
+    ],
+    "incomplete": [
+      {
+        "id": "aria-allowed-role",
+        "impact": "minor",
+        "description": "Ensure role attribute has an appropriate value for the element",
+        "nodesCount": 1
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodesCount": 21
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "impact": "serious",
+        "description": "Ensure that elements labelled through their content must have their visible text as part of their accessible name",
+        "nodesCount": 1
+      }
+    ]
+  },
+  "dashboard_teacher_1440": {
+    "violationsCount": 1,
+    "incompleteCount": 2,
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodesCount": 26,
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=playwright"
+      }
+    ],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "nodesCount": 4
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "impact": "serious",
+        "description": "Ensure that elements labelled through their content must have their visible text as part of their accessible name",
+        "nodesCount": 2
+      }
+    ]
+  },
+  "dashboard_student_390": {
+    "violationsCount": 2,
+    "incompleteCount": 3,
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodesCount": 10,
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=playwright"
+      },
+      {
+        "id": "select-name",
+        "impact": "critical",
+        "description": "Ensure select element has an accessible name",
+        "nodesCount": 1,
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/select-name?application=playwright"
+      }
+    ],
+    "incomplete": [
+      {
+        "id": "aria-allowed-role",
+        "impact": "minor",
+        "description": "Ensure role attribute has an appropriate value for the element",
+        "nodesCount": 1
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodesCount": 3
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "impact": "serious",
+        "description": "Ensure that elements labelled through their content must have their visible text as part of their accessible name",
+        "nodesCount": 1
+      }
+    ]
+  },
+  "dashboard_student_1440": {
+    "violationsCount": 1,
+    "incompleteCount": 2,
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodesCount": 2,
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=playwright"
+      }
+    ],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "nodesCount": 4
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "impact": "serious",
+        "description": "Ensure that elements labelled through their content must have their visible text as part of their accessible name",
+        "nodesCount": 2
+      }
+    ]
+  },
+  "dashboard_parent_390": {
+    "violationsCount": 1,
+    "incompleteCount": 3,
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodesCount": 11,
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=playwright"
+      }
+    ],
+    "incomplete": [
+      {
+        "id": "aria-allowed-role",
+        "impact": "minor",
+        "description": "Ensure role attribute has an appropriate value for the element",
+        "nodesCount": 1
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodesCount": 1
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "impact": "serious",
+        "description": "Ensure that elements labelled through their content must have their visible text as part of their accessible name",
+        "nodesCount": 1
+      }
+    ]
+  },
+  "dashboard_parent_1440": {
+    "violationsCount": 1,
+    "incompleteCount": 2,
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodesCount": 2,
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=playwright"
+      }
+    ],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "description": "Ensure all ARIA attributes have valid values",
+        "nodesCount": 4
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "impact": "serious",
+        "description": "Ensure that elements labelled through their content must have their visible text as part of their accessible name",
+        "nodesCount": 2
+      }
+    ]
+  }
+}
