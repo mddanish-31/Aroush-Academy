@@ -11,6 +11,7 @@ import {
   PasswordResetResult,
 } from "./authTypes";
 import { DEMO_ACCOUNTS_LIST } from "./demoAccounts";
+import { isValidAuthUser, parseStoredAuthUser } from "./authGuard";
 
 const STORAGE_KEY_USER = "aroush_demo_auth_user";
 const STORAGE_KEY_REGISTRATIONS = "aroush_demo_registration_requests_v1";
@@ -72,14 +73,7 @@ export const INITIAL_ACCOUNT_INVITATIONS: AccountInvitation[] = [
   },
 ];
 
-/**
- * Demo Authentication Adapter
- *
- * DISCLAIMER:
- * This adapter runs strictly in-browser for frontend UI demonstrations.
- * It DOES NOT use real encryption, JWT signatures, or secure HTTP-only cookies.
- * Browser-local demo data is not shared across devices or users and is not production storage.
- */
+
 export class DemoAuthAdapter implements AuthProvider {
   private isBrowser(): boolean {
     return typeof window !== "undefined" && typeof localStorage !== "undefined";
@@ -90,7 +84,12 @@ export class DemoAuthAdapter implements AuthProvider {
     try {
       const stored = localStorage.getItem(STORAGE_KEY_USER);
       if (!stored) return null;
-      return JSON.parse(stored) as AuthUser;
+      const parsed = parseStoredAuthUser(stored);
+      if (!parsed) {
+        localStorage.removeItem(STORAGE_KEY_USER);
+        return null;
+      }
+      return parsed;
     } catch {
       return null;
     }
@@ -99,13 +98,12 @@ export class DemoAuthAdapter implements AuthProvider {
   private setCurrentUser(user: AuthUser | null): void {
     if (!this.isBrowser()) return;
     try {
-      if (user) {
+      if (user && isValidAuthUser(user)) {
         localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
       } else {
         localStorage.removeItem(STORAGE_KEY_USER);
       }
     } catch {
-      // Storage unavailable or disabled
     }
   }
 
@@ -136,7 +134,7 @@ export class DemoAuthAdapter implements AuthProvider {
       localStorage.setItem(STORAGE_KEY_REGISTRATIONS, JSON.stringify(requests));
       window.dispatchEvent(new CustomEvent("aroush-registration-updated"));
     } catch {
-      // Storage unavailable or disabled
+      
     }
   }
 
@@ -167,7 +165,7 @@ export class DemoAuthAdapter implements AuthProvider {
       localStorage.setItem(STORAGE_KEY_INVITATIONS, JSON.stringify(invitations));
       window.dispatchEvent(new CustomEvent("aroush-invitations-updated"));
     } catch {
-      // Storage unavailable or disabled
+      
     }
   }
 
@@ -233,10 +231,10 @@ export class DemoAuthAdapter implements AuthProvider {
       createdAt: activated.activatedAt?.split(" ")[0] || "2026-10-12",
     };
 
-    // Save as current user so user is authenticated
+    
     this.setCurrentUser(user);
 
-    // Also register in requests so login with tempPassword works subsequently
+    
     const regList = this.getRegistrationRequests();
     const existingReq = regList.find((r) => r.identifier.toLowerCase() === inv.recipientIdentifier.toLowerCase());
     if (!existingReq) {
@@ -303,7 +301,7 @@ export class DemoAuthAdapter implements AuthProvider {
   }
 
   async login(credentials: LoginCredentials): Promise<AuthResult> {
-    // Artificial latency (300ms) to simulate real async request and show UI loading states
+    
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     const identifier = credentials.identifier.trim().toLowerCase();
@@ -316,7 +314,7 @@ export class DemoAuthAdapter implements AuthProvider {
       };
     }
 
-    // 1. Check predefined demo accounts
+    
     const matchDemo = DEMO_ACCOUNTS_LIST.find((d) => {
       const demoId = d.user.identifier.toLowerCase();
       return (
@@ -337,7 +335,7 @@ export class DemoAuthAdapter implements AuthProvider {
       };
     }
 
-    // 2. Check registration requests
+    
     const registrations = this.getRegistrationRequests();
     const matchReq = registrations.find((r) => r.identifier.toLowerCase() === identifier);
 
@@ -364,7 +362,7 @@ export class DemoAuthAdapter implements AuthProvider {
           };
         }
 
-        // Verify explicit academic record link
+        
         if (!matchReq.linkedStudentId && !matchReq.linkedStudentIds?.length) {
           return {
             success: false,
@@ -390,7 +388,7 @@ export class DemoAuthAdapter implements AuthProvider {
       }
     }
 
-    // 3. Check Account Invitations
+    
     const invitations = this.getAccountInvitations();
     const matchInv = invitations.find((i) => i.recipientIdentifier.toLowerCase() === identifier);
     if (matchInv) {
@@ -402,7 +400,7 @@ export class DemoAuthAdapter implements AuthProvider {
       }
     }
 
-    // 4. Unknown account
+    
     return {
       success: false,
       error: "Account not found or invalid credentials. If you recently registered, please ensure you use your registered email address.",
@@ -412,7 +410,7 @@ export class DemoAuthAdapter implements AuthProvider {
   async register(data: RegisterData): Promise<RegisterResult> {
     await new Promise((resolve) => setTimeout(resolve, 350));
 
-    // Institutional guard: Academy Admin & Teacher registration is restricted
+    
     if (data.role !== "student" && data.role !== "parent") {
       return {
         success: false,
@@ -435,7 +433,7 @@ export class DemoAuthAdapter implements AuthProvider {
       return { success: false, error: "Password must be at least 6 characters long." };
     }
 
-    // Check against predefined demo accounts
+    
     const isDemoAccount = DEMO_ACCOUNTS_LIST.some(
       (d) =>
         d.user.identifier.toLowerCase() === identifier ||
@@ -449,7 +447,7 @@ export class DemoAuthAdapter implements AuthProvider {
       };
     }
 
-    // Check existing registration requests
+    
     const existing = this.getRegistrationRequests();
     const existingReq = existing.find((r) => r.identifier.toLowerCase() === identifier);
     if (existingReq) {
@@ -488,8 +486,8 @@ export class DemoAuthAdapter implements AuthProvider {
 
     this.saveRegistrationRequests([newRequest, ...existing]);
 
-    // Crucial: We do NOT authenticate the user here.
-    // They must wait for Academy Admin approval and identity matching.
+    
+    
     return { success: true, request: newRequest };
   }
 

@@ -17,6 +17,7 @@ export function AcademyIntro() {
         borderBottom: "1px solid rgba(170, 170, 170, 0.3)",
       }}
     >
+      <span id="campus" style={{ display: "block", position: "relative", top: "-80px", visibility: "hidden" }} />
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 24px" }}>
         <Reveal>
           <div style={{ marginBottom: "clamp(36px, 5vw, 64px)" }}>

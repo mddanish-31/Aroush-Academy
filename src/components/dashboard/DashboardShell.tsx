@@ -18,22 +18,54 @@ import { MetricCard } from "./MetricCard";
 import { Badge } from "../ui/Badge";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
-import { DigitalIdCard } from "./DigitalIdCard";
-import { IdCardManagementModule } from "./IdCardManagementModule";
 import { SAMPLE_ID_CARDS } from "@/data/studentIdCardsData";
 import { StudentIdCardRecord } from "@/types";
-import { FeeReceiptModal } from "./FeeReceiptModal";
-import { AttendanceModule } from "./AttendanceModule";
-import { TimetableModule } from "./TimetableModule";
-import { AssessmentsModule } from "./AssessmentsModule";
-import { StudyMaterialsModule } from "./StudyMaterialsModule";
-import { NoticesModule } from "./NoticesModule";
-import { DirectoryModule } from "./DirectoryModule";
-import { AcademicSetupModule } from "./AcademicSetupModule";
-import { AuditLogsModule } from "./AuditLogsModule";
-import { ClassroomModule } from "./ClassroomModule";
-import { RegistrationApprovalsModule } from "./RegistrationApprovalsModule";
-import { FeesModule } from "./FeesModule";
+import dynamic from "next/dynamic";
+import { Users, Clock, Lock, CreditCard } from "lucide-react";
+
+const DigitalIdCard = dynamic(() =>
+  import("./DigitalIdCard").then((m) => m.DigitalIdCard)
+);
+const IdCardManagementModule = dynamic(() =>
+  import("./IdCardManagementModule").then((m) => m.IdCardManagementModule)
+);
+const FeeReceiptModal = dynamic(() =>
+  import("./FeeReceiptModal").then((m) => m.FeeReceiptModal)
+);
+const AttendanceModule = dynamic(() =>
+  import("./AttendanceModule").then((m) => m.AttendanceModule)
+);
+const TimetableModule = dynamic(() =>
+  import("./TimetableModule").then((m) => m.TimetableModule)
+);
+const AssessmentsModule = dynamic(() =>
+  import("./AssessmentsModule").then((m) => m.AssessmentsModule)
+);
+const StudyMaterialsModule = dynamic(() =>
+  import("./StudyMaterialsModule").then((m) => m.StudyMaterialsModule)
+);
+const NoticesModule = dynamic(() =>
+  import("./NoticesModule").then((m) => m.NoticesModule)
+);
+const DirectoryModule = dynamic(() =>
+  import("./DirectoryModule").then((m) => m.DirectoryModule)
+);
+const AcademicSetupModule = dynamic(() =>
+  import("./AcademicSetupModule").then((m) => m.AcademicSetupModule)
+);
+const AuditLogsModule = dynamic(() =>
+  import("./AuditLogsModule").then((m) => m.AuditLogsModule)
+);
+const ClassroomModule = dynamic(() =>
+  import("./ClassroomModule").then((m) => m.ClassroomModule)
+);
+const RegistrationApprovalsModule = dynamic(() =>
+  import("./RegistrationApprovalsModule").then((m) => m.RegistrationApprovalsModule)
+);
+const FeesModule = dynamic(() =>
+  import("./FeesModule").then((m) => m.FeesModule)
+);
+
 import { useDemoStorage, DEMO_STORAGE_KEYS } from "@/lib/demoStorage";
 import { recordCreate } from "@/lib/auditService";
 import {
@@ -252,10 +284,10 @@ export function DashboardShell({
     ? (searchParams.get("role") as UserRole | null)
     : null;
 
-  // STRICT DEMO ISOLATION:
-  // When an authenticated session is active, the role is strictly locked to user.role.
-  // URL query params like ?role=academy-admin CANNOT elevate or switch an authenticated student/teacher session.
-  // Query role is only honored for guest exploration when not authenticated.
+  
+  
+  
+  
   const resolvedRole: UserRole = useMemo(() => {
     if (
       isAuthenticated &&
@@ -287,7 +319,7 @@ export function DashboardShell({
     [registrationRequests],
   );
 
-  // Synchronize activeRole and activeTab when resolvedRole changes during render
+  
   if (resolvedRole !== prevResolvedRole) {
     setPrevResolvedRole(resolvedRole);
     setActiveRole(resolvedRole);
@@ -304,12 +336,12 @@ export function DashboardShell({
     }
   }
 
-  // Ensure activeRole cannot drift away from authenticated identity
+  
   if (isAuthenticated && activeRole !== resolvedRole) {
     setActiveRole(resolvedRole);
   }
 
-  // Canonical tab alias resolution for Academy Admin merged page
+  
   const isAcademyOverviewOrLedger =
     activeRole === "academy-admin" &&
     (activeTab === "Overview & Fee Ledger" ||
@@ -332,17 +364,17 @@ export function DashboardShell({
     setActiveTab("Overview");
   }
 
-  // Teacher portal state: active teacher switcher for multi-teacher demonstration
+  
   const [selectedTeacherId, setSelectedTeacherId] =
     useState<string>("tch-azhar");
 
-  // Reactive payment transactions ledger (persists recorded payments across browser reloads & role switches)
+  
   const [payments, setPayments] = useDemoStorage<PaymentTransaction[]>(
     DEMO_STORAGE_KEYS.PAYMENTS,
     SAMPLE_PAYMENTS,
   );
 
-  // Reactive students and enrollments lists
+  
   const [students] = useDemoStorage<StudentProfile[]>(
     DEMO_STORAGE_KEYS.STUDENTS,
     SAMPLE_STUDENTS,
@@ -365,7 +397,7 @@ export function DashboardShell({
   );
 
 
-  // Payment Recording Modal State
+  
   const [recordingModal, setRecordingModal] = useState<{
     isOpen: boolean;
     enrollmentId: string;
@@ -380,7 +412,7 @@ export function DashboardShell({
   const [receiptNumberInput, setReceiptNumberInput] = useState<string>("");
   const [notesInput, setNotesInput] = useState<string>("");
 
-  // Payment History Inspection Modal State
+  
   const [historyModal, setHistoryModal] = useState<{
     isOpen: boolean;
     studentName: string;
@@ -393,10 +425,10 @@ export function DashboardShell({
     payments: PaymentTransaction[];
   } | null>(null);
 
-  // Active demo student for Student portal (defaults to Taha Rahman - std-101)
+  
   const [selectedStudentId, setSelectedStudentId] = useState<string>("std-101");
 
-  // Receipt Modal State (printable single-page voucher)
+  
   const [receiptModal, setReceiptModal] = useState<{
     isOpen: boolean;
     transaction: PaymentTransaction;
@@ -406,7 +438,7 @@ export function DashboardShell({
     remainingBalanceAfterPayment: number;
   } | null>(null);
 
-  // Digital ID Card Modal State
+  
   const [idCardModalStudent, setIdCardModalStudent] =
     useState<StudentProfile | null>(null);
   const [idCardModalRecord, setIdCardModalRecord] =
@@ -426,7 +458,7 @@ export function DashboardShell({
   };
 
 
-  // Escape key handler for dashboard payment modals
+  
   useEffect(() => {
     if (!recordingModal && !historyModal) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -439,7 +471,7 @@ export function DashboardShell({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [recordingModal, historyModal]);
 
-  // Active Teacher Profile (Strict isolation: only authenticated or selected teacher)
+  
   const currentTeacher = useMemo(() => {
     if (isAuthenticated && activeRole === "teacher") {
       const linkedId = user?.linkedTeacherId || user?.profileId;
@@ -462,19 +494,19 @@ export function DashboardShell({
     faculty,
   ]);
 
-  // Compute all enrollment fee summaries reactively based on current payments state
+  
   const allSummaries = useMemo(() => {
     return buildEnrollmentSummaries(enrollments, obligations, payments);
   }, [enrollments, obligations, payments]);
 
-  // Teacher view: STRICT ISOLATION - ONLY enrollments assigned to this teacher!
+  
   const teacherSummaries = useMemo(() => {
     return allSummaries.filter(
       (s) => s.enrollment.teacherId === currentTeacher.id,
     );
   }, [allSummaries, currentTeacher.id]);
 
-  // Teacher KPIs calculated live
+  
   const teacherKPIs = useMemo(() => {
     const studentCount = teacherSummaries.length;
     const target = teacherSummaries.reduce(
@@ -494,7 +526,7 @@ export function DashboardShell({
 
 
 
-  // Active Student Profile (Strict isolation: only this student's records)
+  
   const currentStudent = useMemo<StudentProfile | null>(() => {
     if (isAuthenticated && activeRole === "student") {
       const linkedId = user?.linkedStudentId || user?.profileId;
@@ -546,7 +578,7 @@ export function DashboardShell({
     return { subjectsCount, target, paid, balance };
   }, [studentEnrollments, studentSummaries]);
 
-  // Parent Linked Student Profile (Strict isolation: only explicitly linked child)
+  
   const parentStudent = useMemo<StudentProfile | null>(() => {
     if (isAuthenticated && activeRole === "parent") {
       const linkedIds =
@@ -582,7 +614,7 @@ export function DashboardShell({
     return payments.filter((p) => p.studentId === parentStudent.id);
   }, [payments, parentStudent]);
 
-  // Open Official Fee Receipt Modal for any transaction
+  
   const openReceiptModal = (tx: PaymentTransaction) => {
     const obligation = obligations.find((o) => o.id === tx.obligationId) || {
       id: tx.obligationId,
@@ -633,7 +665,7 @@ export function DashboardShell({
 
   const currentNav = ROLE_NAV_ITEMS[activeRole] || ROLE_NAV_ITEMS["teacher"];
 
-  // Open Cash Payment Entry Modal
+  
   const openCashPaymentModal = (
     enrollmentId: string,
     studentName: string,
@@ -656,7 +688,7 @@ export function DashboardShell({
     setNotesInput("Authorized cash collected in classroom");
   };
 
-  // Submit Cash Payment
+  
   const handleRecordPayment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!recordingModal) return;
@@ -686,13 +718,13 @@ export function DashboardShell({
         activeRole === "academy-admin"
           ? "Academy Admin Office"
           : currentTeacher.name,
-      isGatewayVerified: false, // strictly false for manual cash entries
+      isGatewayVerified: false, 
       notes: notesInput.trim(),
     };
 
     setPayments((prev) => [newTx, ...prev]);
 
-    // Record Central Audit Entry
+    
     recordCreate({
       action: "Record Cash Fee Payment",
       type: "financial",
@@ -760,7 +792,6 @@ export function DashboardShell({
         flexDirection: "column",
       }}
     >
-      {/* Mobile Contextual Selector Strip (Visible on mobile where sidebar collapses) */}
       <div
         className="mobile-context-bar"
         style={{
@@ -798,8 +829,8 @@ export function DashboardShell({
                 fontWeight: 700,
                 textTransform: "uppercase",
                 letterSpacing: "0.04em",
-                color: "var(--color-accent)",
-                backgroundColor: "rgba(0, 122, 255, 0.08)",
+                color: "var(--color-primary)",
+                backgroundColor: "var(--color-surface-muted)",
                 padding: "2px 6px",
                 borderRadius: "var(--radius-sm)",
               }}
@@ -842,6 +873,8 @@ export function DashboardShell({
         )}
         {activeRole === "student" && (
           <select
+            id="student-switcher-select"
+            aria-label="Simulated student account"
             value={selectedStudentId}
             onChange={(e) => setSelectedStudentId(e.target.value)}
             style={{
@@ -864,7 +897,7 @@ export function DashboardShell({
           <span
             style={{
               fontSize: "11px",
-              color: "var(--color-accent)",
+              color: "var(--color-primary)",
               fontWeight: 600,
             }}
           >
@@ -873,7 +906,6 @@ export function DashboardShell({
         )}
       </div>
 
-      {/* Mobile Dashboard Navigation (Visible on screens <= 768px where sidebar collapses) */}
       <nav
         className="mobile-dashboard-nav"
         aria-label="Mobile dashboard module navigation"
@@ -914,13 +946,13 @@ export function DashboardShell({
               htmlFor="mobile-module-select"
               style={{ fontSize: "11px", color: "var(--color-neutral-dark)" }}
             >
-              Jump:
+              Jump to module:
             </label>
             <select
               id="mobile-module-select"
               value={activeTab}
               onChange={(e) => setActiveTab(e.target.value)}
-              aria-label="Jump to dashboard module"
+              aria-label="Jump to module"
               style={{
                 fontSize: "var(--text-xs)",
                 padding: "3px 8px",
@@ -942,7 +974,6 @@ export function DashboardShell({
           </div>
         </div>
 
-        {/* Horizontally scrollable navigation strip */}
         <div
           role="tablist"
           aria-label="Dashboard modules tabs"
@@ -996,7 +1027,7 @@ export function DashboardShell({
                       style={{
                         backgroundColor: isActive
                           ? "#FFFFFF"
-                          : "var(--color-warning)",
+                          : "var(--color-primary)",
                         color: isActive ? "var(--color-primary)" : "#FFFFFF",
                         fontSize: "10px",
                         fontWeight: 700,
@@ -1013,9 +1044,7 @@ export function DashboardShell({
         </div>
       </nav>
 
-      {/* Main Layout: Sidebar + Canvas */}
       <div style={{ display: "flex", flex: 1 }}>
-        {/* Sidebar */}
         <aside
           role="navigation"
           aria-label="Dashboard navigation"
@@ -1072,7 +1101,6 @@ export function DashboardShell({
               </span>
             </div>
 
-            {/* Contextual Teacher Identity / Demo Switcher */}
             {activeRole === "teacher" && (
               <div
                 style={{
@@ -1133,8 +1161,8 @@ export function DashboardShell({
                           fontWeight: 700,
                           textTransform: "uppercase",
                           letterSpacing: "0.06em",
-                          color: "var(--color-accent)",
-                          backgroundColor: "rgba(0, 122, 255, 0.08)",
+                          color: "var(--color-primary)",
+                          backgroundColor: "var(--color-surface-muted)",
                           padding: "2px 6px",
                           borderRadius: "var(--radius-sm)",
                         }}
@@ -1160,7 +1188,7 @@ export function DashboardShell({
                         marginBottom: "4px",
                       }}
                     >
-                      Demo Tool — Switch Simulated Faculty:
+                      Demo Tool - Switch Simulated Faculty:
                     </label>
                     <select
                       id="teacher-select"
@@ -1189,7 +1217,6 @@ export function DashboardShell({
               </div>
             )}
 
-            {/* Contextual Student Identity / Demo Switcher */}
             {activeRole === "student" && (
               <div
                 style={{
@@ -1289,7 +1316,6 @@ export function DashboardShell({
               </div>
             )}
 
-            {/* Contextual Parent Linkage Indicator */}
             {activeRole === "parent" && (
               <div
                 style={{
@@ -1304,7 +1330,7 @@ export function DashboardShell({
                   style={{
                     fontSize: "10px",
                     fontWeight: 700,
-                    color: "var(--color-accent)",
+                    color: "var(--color-primary)",
                     textTransform: "uppercase",
                     letterSpacing: "0.04em",
                     display: "block",
@@ -1355,7 +1381,6 @@ export function DashboardShell({
             )}
           </div>
 
-          {/* Navigation Links */}
           <nav style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
             {currentNav.map((item) => (
               <button
@@ -1388,7 +1413,7 @@ export function DashboardShell({
                         backgroundColor:
                           activeTab === item
                             ? "#FFFFFF"
-                            : "var(--color-warning)",
+                            : "var(--color-primary)",
                         color:
                           activeTab === item
                             ? "var(--color-primary)"
@@ -1443,7 +1468,7 @@ export function DashboardShell({
                 href={`/login?role=${activeRole}`}
                 style={{
                   fontSize: "var(--text-xs)",
-                  color: "var(--color-accent)",
+                  color: "var(--color-primary)",
                   fontWeight: 600,
                   display: "flex",
                   alignItems: "center",
@@ -1468,7 +1493,6 @@ export function DashboardShell({
           </div>
         </aside>
 
-        {/* Main Canvas */}
         <main
           className="dashboard-content-area"
           style={{
@@ -1479,7 +1503,6 @@ export function DashboardShell({
           }}
         >
           <div style={{ maxWidth: "1160px", margin: "0 auto" }}>
-            {/* UX Scaffolding Guard Banner if not logged in */}
             {!isAuthenticated && (
               <div
                 style={{
@@ -1515,7 +1538,7 @@ export function DashboardShell({
                   style={{
                     fontSize: "var(--text-xs)",
                     fontWeight: 600,
-                    color: "var(--color-accent)",
+                    color: "var(--color-primary)",
                     whiteSpace: "nowrap",
                   }}
                 >
@@ -1524,7 +1547,6 @@ export function DashboardShell({
                 </Link>
               </div>
             )}
-            {/* Top Workspace Header */}
             <div
               style={{
                 display: "flex",
@@ -1568,7 +1590,7 @@ export function DashboardShell({
                   <span
                     style={{
                       fontSize: "var(--text-xs)",
-                      color: "var(--color-accent)",
+                      color: "var(--color-text-secondary)",
                       fontWeight: 500,
                     }}
                   >
@@ -1582,7 +1604,6 @@ export function DashboardShell({
               </Badge>
             </div>
 
-            {/* KPI Metrics */}
             {(activeRole !== "academy-admin" || isAcademyOverviewOrLedger) && (
               <div
                 style={{
@@ -1809,14 +1830,12 @@ export function DashboardShell({
               </div>
             )}
 
-            {/* TEACHER ROLE INTERFACES */}
             {activeRole === "teacher" && (
               <>
                 {(activeTab === "Overview" ||
                   activeTab === "My Students" ||
                   activeTab === "Subject Fee Tracking") && (
                   <Card padding="lg" style={{ marginBottom: "var(--space-8)" }}>
-                    {/* Header within card */}
                     <div
                       style={{
                         display: "flex",
@@ -1857,14 +1876,14 @@ export function DashboardShell({
                           size="sm"
                           onClick={() => setActiveTab("Online Classroom")}
                         >
-                          🌐 Online Classrooms
+                          Online Classrooms
                         </Button>
                         <Button
                           variant="secondary"
                           size="sm"
                           onClick={() => setActiveTab("Test Series & Marks")}
                         >
-                          📝 Mock Exam Engine
+                          Mock Exam Engine
                         </Button>
                         <Button
                           variant={
@@ -1891,9 +1910,8 @@ export function DashboardShell({
                       </div>
                     </div>
 
-                    {/* TAB 1: MY STUDENTS TABLE */}
                     {activeTab === "My Students" && (
-                      <div style={{ overflowX: "auto" }}>
+                      <div tabIndex={0} role="region" aria-label="Dashboard fee ledger table" style={{ overflowX: "auto" }}>
                         <table
                           style={{
                             width: "100%",
@@ -1975,7 +1993,7 @@ export function DashboardShell({
                                     <span
                                       style={{
                                         fontWeight: 600,
-                                        color: "var(--color-accent)",
+                                        color: "var(--color-primary)",
                                       }}
                                     >
                                       {enrollment.subjectName}
@@ -2049,9 +2067,8 @@ export function DashboardShell({
                       </div>
                     )}
 
-                    {/* TAB 2: SUBJECT FEE TRACKING TABLE */}
                     {activeTab === "Overview" && (
-                      <div style={{ overflowX: "auto" }}>
+                      <div tabIndex={0} role="region" aria-label="Dashboard fee ledger table" style={{ overflowX: "auto" }}>
                         <table
                           style={{
                             width: "100%",
@@ -2130,7 +2147,7 @@ export function DashboardShell({
                                     <span
                                       style={{
                                         fontSize: "11px",
-                                        color: "var(--color-accent)",
+                                        color: "var(--color-primary)",
                                         fontWeight: 500,
                                       }}
                                     >
@@ -2257,7 +2274,6 @@ export function DashboardShell({
                   </Card>
                 )}
 
-                {/* TEACHER ADDITIONAL MODULES */}
                 {activeTab === "Subject Fee Tracking" && (
                   <FeesModule
                     role="teacher"
@@ -2301,7 +2317,6 @@ export function DashboardShell({
               </>
             )}
 
-            {/* ACADEMY ADMIN ROLE INTERFACES */}
             {activeRole === "academy-admin" && (
               <>
                 {(activeTab === "Registration Approvals" ||
@@ -2332,7 +2347,7 @@ export function DashboardShell({
                         gap: "var(--space-3)",
                       }}
                     >
-                      <span style={{ fontSize: "20px" }}>⏳</span>
+                      <Clock size={20} />
                       <div>
                         <div
                           style={{
@@ -2372,7 +2387,6 @@ export function DashboardShell({
                   <FeesModule role="academy-admin" />
                 )}
 
-                {/* ACADEMY ADMIN ADDITIONAL MODULES */}
                 {activeTab === "Students & Faculty Directory" && (
                   <DirectoryModule
                     onOpenDigitalId={(studentOrId) => {
@@ -2433,18 +2447,13 @@ export function DashboardShell({
               </>
             )}
 
-            {/* STUDENT ROLE WORKSPACE */}
             {activeRole === "student" &&
               (!currentStudent ? (
                 <Card
                   padding="lg"
                   style={{ textAlign: "center", margin: "var(--space-6) 0" }}
                 >
-                  <div
-                    style={{ fontSize: "40px", marginBottom: "var(--space-2)" }}
-                  >
-                    🔒
-                  </div>
+                  <div style={{ marginBottom: "var(--space-2)" }}><Lock size={40} style={{ margin: "0 auto var(--space-2)" }} /></div>
                   <h3
                     style={{
                       fontSize: "var(--text-lg)",
@@ -2496,7 +2505,6 @@ export function DashboardShell({
                     marginBottom: "var(--space-8)",
                   }}
                 >
-                  {/* Student Profile Header & ID Card Quick Access */}
                   <Card padding="md">
                     <div
                       style={{
@@ -2519,8 +2527,8 @@ export function DashboardShell({
                             width: "48px",
                             height: "48px",
                             borderRadius: "var(--radius-full)",
-                            backgroundColor: "rgba(0, 122, 255, 0.12)",
-                            color: "var(--color-accent)",
+                            backgroundColor: "var(--color-surface-muted)",
+                            color: "var(--color-primary)",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -2563,7 +2571,7 @@ export function DashboardShell({
                             }}
                           >
                             ID:{" "}
-                            <strong style={{ color: "var(--color-accent)" }}>
+                            <strong style={{ color: "var(--color-primary)" }}>
                               AA-2026-{currentStudent.id.replace("std-", "")}
                             </strong>{" "}
                             &bull; {currentStudent.classGrade} (
@@ -2586,7 +2594,7 @@ export function DashboardShell({
                           onClick={() => setActiveTab("Online Classroom")}
                           type="button"
                         >
-                          🔴 Online Classroom
+                          Online Classroom
                         </Button>
                         <Button
                           variant="secondary"
@@ -2594,7 +2602,7 @@ export function DashboardShell({
                           onClick={() => setActiveTab("Tests & Marks")}
                           type="button"
                         >
-                          📝 Mock Exams
+                          Mock Exams
                         </Button>
                         <Button
                           variant="secondary"
@@ -2608,7 +2616,6 @@ export function DashboardShell({
                     </div>
                   </Card>
 
-                  {/* Section 1: Subject-Wise Enrollments & Monthly Fee Status */}
                   {(activeTab === "Overview" ||
                     activeTab === "Enrolled Subjects") && (
                     <Card padding="lg">
@@ -2647,7 +2654,7 @@ export function DashboardShell({
                         </div>
                       </div>
 
-                      <div style={{ overflowX: "auto" }}>
+                      <div tabIndex={0} role="region" aria-label="Dashboard fee ledger table" style={{ overflowX: "auto" }}>
                         <table
                           style={{
                             width: "100%",
@@ -2727,7 +2734,7 @@ export function DashboardShell({
                                     <div
                                       style={{
                                         fontWeight: 600,
-                                        color: "var(--color-accent)",
+                                        color: "var(--color-primary)",
                                       }}
                                     >
                                       {enrollment.teacherName}
@@ -2836,8 +2843,8 @@ export function DashboardShell({
                                             fontWeight: 600,
                                             borderRadius: "var(--radius-sm)",
                                             backgroundColor:
-                                              "var(--color-accent)",
-                                            borderColor: "var(--color-accent)",
+                                              "var(--color-primary)",
+                                            borderColor: "var(--color-primary)",
                                           }}
                                         >
                                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -2880,7 +2887,6 @@ export function DashboardShell({
                     </Card>
                   )}
 
-                  {/* Section 2: Fee Receipts & Payment History (Overview Preview) */}
                   {activeTab === "Overview" && (
                     <Card padding="lg">
                       <div
@@ -2930,7 +2936,7 @@ export function DashboardShell({
                           student.
                         </div>
                       ) : (
-                        <div style={{ overflowX: "auto" }}>
+                        <div tabIndex={0} role="region" aria-label="Dashboard fee ledger table" style={{ overflowX: "auto" }}>
                           <table
                             style={{
                               width: "100%",
@@ -3093,7 +3099,6 @@ export function DashboardShell({
                     </Card>
                   )}
 
-                  {/* Section 3: Digital ID Card Inline Preview */}
                   {(activeTab === "Overview" ||
                     activeTab === "Digital Student ID") &&
                     (() => {
@@ -3114,11 +3119,10 @@ export function DashboardShell({
                             >
                               <div
                                 style={{
-                                  fontSize: "40px",
                                   marginBottom: "12px",
                                 }}
                               >
-                                🪪
+                                <CreditCard size={40} style={{ margin: "0 auto 12px" }} />
                               </div>
                               <h3
                                 style={{
@@ -3215,7 +3219,6 @@ export function DashboardShell({
                     })()}
 
 
-                  {/* STUDENT ADDITIONAL MODULES */}
                   {activeTab === "Online Classroom" && (
                     <ClassroomModule
                       role="student"
@@ -3258,17 +3261,22 @@ export function DashboardShell({
                 </div>
               ))}
 
-            {/* PARENT ROLE WORKSPACE */}
             {activeRole === "parent" &&
               (!parentStudent ? (
+                activeTab === "Fee Receipts & Ledger" ? (
+                  <FeesModule
+                    role="parent"
+                    parentStudent={null}
+                  />
+                ) : (
                 <Card
                   padding="lg"
                   style={{ textAlign: "center", margin: "var(--space-6) 0" }}
                 >
                   <div
-                    style={{ fontSize: "40px", marginBottom: "var(--space-2)" }}
+                    style={{ marginBottom: "var(--space-2)" }}
                   >
-                    👨‍👩‍👧
+                    <Users size={40} style={{ margin: "0 auto var(--space-2)" }} />
                   </div>
                   <h3
                     style={{
@@ -3311,6 +3319,7 @@ export function DashboardShell({
                     your guardian profile to your child&apos;s student record.
                   </div>
                 </Card>
+                )
               ) : (
                 <div
                   style={{
@@ -3320,7 +3329,6 @@ export function DashboardShell({
                     marginBottom: "var(--space-8)",
                   }}
                 >
-                  {/* Guardian Linked Profile Banner */}
                   <Card
                     padding="md"
                     style={{ borderLeft: "4px solid var(--color-accent)" }}
@@ -3371,7 +3379,7 @@ export function DashboardShell({
                           }}
                         >
                           Linked Student ID:{" "}
-                          <strong style={{ color: "var(--color-accent)" }}>
+                          <strong style={{ color: "var(--color-primary)" }}>
                             AA-2026-101
                           </strong>{" "}
                           &bull; {parentStudent.classGrade} (
@@ -3393,7 +3401,6 @@ export function DashboardShell({
                     </div>
                   </Card>
 
-                  {/* Section 1: Child's Enrolled Subjects & Fee Status */}
                   {(activeTab === "Overview" ||
                     activeTab === "Child's Subjects") && (
                     <Card padding="lg">
@@ -3431,7 +3438,7 @@ export function DashboardShell({
                         </div>
                       </div>
 
-                      <div style={{ overflowX: "auto" }}>
+                      <div tabIndex={0} role="region" aria-label="Dashboard fee ledger table" style={{ overflowX: "auto" }}>
                         <table
                           style={{
                             width: "100%",
@@ -3509,7 +3516,7 @@ export function DashboardShell({
                                     style={{
                                       padding: "12px",
                                       fontWeight: 600,
-                                      color: "var(--color-accent)",
+                                      color: "var(--color-primary)",
                                     }}
                                   >
                                     {enrollment.teacherName}
@@ -3597,8 +3604,8 @@ export function DashboardShell({
                                           fontWeight: 600,
                                           borderRadius: "var(--radius-sm)",
                                           backgroundColor:
-                                            "var(--color-accent)",
-                                          borderColor: "var(--color-accent)",
+                                            "var(--color-primary)",
+                                          borderColor: "var(--color-primary)",
                                         }}
                                       >
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -3609,7 +3616,7 @@ export function DashboardShell({
                                       </Button>
                                     ) : (
                                       <Badge variant="success" size="sm">
-                                        ✓ Paid
+                                        Paid
                                       </Badge>
                                     )}
                                   </td>
@@ -3622,7 +3629,6 @@ export function DashboardShell({
                     </Card>
                   )}
 
-                  {/* Section 2: Fee Receipts & Payment Ledger (Overview Preview) */}
                   {activeTab === "Overview" && (
                     <Card padding="lg">
                       <div
@@ -3659,7 +3665,7 @@ export function DashboardShell({
                         </div>
                       </div>
 
-                      <div style={{ overflowX: "auto" }}>
+                      <div tabIndex={0} role="region" aria-label="Dashboard fee ledger table" style={{ overflowX: "auto" }}>
                         <table
                           style={{
                             width: "100%",
@@ -3803,7 +3809,6 @@ export function DashboardShell({
                     </Card>
                   )}
 
-                  {/* Section 3: Digital ID Card Preview for Guardian */}
                   {(activeTab === "Overview" ||
                     activeTab === "Digital Student ID") &&
                     (() => {
@@ -3824,11 +3829,10 @@ export function DashboardShell({
                             >
                               <div
                                 style={{
-                                  fontSize: "40px",
                                   marginBottom: "12px",
                                 }}
                               >
-                                🪪
+                                <CreditCard size={40} style={{ margin: "0 auto 12px" }} />
                               </div>
                               <h3
                                 style={{
@@ -3929,7 +3933,6 @@ export function DashboardShell({
                     })()}
 
 
-                  {/* PARENT ADDITIONAL MODULES */}
                   {activeTab === "Online Classroom" && (
                     <ClassroomModule
                       role="parent"
@@ -3975,7 +3978,6 @@ export function DashboardShell({
         </main>
       </div>
 
-      {/* MODAL 1: RECORD CASH PAYMENT */}
       {recordingModal && recordingModal.isOpen && (
         <div
           role="dialog"
@@ -4026,7 +4028,7 @@ export function DashboardShell({
                   cursor: "pointer",
                 }}
               >
-                ✕
+                
               </button>
             </div>
 
@@ -4049,7 +4051,7 @@ export function DashboardShell({
                 }}
               >
                 Subject:{" "}
-                <strong style={{ color: "var(--color-accent)" }}>
+                <strong style={{ color: "var(--color-primary)" }}>
                   {recordingModal.subjectName}
                 </strong>{" "}
                 &bull; Total Obligation: ₹
@@ -4209,7 +4211,6 @@ export function DashboardShell({
         </div>
       )}
 
-      {/* MODAL 2: PAYMENT HISTORY INSPECTION */}
       {historyModal && historyModal.isOpen && (
         <div
           role="dialog"
@@ -4271,7 +4272,7 @@ export function DashboardShell({
                   cursor: "pointer",
                 }}
               >
-                ✕
+                
               </button>
             </div>
 
@@ -4360,7 +4361,7 @@ export function DashboardShell({
                 <p
                   style={{
                     fontSize: "var(--text-xs)",
-                    color: "var(--color-neutral)",
+                    color: "var(--color-text-secondary)",
                     marginTop: "8px",
                   }}
                 >
@@ -4438,7 +4439,7 @@ export function DashboardShell({
                           <div
                             style={{
                               fontSize: "10px",
-                              color: "var(--color-neutral)",
+                              color: "var(--color-text-secondary)",
                               marginTop: "1px",
                             }}
                           >
@@ -4488,7 +4489,6 @@ export function DashboardShell({
         </div>
       )}
 
-      {/* MODAL 3: OFFICIAL PRINTABLE FEE RECEIPT */}
       {receiptModal && receiptModal.isOpen && (
         <FeeReceiptModal
           isOpen={receiptModal.isOpen}
@@ -4503,7 +4503,6 @@ export function DashboardShell({
         />
       )}
 
-      {/* MODAL 4: DIGITAL STUDENT ID CARD MODAL */}
       {idCardModalStudent && (
         <DigitalIdCard
           student={idCardModalStudent}

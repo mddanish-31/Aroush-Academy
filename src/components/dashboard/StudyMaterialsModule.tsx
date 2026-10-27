@@ -1,4 +1,5 @@
 "use client";
+import { Lock, BookOpen, FileText, Paperclip } from "lucide-react";
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import {
@@ -53,7 +54,7 @@ interface StudyMaterialsModuleProps {
   currentStudentId?: string;
 }
 
-// Dependent field cascading helpers
+
 function getValidSubjectsForTeacher(
   teacher: TeacherProfile | null,
   academicSubjects: AcademicSubject[],
@@ -135,7 +136,7 @@ export function StudyMaterialsModule({
   currentTeacherId = "tch-azhar",
   currentStudentId,
 }: StudyMaterialsModuleProps) {
-  // Shared Demo Stores
+  
   const [materials, setMaterials] = useDemoStorage<StudyMaterialItem[]>(
     DEMO_STORAGE_KEYS.STUDY_MATERIALS,
     SAMPLE_MATERIALS
@@ -173,7 +174,7 @@ export function StudyMaterialsModule({
     SAMPLE_AUDIT_LOGS
   );
 
-  // Active User Profiles
+  
   const currentTeacher = useMemo(() => {
     return faculty.find((t) => t.id === currentTeacherId) || faculty[0] || null;
   }, [faculty, currentTeacherId]);
@@ -190,13 +191,13 @@ export function StudyMaterialsModule({
     );
   }, [enrollments, currentStudentId]);
 
-  // Filter & Search State
+  
   const [filterSubject, setFilterSubject] = useState<string>("all");
   const [filterType, setFilterType] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  // Modals State
+  
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isTypeSettingsOpen, setIsTypeSettingsOpen] = useState(false);
   const [newTypeName, setNewTypeName] = useState("");
@@ -205,7 +206,7 @@ export function StudyMaterialsModule({
   const [editingItem, setEditingItem] = useState<StudyMaterialItem | null>(null);
   const [inspectItem, setInspectItem] = useState<StudyMaterialItem | null>(null);
 
-  // Upload Form State
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -222,7 +223,7 @@ export function StudyMaterialsModule({
   const [descriptionInput, setDescriptionInput] = useState("");
   const [statusInput, setStatusInput] = useState<MaterialPublicationStatus>("published");
 
-  // Edit Form State
+  
   const [editTitle, setEditTitle] = useState("");
   const [editSubject, setEditSubject] = useState("");
   const [editClassGrade, setEditClassGrade] = useState("");
@@ -233,7 +234,7 @@ export function StudyMaterialsModule({
   const [editSelectedFile, setEditSelectedFile] = useState<File | null>(null);
   const [editFileError, setEditFileError] = useState<string | null>(null);
 
-  // Binary file cache hydration across page reloads
+  
   const [activeBinaryIds, setActiveBinaryIds] = useState<string[]>(() =>
     demoStudyMaterialStorage.getAvailableFileIds()
   );
@@ -250,14 +251,14 @@ export function StudyMaterialsModule({
     };
   }, []);
 
-  // Action Notification Banner
+  
   const [actionNotification, setActionNotification] = useState<{
     type: "success" | "warning" | "error";
     message: string;
     note?: string;
   } | null>(null);
 
-  // Close modals on Escape key
+  
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -271,7 +272,7 @@ export function StudyMaterialsModule({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Upload: Compute Available Options & Derived Effective Selections (Zero setState in Effect)
+  
   const uploadSelectedTeacher = useMemo(() => {
     if (role === "teacher") return currentTeacher;
     if (uploadTeacherId === "admin") return null;
@@ -321,7 +322,7 @@ export function StudyMaterialsModule({
     return "All Batches in this Class";
   }, [uploadAvailableBatches, batchInput]);
 
-  // Edit: Compute Available Options with Cascading Dependencies
+  
   const editSelectedTeacher = useMemo(() => {
     if (!editingItem) return null;
     return faculty.find((f) => f.id === editingItem.teacherId) || null;
@@ -343,7 +344,7 @@ export function StudyMaterialsModule({
     return getValidBatchesForClassAndSubject(editClassGrade, editSubject, batches);
   }, [editClassGrade, editSubject, batches]);
 
-  // Event handlers for cascading changes
+  
   const handleEditSubjectChange = (newSubject: string) => {
     setEditSubject(newSubject);
     const validClasses = getValidClassesForSubject(newSubject, academicSubjects, academicClasses);
@@ -425,7 +426,7 @@ export function StudyMaterialsModule({
     }
   };
 
-  // Open Upload Modal with intelligent profile-based defaults
+  
   const openUploadModal = () => {
     const defaultTeacherId = role === "teacher" ? currentTeacherId : "admin";
     setUploadTeacherId(defaultTeacherId);
@@ -442,10 +443,10 @@ export function StudyMaterialsModule({
     const chosenSubject = validSubjects[0] || "";
     setSubjectInput(chosenSubject);
 
-    // Find classes applicable to this subject
+    
     const validClasses = getValidClassesForSubject(chosenSubject, academicSubjects, academicClasses);
 
-    // If teacher has assigned batches, find which class their batch belongs to (e.g. Class X for Azhar Sir)
+    
     let defaultClass = validClasses[0] || "";
     if (tch && tch.batches && tch.batches.length > 0) {
       const teacherBatchDefs = batches.filter(
@@ -469,7 +470,7 @@ export function StudyMaterialsModule({
     setIsUploadModalOpen(true);
   };
 
-  // Open Edit Modal and Initialize Form
+  
   const openEditModal = (item: StudyMaterialItem) => {
     setEditingItem(item);
     setEditTitle(item.title);
@@ -483,7 +484,7 @@ export function StudyMaterialsModule({
     setEditFileError(null);
   };
 
-  // Save Edit Changes
+  
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingItem) return;
@@ -549,7 +550,7 @@ export function StudyMaterialsModule({
       createAuditLog(
         "Study Material Updated",
         `${updatedItem.subject} (${updatedItem.classGrade})`,
-        `Updated "${updatedItem.title}" — scope: ${updatedItem.batchName || "All Batches"}, status: ${updatedItem.status}.`,
+        `Updated "${updatedItem.title}" - scope: ${updatedItem.batchName || "All Batches"}, status: ${updatedItem.status}.`,
         actorName,
         "enrollment"
       ),
@@ -564,7 +565,7 @@ export function StudyMaterialsModule({
     setTimeout(() => setActionNotification(null), 5000);
   };
 
-  // Explicit Publish Action
+  
   const handlePublish = (item: StudyMaterialItem) => {
     const updated: StudyMaterialItem = { ...item, status: "published" };
     demoStudyMaterialStorage.saveMaterial(updated);
@@ -581,7 +582,7 @@ export function StudyMaterialsModule({
       createAuditLog(
         "Study Material Published",
         `${item.subject} (${item.classGrade})`,
-        `Published "${item.title}" — visible to enrolled students and parents.`,
+        `Published "${item.title}" - visible to enrolled students and parents.`,
         actorName,
         "enrollment"
       ),
@@ -595,7 +596,7 @@ export function StudyMaterialsModule({
     setTimeout(() => setActionNotification(null), 5000);
   };
 
-  // Explicit Unpublish Action (Move to Draft)
+  
   const handleUnpublish = (item: StudyMaterialItem) => {
     const updated: StudyMaterialItem = { ...item, status: "draft" };
     demoStudyMaterialStorage.saveMaterial(updated);
@@ -612,7 +613,7 @@ export function StudyMaterialsModule({
       createAuditLog(
         "Study Material Unpublished",
         `${item.subject} (${item.classGrade})`,
-        `Moved "${item.title}" to draft — hidden from students and parents.`,
+        `Moved "${item.title}" to draft - hidden from students and parents.`,
         actorName,
         "enrollment"
       ),
@@ -626,7 +627,7 @@ export function StudyMaterialsModule({
     setTimeout(() => setActionNotification(null), 5000);
   };
 
-  // Delete Study Material
+  
   const handleDeleteMaterial = (item: StudyMaterialItem) => {
     const confirmed = window.confirm(
       `Are you sure you want to delete "${item.title}"? This action removes the resource from student and parent views.`
@@ -660,7 +661,7 @@ export function StudyMaterialsModule({
     setTimeout(() => setActionNotification(null), 5000);
   };
 
-  // Configure Resource Types (Admin only)
+  
   const handleAddResourceType = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = newTypeName.trim();
@@ -732,10 +733,10 @@ export function StudyMaterialsModule({
     setTimeout(() => setActionNotification(null), 4000);
   };
 
-  // Authoritative Filtered Materials
+  
   const visibleMaterials = useMemo(() => {
     return materials.filter((m) => {
-      // 1. Role-based scoping via shared authoritative selector
+      
       const isVisible = isMaterialVisibleToRole(m, role, {
         student: currentStudent
           ? { id: currentStudent.id, classGrade: currentStudent.classGrade }
@@ -748,7 +749,7 @@ export function StudyMaterialsModule({
 
       if (!isVisible) return false;
 
-      // 2. Status filter (Admin & Teacher only)
+      
       if (
         (role === "teacher" || role === "academy-admin") &&
         filterStatus !== "all" &&
@@ -757,13 +758,13 @@ export function StudyMaterialsModule({
         return false;
       }
 
-      // 3. Subject filter
+      
       if (filterSubject !== "all" && m.subject !== filterSubject) return false;
 
-      // 4. Type filter
+      
       if (filterType !== "all" && m.type !== filterType) return false;
 
-      // 5. Search query
+      
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesTitle = m.title.toLowerCase().includes(q);
@@ -790,7 +791,7 @@ export function StudyMaterialsModule({
     searchQuery,
   ]);
 
-  // Handle File Input Selection
+  
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) {
@@ -806,7 +807,7 @@ export function StudyMaterialsModule({
     } else {
       setFileError(null);
       setSelectedFile(file);
-      // Auto-populate title if empty
+      
       if (!titleInput.trim()) {
         const nameWithoutExt = file.name.substring(0, file.name.lastIndexOf(".")) || file.name;
         setTitleInput(nameWithoutExt.replace(/[-_]/g, " "));
@@ -814,7 +815,7 @@ export function StudyMaterialsModule({
     }
   };
 
-  // Submit Upload Handler
+  
   const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile) {
@@ -867,19 +868,19 @@ export function StudyMaterialsModule({
     setActiveBinaryIds(demoStudyMaterialStorage.getAvailableFileIds());
     setMaterials((prev) => [newItem, ...prev.filter((m) => m.id !== newItem.id)]);
 
-    // Record activity in shared audit logs
+    
     setAuditLogs((prev) => [
       createAuditLog(
         "Study Material Uploaded",
         `${newItem.subject} (${newItem.classGrade})`,
-        `Uploaded ${newItem.type}: "${newItem.title}" (${newItem.fileName}, ${newItem.size}) — ${newItem.status}.`,
+        `Uploaded ${newItem.type}: "${newItem.title}" (${newItem.fileName}, ${newItem.size}) - ${newItem.status}.`,
         teacherName,
         "enrollment"
       ),
       ...prev,
     ]);
 
-    // Reset Modal Form
+    
     setIsUploadModalOpen(false);
     setSelectedFile(null);
     setTitleInput("");
@@ -895,7 +896,7 @@ export function StudyMaterialsModule({
     setTimeout(() => setActionNotification(null), 6000);
   };
 
-  // Download Handler (Only when physical file exists and binary bytes are available)
+  
   const handleDownload = async (item: StudyMaterialItem) => {
     if (!item.hasPhysicalFile || !item.fileName) {
       setInspectItem(item);
@@ -919,7 +920,7 @@ export function StudyMaterialsModule({
     setTimeout(() => setActionNotification(null), 5000);
   };
 
-  // View / Open File in Browser
+  
   const handleViewFile = async (item: StudyMaterialItem) => {
     let url = demoStudyMaterialStorage.getFileUrl(item.id);
     if (!url && item.hasPhysicalFile) {
@@ -933,7 +934,7 @@ export function StudyMaterialsModule({
     }
   };
 
-  // Dynamic filter lists
+  
   const filterSubjectOptions = useMemo(() => {
     const fromSubjects = academicSubjects.filter((s) => s.isActive).map((s) => s.name);
     const fromMaterials = materials.map((m) => m.subject);
@@ -948,7 +949,6 @@ export function StudyMaterialsModule({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
-      {/* Header Card */}
       <Card padding="md">
         <div
           style={{
@@ -991,7 +991,7 @@ export function StudyMaterialsModule({
                 }}
                 style={{ fontSize: "var(--text-xs)" }}
               >
-                ⚙ Manage Resource Types ({resourceTypes.length})
+                Manage Resource Types ({resourceTypes.length})
               </Button>
             )}
 
@@ -1010,7 +1010,6 @@ export function StudyMaterialsModule({
         </div>
       </Card>
 
-      {/* Action Notification Banner */}
       {actionNotification && (
         <div
           style={{
@@ -1051,7 +1050,7 @@ export function StudyMaterialsModule({
                   fontWeight: 700,
                 }}
               >
-                {actionNotification.type === "success" ? "✓" : "ℹ"}
+                {actionNotification.type === "success" ? "Success" : "Info"}
               </span>
               <strong style={{ fontWeight: 600 }}>{actionNotification.message}</strong>
             </div>
@@ -1073,15 +1072,14 @@ export function StudyMaterialsModule({
               padding: "2px",
             }}
           >
-            ✕
+            
           </button>
         </div>
       )}
 
-      {/* Unlinked Student / Parent Guard */}
       {(role === "student" || role === "parent") && !currentStudentId && (
         <Card padding="lg" style={{ textAlign: "center", color: "var(--color-neutral-dark)" }}>
-          <div style={{ fontSize: "28px", marginBottom: "var(--space-2)" }}>🔒</div>
+          <div style={{ marginBottom: "var(--space-2)" }}><Lock size={28} /></div>
           <h3 style={{ fontSize: "var(--text-base)", fontWeight: 600, color: "var(--color-primary)", margin: "0 0 4px" }}>
             No Student Account Associated
           </h3>
@@ -1091,7 +1089,6 @@ export function StudyMaterialsModule({
         </Card>
       )}
 
-      {/* Search and Filters Bar */}
       {((role !== "student" && role !== "parent") || currentStudentId) && (
         <div
           style={{
@@ -1118,7 +1115,6 @@ export function StudyMaterialsModule({
               }}
             />
 
-            {/* Subject Filter (Dynamic from Academy Subjects) */}
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
                 Subject:
@@ -1143,7 +1139,6 @@ export function StudyMaterialsModule({
               </select>
             </div>
 
-            {/* Type Filter (Dynamic from Resource Types) */}
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
                 Type:
@@ -1168,7 +1163,6 @@ export function StudyMaterialsModule({
               </select>
             </div>
 
-            {/* Status Filter (Teachers and Admin) */}
             {(role === "teacher" || role === "academy-admin") && (
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 <span style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
@@ -1211,7 +1205,6 @@ export function StudyMaterialsModule({
         </div>
       )}
 
-      {/* Materials Grid */}
       {((role !== "student" && role !== "parent") || currentStudentId) && (
         <div
           style={{
@@ -1232,7 +1225,7 @@ export function StudyMaterialsModule({
                 color: "var(--color-neutral-dark)",
               }}
             >
-              <div style={{ fontSize: "28px", marginBottom: "var(--space-2)" }}>📚</div>
+              <div style={{ marginBottom: "var(--space-2)" }}><BookOpen size={28} /></div>
               <h4 style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--color-primary)", margin: "0 0 4px" }}>
                 No study materials found
               </h4>
@@ -1289,7 +1282,6 @@ export function StudyMaterialsModule({
                   }}
                 >
                   <div>
-                    {/* Top Badges Row */}
                     <div
                       style={{
                         display: "flex",
@@ -1330,7 +1322,6 @@ export function StudyMaterialsModule({
                         )}
                       </div>
 
-                      {/* Management Quick Actions for Author/Admin */}
                       {canManage && (
                         <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                           {isDraft ? (
@@ -1349,7 +1340,7 @@ export function StudyMaterialsModule({
                                 fontWeight: 600,
                               }}
                             >
-                              Publish 🟢
+                              Publish
                             </button>
                           ) : (
                             <button
@@ -1384,7 +1375,7 @@ export function StudyMaterialsModule({
                               cursor: "pointer",
                             }}
                           >
-                            Edit ✏
+                            Edit
                           </button>
                           <button
                             type="button"
@@ -1400,13 +1391,12 @@ export function StudyMaterialsModule({
                               cursor: "pointer",
                             }}
                           >
-                            ✕
+                            
                           </button>
                         </div>
                       )}
                     </div>
 
-                    {/* Title */}
                     <h3
                       style={{
                         fontSize: "var(--text-sm)",
@@ -1421,7 +1411,6 @@ export function StudyMaterialsModule({
                       {mat.title}
                     </h3>
 
-                    {/* Subject & Class Details */}
                     <div style={{ fontSize: "11px", color: "var(--color-neutral-dark)", marginBottom: "6px" }}>
                       <strong>{mat.subject}</strong> &bull; {mat.classGrade}
                       {mat.batchName &&
@@ -1432,7 +1421,6 @@ export function StudyMaterialsModule({
                         )}
                     </div>
 
-                    {/* Description excerpt */}
                     {mat.description && (
                       <p
                         style={{
@@ -1451,7 +1439,6 @@ export function StudyMaterialsModule({
                     )}
                   </div>
 
-                  {/* Card Footer: Metadata and Actions */}
                   <div
                     style={{
                       borderTop: "1px solid var(--color-border-subtle)",
@@ -1521,7 +1508,7 @@ export function StudyMaterialsModule({
                             borderRadius: "var(--radius-sm)",
                           }}
                         >
-                          Unavailable ⚠
+                          Unavailable
                         </button>
                       ) : (
                         <button
@@ -1551,7 +1538,6 @@ export function StudyMaterialsModule({
         </div>
       )}
 
-      {/* INSPECT / CATALOG OVERVIEW MODAL */}
       {inspectItem && (
         <div
           onClick={(e) => {
@@ -1625,7 +1611,7 @@ export function StudyMaterialsModule({
                   padding: "4px",
                 }}
               >
-                ✕
+                
               </button>
             </div>
 
@@ -1740,7 +1726,6 @@ export function StudyMaterialsModule({
         </div>
       )}
 
-      {/* TEACHER / ADMIN FILE UPLOAD MODAL */}
       {isUploadModalOpen && (
         <div
           onClick={(e) => {
@@ -1779,7 +1764,6 @@ export function StudyMaterialsModule({
               overflowY: "auto",
             }}
           >
-            {/* Modal Title */}
             <div
               style={{
                 display: "flex",
@@ -1813,12 +1797,11 @@ export function StudyMaterialsModule({
                   padding: "4px",
                 }}
               >
-                ✕
+                
               </button>
             </div>
 
             <form onSubmit={handleUploadSubmit}>
-              {/* File Picker Zone */}
               <div style={{ marginBottom: "var(--space-4)" }}>
                 <label
                   style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "6px" }}
@@ -1854,7 +1837,7 @@ export function StudyMaterialsModule({
 
                   {selectedFile ? (
                     <div>
-                      <div style={{ fontSize: "24px", marginBottom: "4px" }}>📄</div>
+                      <div style={{ marginBottom: "4px" }}><FileText size={24} /></div>
                       <div style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--color-primary)" }}>
                         {selectedFile.name}
                       </div>
@@ -1880,12 +1863,12 @@ export function StudyMaterialsModule({
                           fontWeight: 600,
                         }}
                       >
-                        ✕ Remove File
+                        Remove File
                       </button>
                     </div>
                   ) : (
                     <div>
-                      <div style={{ fontSize: "24px", marginBottom: "4px" }}>📎</div>
+                      <div style={{ marginBottom: "4px" }}><Paperclip size={24} /></div>
                       <div style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--color-primary)" }}>
                         Click to browse file from your device
                       </div>
@@ -1905,12 +1888,11 @@ export function StudyMaterialsModule({
                       fontWeight: 500,
                     }}
                   >
-                    ⚠ {fileError}
+                    Notice: {fileError}
                   </div>
                 )}
               </div>
 
-              {/* Title Input */}
               <div style={{ marginBottom: "var(--space-3)" }}>
                 <label
                   htmlFor="material-title-input"
@@ -1936,7 +1918,6 @@ export function StudyMaterialsModule({
                 />
               </div>
 
-              {/* Admin-only: Author / Faculty Selector */}
               {role === "academy-admin" && (
                 <div style={{ marginBottom: "var(--space-3)" }}>
                   <label
@@ -1970,7 +1951,6 @@ export function StudyMaterialsModule({
                 </div>
               )}
 
-              {/* Grid 1: Dynamic Subject & Dependent Target Class */}
               <div
                 style={{
                   display: "grid",
@@ -2036,7 +2016,6 @@ export function StudyMaterialsModule({
                 </div>
               </div>
 
-              {/* Grid 2: Dependent Batch & Configured Resource Type */}
               <div
                 style={{
                   display: "grid",
@@ -2103,7 +2082,6 @@ export function StudyMaterialsModule({
                 </div>
               </div>
 
-              {/* Publication Status Selector */}
               <div style={{ marginBottom: "var(--space-3)" }}>
                 <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "6px" }}>
                   Publication Status *
@@ -2126,7 +2104,7 @@ export function StudyMaterialsModule({
                       onChange={() => setStatusInput("published")}
                     />
                     <span>
-                      🟢 <strong>Publish Now</strong> (Visible to enrolled students &amp; parents)
+                      <strong>Publish Now</strong> (Visible to enrolled students &amp; parents)
                     </span>
                   </label>
 
@@ -2147,13 +2125,12 @@ export function StudyMaterialsModule({
                       onChange={() => setStatusInput("draft")}
                     />
                     <span>
-                      🟡 <strong>Save as Draft</strong> (Hidden from students &amp; parents)
+                      <strong>Save as Draft</strong> (Hidden from students &amp; parents)
                     </span>
                   </label>
                 </div>
               </div>
 
-              {/* Description Input (Optional) */}
               <div style={{ marginBottom: "var(--space-4)" }}>
                 <label
                   htmlFor="material-desc-input"
@@ -2180,7 +2157,6 @@ export function StudyMaterialsModule({
                 />
               </div>
 
-              {/* Upload Notice */}
               <div
                 style={{
                   backgroundColor: "rgba(0, 122, 255, 0.05)",
@@ -2196,7 +2172,6 @@ export function StudyMaterialsModule({
                 Students and parents can download and open this exact file during this session.
               </div>
 
-              {/* Actions */}
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--space-2)" }}>
                 <Button
                   type="button"
@@ -2221,7 +2196,6 @@ export function StudyMaterialsModule({
         </div>
       )}
 
-      {/* EDIT STUDY MATERIAL MODAL */}
       {editingItem && (
         <div
           onClick={(e) => {
@@ -2290,12 +2264,11 @@ export function StudyMaterialsModule({
                   padding: "4px",
                 }}
               >
-                ✕
+                
               </button>
             </div>
 
             <form onSubmit={handleEditSubmit}>
-              {/* Optional File Replacement */}
               <div style={{ marginBottom: "var(--space-3)" }}>
                 <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>
                   Attached File
@@ -2313,7 +2286,7 @@ export function StudyMaterialsModule({
                   }}
                 >
                   <span style={{ color: "var(--color-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "340px" }}>
-                    📄 {editSelectedFile ? editSelectedFile.name : editingItem.fileName || "No physical file attached (Catalog Entry)"}
+                    <FileText size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} />{editSelectedFile ? editSelectedFile.name : editingItem.fileName || "No physical file attached (Catalog Entry)"}
                     {" "}({editSelectedFile ? formatFileSize(editSelectedFile.size) : editingItem.size || ""})
                   </span>
                   <label
@@ -2350,12 +2323,11 @@ export function StudyMaterialsModule({
                 </div>
                 {editFileError && (
                   <div style={{ fontSize: "11px", color: "#FF3B30", marginTop: "4px" }}>
-                    ⚠ {editFileError}
+                    Notice: {editFileError}
                   </div>
                 )}
               </div>
 
-              {/* Title */}
               <div style={{ marginBottom: "var(--space-3)" }}>
                 <label
                   htmlFor="edit-material-title"
@@ -2380,7 +2352,6 @@ export function StudyMaterialsModule({
                 />
               </div>
 
-              {/* Grid: Subject & Dependent Class */}
               <div
                 style={{
                   display: "grid",
@@ -2446,7 +2417,6 @@ export function StudyMaterialsModule({
                 </div>
               </div>
 
-              {/* Grid: Dependent Batch & Resource Type */}
               <div
                 style={{
                   display: "grid",
@@ -2513,7 +2483,6 @@ export function StudyMaterialsModule({
                 </div>
               </div>
 
-              {/* Publication Status */}
               <div style={{ marginBottom: "var(--space-3)" }}>
                 <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "6px" }}>
                   Publication Status
@@ -2527,7 +2496,7 @@ export function StudyMaterialsModule({
                       checked={editStatus === "published"}
                       onChange={() => setEditStatus("published")}
                     />
-                    <span>🟢 <strong>Published</strong> (Visible to eligible students &amp; parents)</span>
+                    <span><strong>Published</strong> (Visible to eligible students &amp; parents)</span>
                   </label>
                   <label style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "var(--text-xs)", cursor: "pointer" }}>
                     <input
@@ -2537,12 +2506,11 @@ export function StudyMaterialsModule({
                       checked={editStatus === "draft"}
                       onChange={() => setEditStatus("draft")}
                     />
-                    <span>🟡 <strong>Draft</strong> (Hidden from students &amp; parents)</span>
+                    <span><strong>Draft</strong> (Hidden from students &amp; parents)</span>
                   </label>
                 </div>
               </div>
 
-              {/* Description */}
               <div style={{ marginBottom: "var(--space-4)" }}>
                 <label
                   htmlFor="edit-material-desc"
@@ -2585,7 +2553,6 @@ export function StudyMaterialsModule({
         </div>
       )}
 
-      {/* ADMIN RESOURCE TYPE SETTINGS MODAL */}
       {isTypeSettingsOpen && (
         <div
           onClick={(e) => {
@@ -2654,11 +2621,10 @@ export function StudyMaterialsModule({
                   padding: "4px",
                 }}
               >
-                ✕
+                
               </button>
             </div>
 
-            {/* Existing Types List */}
             <div style={{ marginBottom: "var(--space-4)" }}>
               <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "6px" }}>
                 Active Resource Types ({resourceTypes.length}):
@@ -2719,7 +2685,6 @@ export function StudyMaterialsModule({
               </div>
             </div>
 
-            {/* Add New Type Form */}
             <form onSubmit={handleAddResourceType}>
               <div style={{ marginBottom: "var(--space-3)" }}>
                 <label
@@ -2753,7 +2718,7 @@ export function StudyMaterialsModule({
                 </div>
                 {typeSettingsError && (
                   <div style={{ fontSize: "11px", color: "#FF3B30", marginTop: "4px" }}>
-                    ⚠ {typeSettingsError}
+                    Notice: {typeSettingsError}
                   </div>
                 )}
               </div>

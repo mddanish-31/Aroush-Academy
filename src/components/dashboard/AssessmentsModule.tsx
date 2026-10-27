@@ -1,4 +1,5 @@
 "use client";
+import { Clock, BarChart3, FileText, TrendingUp, Award } from "lucide-react";
 
 import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import {
@@ -50,12 +51,12 @@ export function AssessmentsModule({
   currentTeacherId = "tch-azhar",
   currentStudentId = "std-101",
 }: AssessmentsModuleProps) {
-  // --------------------------------------------------------------------------
-  // TOP-LEVEL SUBTABS: Overview, Tests & Marks, Results & Reports, Certificate Management
-  // --------------------------------------------------------------------------
+  
+  
+  
   const [activeTab, setActiveTab] = useState<"overview" | "tests" | "results" | "certificates">("overview");
 
-  // Shared persistent storage
+  
   const [assessments, setAssessments] = useDemoStorage<AssessmentRecord[]>(
     DEMO_STORAGE_KEYS.ASSESSMENTS,
     SAMPLE_ASSESSMENTS
@@ -93,28 +94,28 @@ export function AssessmentsModule({
     SAMPLE_ENROLLMENTS
   );
 
-  // Search & Filter State
+  
   const [filterSubject, setFilterSubject] = useState<string>("all");
   const [filterBatch, setFilterBatch] = useState<string>("all");
   const [filterType, setFilterType] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  // Inspected student for results and certificate views (Admin & Teacher can switch; Student/Parent is locked)
+  
   const [inspectedStudentId, setInspectedStudentId] = useState<string>(currentStudentId);
 
-  // Feedback toast notice
+  
   const [actionNotice, setActionNotice] = useState<string | null>(null);
   const showToast = useCallback((msg: string) => {
     setActionNotice(msg);
     setTimeout(() => setActionNotice(null), 4000);
   }, []);
 
-  // Certificate Modal State
+  
   const [activeCertificate, setActiveCertificate] = useState<AcademicCertificateData | null>(null);
   const [activeCertIsIssued, setActiveCertIsIssued] = useState<boolean>(false);
 
-  // Active student reference
+  
   const targetStudentId = useMemo(() => {
     if (role === "student" || role === "parent") return currentStudentId;
     return inspectedStudentId;
@@ -125,12 +126,12 @@ export function AssessmentsModule({
     return students.find((s) => s.id === targetStudentId) || null;
   }, [students, targetStudentId]);
 
-  // Current logged in teacher reference
+  
   const currentTeacher = useMemo(() => {
     return faculty.find((t) => t.id === currentTeacherId) || faculty[0] || null;
   }, [faculty, currentTeacherId]);
 
-  // Teacher-scoped enrollments and student list
+  
   const teacherEnrollments = useMemo(() => {
     if (role === "teacher") {
       return enrollments.filter((e) => e.teacherId === currentTeacherId);
@@ -146,16 +147,16 @@ export function AssessmentsModule({
     return students;
   }, [students, role, teacherEnrollments]);
 
-  // Teacher permission check: whether this teacher is permitted to configure certificates
+  
   const canTeacherConfigureCert = useMemo(() => {
     if (role === "academy-admin") return true;
     if (role === "teacher") return Boolean(allowTeacherCertControl);
     return false;
   }, [role, allowTeacherCertControl]);
 
-  // --------------------------------------------------------------------------
-  // LIVE EXAM TAKING & INTERACTIVE MOCK ENGINE STATE
-  // --------------------------------------------------------------------------
+  
+  
+  
   const [examViewState, setExamViewState] = useState<"list" | "instructions" | "taking" | "result">("list");
   const [selectedExam, setSelectedExam] = useState<MockExam | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
@@ -169,7 +170,7 @@ export function AssessmentsModule({
   const isSubmittedRef = useRef<boolean>(false);
   const examStartTimeRef = useRef<number>(0);
 
-  // Teacher Question Bank Authoring Modal State
+  
   const [isAuthorModalOpen, setIsAuthorModalOpen] = useState<boolean>(false);
   const [authoringExamId, setAuthoringExamId] = useState<string | null>(null);
   const [authorTitle, setAuthorTitle] = useState<string>("");
@@ -181,9 +182,9 @@ export function AssessmentsModule({
   const [authorQuestions, setAuthorQuestions] = useState<MockExamQuestion[]>([]);
   const [authorError, setAuthorError] = useState<string | null>(null);
 
-  // --------------------------------------------------------------------------
-  // ASSESSMENT CREATION & EDITING MODAL STATE
-  // --------------------------------------------------------------------------
+  
+  
+  
   const [isAssessmentModalOpen, setIsAssessmentModalOpen] = useState<boolean>(false);
   const [editingAssessmentId, setEditingAssessmentId] = useState<string | null>(null);
   const [formTitle, setFormTitle] = useState<string>("");
@@ -195,16 +196,16 @@ export function AssessmentsModule({
   const [formTeacherId, setFormTeacherId] = useState<string>(currentTeacherId);
   const [formType, setFormType] = useState<AssessmentType>("regular-class-test");
   const [formStatus, setFormStatus] = useState<AssessmentStatus>("draft");
-  // Certificate policy in assessment form: DEFAULT DISABLED FOR NEW ASSESSMENTS
+  
   const [formCertEnabled, setFormCertEnabled] = useState<boolean>(false);
   const [formCertMinPercentage, setFormCertMinPercentage] = useState<number>(75);
   const [formCertTitle, setFormCertTitle] = useState<string>("");
   const [formCertType, setFormCertType] = useState<"merit" | "mock-completion">("merit");
   const [formError, setFormError] = useState<string | null>(null);
 
-  // --------------------------------------------------------------------------
-  // MARKS RECORDING & EDITING MODAL STATE
-  // --------------------------------------------------------------------------
+  
+  
+  
   const [isRecordModalOpen, setIsRecordModalOpen] = useState<boolean>(false);
   const [recordExamId, setRecordExamId] = useState<string>(assessments[0]?.id || "exam-1");
   const [recordStudentId, setRecordStudentId] = useState<string>(() => students[0]?.id || "std-101");
@@ -213,9 +214,9 @@ export function AssessmentsModule({
   const [recordStatusInput, setRecordStatusInput] = useState<"evaluated" | "absent" | "pending">("evaluated");
   const [recordError, setRecordError] = useState<string | null>(null);
 
-  // --------------------------------------------------------------------------
-  // CERTIFICATE ISSUANCE CONFIRMATION MODAL STATE
-  // --------------------------------------------------------------------------
+  
+  
+  
   const [isConfirmIssueOpen, setIsConfirmIssueOpen] = useState<boolean>(false);
   const [pendingIssueCandidate, setPendingIssueCandidate] = useState<{
     assessment: AssessmentRecord;
@@ -225,12 +226,12 @@ export function AssessmentsModule({
     percentage: number;
   } | null>(null);
 
-  // Revocation Modal State
+  
   const [isConfirmRevokeOpen, setIsConfirmRevokeOpen] = useState<boolean>(false);
   const [pendingRevokeCert, setPendingRevokeCert] = useState<IssuedCertificateRecord | null>(null);
   const [revokeReasonInput, setRevokeReasonInput] = useState<string>("Score recalculated / Administrative review");
 
-  // Escape key handler for dialogs
+  
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -247,15 +248,15 @@ export function AssessmentsModule({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // --------------------------------------------------------------------------
-  // ROLE-FILTERED ASSESSMENTS
-  // --------------------------------------------------------------------------
+  
+  
+  
   const visibleAssessments = useMemo(() => {
     return assessments.filter((exam) => {
-      // Role scope
+      
       if (role === "teacher") {
-        // Teacher can view their own assessments or assessments relevant to their subject
-        // For editing, strict ownership is enforced. For viewing catalog, teacher can view their subject/assigned assessments.
+        
+        
         if (exam.teacherId !== currentTeacherId && !currentTeacher?.assignedSubjects.includes(exam.subject)) {
           return false;
         }
@@ -265,19 +266,19 @@ export function AssessmentsModule({
         }
       }
 
-      // Filter by subject
+      
       if (filterSubject !== "all" && exam.subject !== filterSubject) return false;
 
-      // Filter by batch
+      
       if (filterBatch !== "all" && exam.batch !== filterBatch) return false;
 
-      // Filter by assessment type
+      
       if (filterType !== "all" && (exam.type || "regular-class-test") !== filterType) return false;
 
-      // Filter by status
+      
       if (filterStatus !== "all" && (exam.status || "published") !== filterStatus) return false;
 
-      // Filter by search query
+      
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesTitle = exam.title.toLowerCase().includes(q);
@@ -290,19 +291,19 @@ export function AssessmentsModule({
     });
   }, [assessments, role, currentTeacherId, currentTeacher, targetStudent, enrollments, filterSubject, filterBatch, filterType, filterStatus, searchQuery]);
 
-  // --------------------------------------------------------------------------
-  // OVERVIEW METRICS (Strictly derived from actual assessment records)
-  // --------------------------------------------------------------------------
+  
+  
+  
   const overviewMetrics = useMemo(() => {
     const totalAssessments = visibleAssessments.length;
 
-    // Upcoming tests: scheduled or date >= current date and status not completed/published
+    
     const todayStr = "2026-10-15";
     const upcomingCount = visibleAssessments.filter(
       (a) => a.status === "scheduled" || (a.date >= todayStr && a.status === "draft")
     ).length;
 
-    // Pending publication: draft or completed but not published
+    
     const pendingPublicationCount = visibleAssessments.filter(
       (a) => a.status === "draft" || a.status === "completed"
     ).length;
@@ -329,9 +330,9 @@ export function AssessmentsModule({
     };
   }, [visibleAssessments, issuedCertificates, role, targetStudent, enrollments, assessments, currentTeacherId]);
 
-  // --------------------------------------------------------------------------
-  // ACADEMIC RESULTS CALCULATION FOR RESULTS & REPORTS TAB
-  // --------------------------------------------------------------------------
+  
+  
+  
   const studentResultsLedger = useMemo(() => {
     if (!targetStudent) return [];
 
@@ -410,7 +411,7 @@ export function AssessmentsModule({
     return records;
   }, [assessments, role, currentTeacherId, currentTeacher, filterSubject, targetStudent, enrollments, issuedCertificates, faculty]);
 
-  // Aggregate results summary derived strictly from studentResultsLedger
+  
   const resultsSummary = useMemo(() => {
     const totalCount = studentResultsLedger.length;
     if (totalCount === 0) {
@@ -451,9 +452,9 @@ export function AssessmentsModule({
     };
   }, [studentResultsLedger]);
 
-  // --------------------------------------------------------------------------
-  // CERTIFICATE MANAGEMENT QUEUE & ELIGIBILITY AUDIT
-  // --------------------------------------------------------------------------
+  
+  
+  
   const certificateAssessments = useMemo(() => {
     return assessments.filter((exam) => {
       if (!exam.certificatePolicy?.enabled) return false;
@@ -520,9 +521,9 @@ export function AssessmentsModule({
     });
   }, [activeCertAssessment, issuedCertificates, students, role, targetStudent, enrollments]);
 
-  // --------------------------------------------------------------------------
-  // CERTIFICATE ISSUANCE & REVOCATION HANDLERS
-  // --------------------------------------------------------------------------
+  
+  
+  
   const handleOpenIssueConfirm = (candidate: {
     student: { id: string; name: string; classGrade: string; board: string };
     marksObtained: number;
@@ -547,7 +548,7 @@ export function AssessmentsModule({
       return;
     }
 
-    // Prevent duplicate active issuance
+    
     const alreadyIssued = issuedCertificates.some(
       (c) => c.assessmentId === assessment.id && c.studentId === student.id && c.status === "issued"
     );
@@ -662,9 +663,9 @@ export function AssessmentsModule({
     setActiveCertIsIssued(isIssued);
   };
 
-  // --------------------------------------------------------------------------
-  // QUICK STATUS TOGGLE (Publish / Unpublish)
-  // --------------------------------------------------------------------------
+  
+  
+  
   const handleTogglePublishStatus = (exam: AssessmentRecord, newStatus: AssessmentStatus) => {
     setAssessments((prev) =>
       prev.map((a) => (a.id === exam.id ? { ...a, status: newStatus } : a))
@@ -690,9 +691,9 @@ export function AssessmentsModule({
     );
   };
 
-  // --------------------------------------------------------------------------
-  // ASSESSMENT CREATION & EDITING HANDLERS
-  // --------------------------------------------------------------------------
+  
+  
+  
   const handleOpenCreateAssessmentModal = (examToEdit?: AssessmentRecord) => {
     if (examToEdit) {
       setEditingAssessmentId(examToEdit.id);
@@ -721,7 +722,7 @@ export function AssessmentsModule({
       setFormTeacherId(role === "teacher" ? currentTeacherId : "tch-azhar");
       setFormType("regular-class-test");
       setFormStatus("draft");
-      // Default: certificates DISABLED for new assessments
+      
       setFormCertEnabled(false);
       setFormCertMinPercentage(75);
       setFormCertTitle("Certificate of Academic Distinction");
@@ -746,7 +747,7 @@ export function AssessmentsModule({
       return;
     }
 
-    // Role check: Teacher can only create/edit for their permitted subjects/batches
+    
     if (role === "teacher") {
       if (formTeacherId !== currentTeacherId) {
         setFormError("You can only assign assessments to yourself.");
@@ -831,9 +832,9 @@ export function AssessmentsModule({
     setIsAssessmentModalOpen(false);
   };
 
-  // --------------------------------------------------------------------------
-  // MARKS RECORDING HANDLER
-  // --------------------------------------------------------------------------
+  
+  
+  
   const handleOpenRecordMarksModal = (assessment?: AssessmentRecord) => {
     if (assessment) {
       setRecordExamId(assessment.id);
@@ -853,7 +854,7 @@ export function AssessmentsModule({
     const targetExam = assessments.find((a) => a.id === recordExamId);
     if (!targetExam) return;
 
-    // Role verification
+    
     if (role === "teacher" && targetExam.teacherId !== currentTeacherId) {
       setRecordError("Permission denied: You can only record marks for assessments assigned to you.");
       return;
@@ -910,9 +911,9 @@ export function AssessmentsModule({
     showToast(`Recorded score of ${marksNum}/${targetExam.totalMarks} for ${student.name}.`);
   };
 
-  // --------------------------------------------------------------------------
-  // LIVE MOCK ENGINE WORKFLOW (MCQ Taker with Timer & Palette)
-  // --------------------------------------------------------------------------
+  
+  
+  
   const calculateResult = useCallback(
     (exam: MockExam, answers: Record<string, number | null>, submissionType: "manual" | "timeout"): ExamAttemptResult => {
       let scoreObtained = 0;
@@ -966,13 +967,13 @@ export function AssessmentsModule({
 
       const result = calculateResult(selectedExam, userAnswers, submissionType);
 
-      // Persist to examResults
+      
       setExamResults((prev) => [result, ...prev.filter((r) => r.examId !== selectedExam.id)]);
       setActiveResult(result);
       setIsConfirmSubmitOpen(false);
       setExamViewState("result");
 
-      // Also sync score into corresponding assessment in `assessments` if linked
+      
       const stdId = targetStudent?.id || "";
       const stdName = targetStudent?.name || "Candidate";
       if (!stdId) return;
@@ -1016,7 +1017,7 @@ export function AssessmentsModule({
     [selectedExam, userAnswers, calculateResult, setExamResults, setAssessments, targetStudent, showToast]
   );
 
-  // Timer Effect
+  
   useEffect(() => {
     if (examViewState !== "taking" || !selectedExam) return;
 
@@ -1068,7 +1069,7 @@ export function AssessmentsModule({
     setExamViewState("taking");
   };
 
-  // Teacher Authoring Modal Handlers
+  
   const handleOpenAuthorModal = (examToEdit?: MockExam) => {
     if (examToEdit) {
       setAuthoringExamId(examToEdit.id);
@@ -1156,7 +1157,7 @@ export function AssessmentsModule({
       showToast(`Updated mock exam "${examData.title}".`);
     } else {
       setMockExams((prev) => [examData, ...prev]);
-      // Also add an entry in assessments with online-mock-exam type so it integrates into assessment management
+      
       const linkedRecord: AssessmentRecord = {
         id: `exam-online-${Date.now()}`,
         title: examData.title,
@@ -1196,9 +1197,9 @@ export function AssessmentsModule({
     setIsAuthorModalOpen(false);
   };
 
-  // --------------------------------------------------------------------------
-  // LIVE EXAM VIEWS (Instructions / Taking / Result)
-  // --------------------------------------------------------------------------
+  
+  
+  
   if (examViewState === "instructions" && selectedExam) {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
@@ -1335,7 +1336,6 @@ export function AssessmentsModule({
 
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
-        {/* Exam Navigation Bar */}
         <div
           style={{
             backgroundColor: "#1D1D1F",
@@ -1369,7 +1369,7 @@ export function AssessmentsModule({
                 letterSpacing: "1px",
               }}
             >
-              ⏱️ {formatTimer(timeRemaining)}
+              <Clock size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> {formatTimer(timeRemaining)}
             </div>
 
             <Button
@@ -1383,9 +1383,7 @@ export function AssessmentsModule({
           </div>
         </div>
 
-        {/* Question Panel & Palette */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: "var(--space-4)" }}>
-          {/* Main Question Card */}
           {currentQ && (
             <Card padding="lg">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-4)" }}>
@@ -1401,7 +1399,6 @@ export function AssessmentsModule({
                 {currentQ.questionText}
               </div>
 
-              {/* Options */}
               <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)", marginBottom: "var(--space-6)" }}>
                 {currentQ.options.map((opt, optIdx) => {
                   const isSelected = selectedOptionIndex === optIdx;
@@ -1447,7 +1444,6 @@ export function AssessmentsModule({
                 })}
               </div>
 
-              {/* Navigation Actions */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--color-border)", paddingTop: "var(--space-4)" }}>
                 <Button
                   variant="secondary"
@@ -1463,7 +1459,7 @@ export function AssessmentsModule({
                     size="sm"
                     onClick={() => setReviewFlags((prev) => ({ ...prev, [currentQ.id]: !prev[currentQ.id] }))}
                   >
-                    {isCurrentMarked ? "✓ Marked for Review" : "Mark for Review"}
+                    {isCurrentMarked ? "Marked for Review" : "Mark for Review"}
                   </Button>
 
                   {currentQuestionIndex > 0 && (
@@ -1498,7 +1494,6 @@ export function AssessmentsModule({
             </Card>
           )}
 
-          {/* Question Palette */}
           <Card padding="md">
             <h4 style={{ fontSize: "var(--text-xs)", fontWeight: 700, textTransform: "uppercase", marginBottom: "var(--space-3)" }}>
               Question Palette
@@ -1559,7 +1554,6 @@ export function AssessmentsModule({
           </Card>
         </div>
 
-        {/* Confirm Submit Dialog */}
         {isConfirmSubmitOpen && (
           <div
             role="dialog"
@@ -1687,7 +1681,7 @@ export function AssessmentsModule({
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
                       <span style={{ fontSize: "var(--text-xs)", fontWeight: 700 }}>Question {idx + 1}</span>
                       <Badge variant={isCorrect ? "success" : isUnanswered ? "neutral" : "warning"} size="sm">
-                        {isCorrect ? `✓ Correct (+${q.marks})` : isUnanswered ? "— Unanswered (0)" : "✗ Incorrect (0)"}
+                        {isCorrect ? `Correct (+${q.marks})` : isUnanswered ? "- Unanswered (0)" : "Incorrect (0)"}
                       </Badge>
                     </div>
                     <p style={{ fontSize: "var(--text-xs)", fontWeight: 600, margin: "0 0 6px" }}>{q.questionText}</p>
@@ -1706,12 +1700,11 @@ export function AssessmentsModule({
     );
   }
 
-  // --------------------------------------------------------------------------
-  // MAIN ORGANIZED DASHBOARD (Overview, Tests & Marks, Results & Reports, Certificate Management)
-  // --------------------------------------------------------------------------
+  
+  
+  
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-5)" }}>
-      {/* Toast Notice */}
       {actionNotice && (
         <div
           role="status"
@@ -1731,7 +1724,6 @@ export function AssessmentsModule({
         </div>
       )}
 
-      {/* Main Module Header & Organized Navigation Tabs */}
       <Card padding="md">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "var(--space-3)" }}>
           <div>
@@ -1746,7 +1738,7 @@ export function AssessmentsModule({
                   : "Academy Assessment Management & Examination Directorate"}
               </h2>
               <Badge variant="accent" size="sm">
-                Session 2026–27
+                Session 2026-27
               </Badge>
             </div>
             <p style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", margin: 0 }}>
@@ -1754,7 +1746,6 @@ export function AssessmentsModule({
             </p>
           </div>
 
-          {/* Quick Actions for Admin and Teachers */}
           <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap" }}>
             {(role === "teacher" || role === "academy-admin") && (
               <>
@@ -1786,7 +1777,6 @@ export function AssessmentsModule({
           </div>
         </div>
 
-        {/* Clean 4-Area Navigation Subtabs */}
         <div
           style={{
             display: "flex",
@@ -1811,7 +1801,7 @@ export function AssessmentsModule({
               cursor: "pointer",
             }}
           >
-            📊 Overview
+            <BarChart3 size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> Overview
           </button>
 
           <button
@@ -1828,7 +1818,7 @@ export function AssessmentsModule({
               cursor: "pointer",
             }}
           >
-            📝 Tests &amp; Marks ({visibleAssessments.length})
+            <FileText size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> Tests &amp; Marks ({visibleAssessments.length})
           </button>
 
           <button
@@ -1845,7 +1835,7 @@ export function AssessmentsModule({
               cursor: "pointer",
             }}
           >
-            📈 Results &amp; Reports ({studentResultsLedger.length})
+            <TrendingUp size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> Results &amp; Reports ({studentResultsLedger.length})
           </button>
 
           <button
@@ -1862,16 +1852,14 @@ export function AssessmentsModule({
               cursor: "pointer",
             }}
           >
-            🎓 Certificate Management ({certificateAssessments.length} Active Policies)
+            <Award size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> Certificate Management ({certificateAssessments.length} Active Policies)
           </button>
         </div>
       </Card>
 
-      {/* Filter and Candidate Selector Strip */}
       <Card padding="sm">
         <div style={{ display: "flex", gap: "var(--space-3)", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap", alignItems: "center", flex: 1 }}>
-            {/* Subject Filter */}
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", fontWeight: 600 }}>Subject:</span>
               <select
@@ -1887,7 +1875,6 @@ export function AssessmentsModule({
               </select>
             </div>
 
-            {/* Batch Filter */}
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", fontWeight: 600 }}>Batch:</span>
               <select
@@ -1902,7 +1889,6 @@ export function AssessmentsModule({
               </select>
             </div>
 
-            {/* Test Type Filter */}
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", fontWeight: 600 }}>Type:</span>
               <select
@@ -1918,7 +1904,6 @@ export function AssessmentsModule({
               </select>
             </div>
 
-            {/* Status Filter */}
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", fontWeight: 600 }}>Status:</span>
               <select
@@ -1934,7 +1919,6 @@ export function AssessmentsModule({
               </select>
             </div>
 
-            {/* Search Input */}
             <div style={{ minWidth: "160px", flex: "1 1 140px" }}>
               <input
                 type="text"
@@ -1952,7 +1936,6 @@ export function AssessmentsModule({
             </div>
           </div>
 
-          {/* Student Selector for Teachers & Admin */}
           {(role === "teacher" || role === "academy-admin") && (
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", fontWeight: 600 }}>
@@ -1980,12 +1963,8 @@ export function AssessmentsModule({
         </div>
       </Card>
 
-      {/* ==================================================================== */}
-      {/* AREA 1: OVERVIEW                                                     */}
-      {/* ==================================================================== */}
       {activeTab === "overview" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
-          {/* Top Useful Metrics Cards */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "var(--space-3)" }}>
             <Card padding="md">
               <div style={{ fontSize: "10px", color: "var(--color-neutral-dark)", textTransform: "uppercase", fontWeight: 700 }}>
@@ -2036,7 +2015,6 @@ export function AssessmentsModule({
             </Card>
           </div>
 
-          {/* Admin / Teacher Permissions Notice */}
           {role === "academy-admin" && (
             <Card padding="sm" style={{ borderLeft: "4px solid #007AFF" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-2)" }}>
@@ -2079,7 +2057,6 @@ export function AssessmentsModule({
             </Card>
           )}
 
-          {/* Overview Quick Glance Table */}
           <Card padding="md">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-3)" }}>
               <div>
@@ -2095,7 +2072,7 @@ export function AssessmentsModule({
               </Button>
             </div>
 
-            <div style={{ overflowX: "auto" }}>
+            <div tabIndex={0} role="region" aria-label="Assessment ledger table" style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-xs)", textAlign: "left" }}>
                 <thead>
                   <tr style={{ backgroundColor: "var(--color-surface-muted)", borderBottom: "1px solid var(--color-border)", color: "var(--color-neutral-dark)" }}>
@@ -2170,7 +2147,7 @@ export function AssessmentsModule({
                               Take Exam →
                             </Button>
                           ) : (
-                            <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)" }}>—</span>
+                            <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)" }}>-</span>
                           )}
                         </td>
                       </tr>
@@ -2183,9 +2160,6 @@ export function AssessmentsModule({
         </div>
       )}
 
-      {/* ==================================================================== */}
-      {/* AREA 2: TESTS & MARKS MANAGEMENT                                    */}
-      {/* ==================================================================== */}
       {activeTab === "tests" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-2)" }}>
@@ -2240,7 +2214,6 @@ export function AssessmentsModule({
                     }}
                   >
                     <div>
-                      {/* Badge header */}
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
                         <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
                           <Badge variant="accent" size="sm">{exam.subject}</Badge>
@@ -2270,14 +2243,13 @@ export function AssessmentsModule({
                       </h4>
 
                       <div style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", lineHeight: 1.6 }}>
-                        <div>📅 Date: <strong>{exam.date}</strong> &bull; Total Marks: <strong>{exam.totalMarks}</strong></div>
-                        <div>🏷️ {exam.batch} &bull; Class: <strong>{exam.classGrade}</strong></div>
+                        <div>Date: <strong>{exam.date}</strong> &bull; Total Marks: <strong>{exam.totalMarks}</strong></div>
+                        <div>Batch: {exam.batch} &bull; Class: <strong>{exam.classGrade}</strong></div>
                         <div>
-                          👨‍🏫 Evaluator: <strong>{exam.teacherId === "tch-azhar" ? "Azhar Sir" : exam.teacherId === "tch-alvi" ? "Dr. Tariq Alvi" : "Prof. N. Roy"}</strong>
+                          Evaluator: <strong>{exam.teacherId === "tch-azhar" ? "Azhar Sir" : exam.teacherId === "tch-alvi" ? "Dr. Tariq Alvi" : "Prof. N. Roy"}</strong>
                         </div>
                       </div>
 
-                      {/* Certificate Policy Banner for this test */}
                       <div
                         style={{
                           marginTop: "var(--space-3)",
@@ -2290,25 +2262,23 @@ export function AssessmentsModule({
                       >
                         {certEnabled ? (
                           <div style={{ color: "#34C759", fontWeight: 600 }}>
-                            🎓 Certificate Policy: <strong>Active (≥{certThreshold}%)</strong>
+                            Certificate Policy: <strong>Active (≥{certThreshold}%)</strong>
                             <div style={{ fontSize: "10px", color: "var(--color-neutral-dark)", fontWeight: 400 }}>
                               {exam.certificatePolicy?.certificateTitle || "Merit Certificate"}
                             </div>
                           </div>
                         ) : (
                           <div style={{ color: "var(--color-neutral-dark)" }}>
-                            🔒 Certificates: <strong>Disabled</strong> (Standard Marks Only)
+                            Certificates: <strong>Disabled</strong> (Standard Marks Only)
                           </div>
                         )}
                       </div>
 
-                      {/* Evaluated Student Scores count */}
                       <div style={{ fontSize: "11px", color: "var(--color-neutral-dark)", marginTop: "6px" }}>
                         Evaluation Progress: <strong>{evaluatedCount} evaluated score(s)</strong> recorded
                       </div>
                     </div>
 
-                    {/* Action Buttons Row */}
                     <div
                       style={{
                         display: "flex",
@@ -2417,9 +2387,6 @@ export function AssessmentsModule({
         </div>
       )}
 
-      {/* ==================================================================== */}
-      {/* AREA 3: RESULTS & REPORTS                                            */}
-      {/* ==================================================================== */}
       {activeTab === "results" && (
         !targetStudent ? (
           <Card padding="lg" style={{ textAlign: "center", color: "var(--color-neutral-dark)", margin: "var(--space-4) 0" }}>
@@ -2430,7 +2397,6 @@ export function AssessmentsModule({
           </Card>
         ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
-          {/* Candidate Profile & Cumulative Academic Summary Banner */}
           <Card padding="lg" style={{ borderLeft: "4px solid #007AFF" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "var(--space-3)", marginBottom: "var(--space-4)" }}>
               <div>
@@ -2456,7 +2422,6 @@ export function AssessmentsModule({
               </div>
             </div>
 
-            {/* Performance KPI Cards */}
             <div
               style={{
                 display: "grid",
@@ -2479,7 +2444,6 @@ export function AssessmentsModule({
                 </div>
               </div>
 
-              {/* Subject Breakdown cards */}
               {Object.keys(resultsSummary.subjectStats).map((subj) => {
                 const item = resultsSummary.subjectStats[subj];
                 return (
@@ -2494,7 +2458,6 @@ export function AssessmentsModule({
             </div>
           </Card>
 
-          {/* Detailed Itemized Results Table */}
           <Card padding="md">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-3)" }}>
               <div>
@@ -2512,7 +2475,7 @@ export function AssessmentsModule({
                 No evaluated test records available for {targetStudent.name} under the selected filters.
               </div>
             ) : (
-              <div style={{ overflowX: "auto" }}>
+              <div tabIndex={0} role="region" aria-label="Assessment ledger table" style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-xs)", textAlign: "left" }}>
                   <thead>
                     <tr style={{ backgroundColor: "var(--color-surface-muted)", borderBottom: "1px solid var(--color-border)", color: "var(--color-neutral-dark)" }}>
@@ -2537,7 +2500,7 @@ export function AssessmentsModule({
                           {record.title}
                           {record.certPolicyEnabled && (
                             <div style={{ fontSize: "10px", color: "#34C759", fontWeight: 600, marginTop: "2px" }}>
-                              ★ Certificate Qualified (Policy ≥ {record.certThreshold}%)
+                              Certificate Qualified (Policy ≥ {record.certThreshold}%)
                             </div>
                           )}
                         </td>
@@ -2561,7 +2524,7 @@ export function AssessmentsModule({
                           </Badge>
                         </td>
                         <td style={{ padding: "10px 12px", color: "var(--color-neutral-dark)", maxWidth: "200px" }}>
-                          {record.feedback || "—"}
+                          {record.feedback || "-"}
                         </td>
                         <td style={{ padding: "10px 12px", textAlign: "right" }}>
                           {record.issuedCertificate ? (
@@ -2579,7 +2542,7 @@ export function AssessmentsModule({
                                 cursor: "pointer",
                               }}
                             >
-                              🎓 View Issued Cert
+                              View Issued Cert
                             </button>
                           ) : (
                             <Badge variant={record.isPublished ? "success" : "neutral"} size="sm">
@@ -2598,12 +2561,8 @@ export function AssessmentsModule({
         )
       )}
 
-      {/* ==================================================================== */}
-      {/* AREA 4: CERTIFICATE MANAGEMENT                                       */}
-      {/* ==================================================================== */}
       {activeTab === "certificates" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-5)" }}>
-          {/* Certificate Policy Guidance Notice */}
           <Card padding="md" style={{ borderLeft: "4px solid #34C759" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "var(--space-2)" }}>
               <div>
@@ -2624,7 +2583,6 @@ export function AssessmentsModule({
             </div>
           </Card>
 
-          {/* Assessment Policy Selector Bar */}
           <Card padding="sm">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-3)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
@@ -2659,13 +2617,12 @@ export function AssessmentsModule({
                   size="sm"
                   onClick={() => handleOpenCreateAssessmentModal(activeCertAssessment)}
                 >
-                  ⚙️ Configure Assessment Policy
+                  Configure Assessment Policy
                 </Button>
               )}
             </div>
           </Card>
 
-          {/* Active Assessment Certificate Policy Detail */}
           {activeCertAssessment && activeCertAssessment.certificatePolicy?.enabled ? (
             <Card padding="md">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "var(--space-3)", marginBottom: "var(--space-4)" }}>
@@ -2691,8 +2648,7 @@ export function AssessmentsModule({
                 </div>
               </div>
 
-              {/* Eligible Candidates & Issuance Queue Table */}
-              <div style={{ overflowX: "auto" }}>
+              <div tabIndex={0} role="region" aria-label="Assessment ledger table" style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-xs)", textAlign: "left" }}>
                   <thead>
                     <tr style={{ backgroundColor: "var(--color-surface-muted)", borderBottom: "1px solid var(--color-border)", color: "var(--color-neutral-dark)" }}>
@@ -2730,7 +2686,7 @@ export function AssessmentsModule({
                           <td style={{ padding: "10px 12px" }}>
                             {item.isEligible ? (
                               <Badge variant="success" size="sm">
-                                ✓ Qualified (≥{activeCertAssessment.certificatePolicy!.minPercentage}%)
+                                Qualified (≥{activeCertAssessment.certificatePolicy!.minPercentage}%)
                               </Badge>
                             ) : (
                               <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", fontStyle: "italic" }}>
@@ -2741,7 +2697,7 @@ export function AssessmentsModule({
                           <td style={{ padding: "10px 12px" }}>
                             {item.issuedCert ? (
                               <Badge variant="success" size="sm">
-                                ★ Issued ({item.issuedCert.certificateNumber})
+                                Issued ({item.issuedCert.certificateNumber})
                               </Badge>
                             ) : item.revokedCert ? (
                               <Badge variant="warning" size="sm">
@@ -2789,7 +2745,7 @@ export function AssessmentsModule({
                                 <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)" }}>Awaiting Admin</span>
                               )
                             ) : (
-                              <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)" }}>—</span>
+                              <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)" }}>-</span>
                             )}
                           </td>
                         </tr>
@@ -2815,7 +2771,6 @@ export function AssessmentsModule({
             </Card>
           )}
 
-          {/* Official Issued Certificates Ledger */}
           <Card padding="md">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-3)", flexWrap: "wrap", gap: "var(--space-2)" }}>
               <div>
@@ -2833,7 +2788,7 @@ export function AssessmentsModule({
                 No certificates have been issued yet. Configure an assessment certificate policy and issue to qualifying candidates.
               </div>
             ) : (
-              <div style={{ overflowX: "auto" }}>
+              <div tabIndex={0} role="region" aria-label="Assessment ledger table" style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-xs)", textAlign: "left" }}>
                   <thead>
                     <tr style={{ backgroundColor: "var(--color-surface-muted)", borderBottom: "1px solid var(--color-border)", color: "var(--color-neutral-dark)" }}>
@@ -2909,9 +2864,6 @@ export function AssessmentsModule({
         </div>
       )}
 
-      {/* ==================================================================== */}
-      {/* MODAL 1: CREATE / EDIT ASSESSMENT & CERTIFICATE POLICY                */}
-      {/* ==================================================================== */}
       {isAssessmentModalOpen && (
         <div
           role="dialog"
@@ -2945,7 +2897,7 @@ export function AssessmentsModule({
                 onClick={() => setIsAssessmentModalOpen(false)}
                 style={{ background: "none", border: "none", fontSize: "18px", cursor: "pointer", color: "var(--color-neutral-dark)" }}
               >
-                ✕
+                
               </button>
             </div>
 
@@ -3047,7 +2999,7 @@ export function AssessmentsModule({
                   <select
                     value={formTeacherId}
                     onChange={(e) => setFormTeacherId(e.target.value)}
-                    disabled={role === "teacher"} // Teacher cannot reassign to other teachers
+                    disabled={role === "teacher"} 
                     style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
                   >
                     {faculty.map((t) => (
@@ -3071,7 +3023,6 @@ export function AssessmentsModule({
                 </div>
               </div>
 
-              {/* CRITICAL: Configurable Certificate Policy Section */}
               <div
                 style={{
                   backgroundColor: formCertEnabled ? "rgba(52, 199, 89, 0.06)" : "var(--color-surface-muted)",
@@ -3097,7 +3048,7 @@ export function AssessmentsModule({
 
                 {!canTeacherConfigureCert && (
                   <div style={{ fontSize: "10px", color: "#FF9500", marginBottom: "6px" }}>
-                    ⚠️ Note: Certificate policy configuration has been restricted by the Academy Administrator.
+                    Note: Certificate policy configuration has been restricted by the Academy Administrator.
                   </div>
                 )}
 
@@ -3150,9 +3101,6 @@ export function AssessmentsModule({
         </div>
       )}
 
-      {/* ==================================================================== */}
-      {/* MODAL 2: RECORD / EDIT STUDENT MARKS                                  */}
-      {/* ==================================================================== */}
       {isRecordModalOpen && (
         <div
           role="dialog"
@@ -3268,9 +3216,6 @@ export function AssessmentsModule({
         </div>
       )}
 
-      {/* ==================================================================== */}
-      {/* MODAL 3: CONFIRM CERTIFICATE ISSUANCE                                 */}
-      {/* ==================================================================== */}
       {isConfirmIssueOpen && pendingIssueCandidate && (
         <div
           role="dialog"
@@ -3291,7 +3236,7 @@ export function AssessmentsModule({
         >
           <Card padding="lg" style={{ maxWidth: "480px", width: "100%" }}>
             <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, marginBottom: "var(--space-2)", color: "#007AFF" }}>
-              🎓 Confirm Official Certificate Issuance
+              Confirm Certificate Issuance
             </h3>
             <p style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", lineHeight: 1.5, marginBottom: "var(--space-3)" }}>
               You are about to issue an official academic achievement certificate in accordance with this assessment&apos;s verified policy.
@@ -3317,9 +3262,6 @@ export function AssessmentsModule({
         </div>
       )}
 
-      {/* ==================================================================== */}
-      {/* MODAL 4: CONFIRM CERTIFICATE REVOCATION                               */}
-      {/* ==================================================================== */}
       {isConfirmRevokeOpen && pendingRevokeCert && (
         <div
           role="dialog"
@@ -3371,9 +3313,6 @@ export function AssessmentsModule({
         </div>
       )}
 
-      {/* ==================================================================== */}
-      {/* MODAL 5: TEACHER QUESTION BANK & MOCK EXAM AUTHORING                 */}
-      {/* ==================================================================== */}
       {isAuthorModalOpen && (
         <div
           role="dialog"
@@ -3407,7 +3346,7 @@ export function AssessmentsModule({
                 onClick={() => setIsAuthorModalOpen(false)}
                 style={{ background: "none", border: "none", fontSize: "18px", cursor: "pointer", color: "var(--color-neutral-dark)" }}
               >
-                ✕
+                
               </button>
             </div>
 
@@ -3670,9 +3609,6 @@ export function AssessmentsModule({
         </div>
       )}
 
-      {/* ==================================================================== */}
-      {/* MODAL 6: PRINTABLE CERTIFICATE VIEW                                   */}
-      {/* ==================================================================== */}
       {activeCertificate && (
         <ExamCertificateModal
           isOpen={

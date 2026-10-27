@@ -1,4 +1,5 @@
 "use client";
+import { Check, FileText } from "lucide-react";
 
 import React, { useState, useMemo, useEffect } from "react";
 import { UserRole, NoticeItem } from "@/types";
@@ -60,7 +61,6 @@ export function NoticesModule({ role }: NoticesModuleProps) {
 
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
-  // Publish Modal State
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [titleInput, setTitleInput] = useState("");
   const [categoryInput, setCategoryInput] = useState<NoticeItem["category"]>("Academic");
@@ -77,7 +77,6 @@ export function NoticesModule({ role }: NoticesModuleProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isPublishModalOpen]);
 
-  // Scoped strictly to user role
   const roleScopedNotices = useMemo(() => {
     return notices.filter((n) => {
       if (role !== "academy-admin" && !n.targetRoles.includes(role)) return false;
@@ -116,7 +115,6 @@ export function NoticesModule({ role }: NoticesModuleProps) {
 
     setNotices((prev) => [newNotice, ...prev]);
 
-    // Record activity event in centralized audit trail
     recordCreate({
       action: "Publish Notice",
       type: "system",
@@ -140,7 +138,6 @@ export function NoticesModule({ role }: NoticesModuleProps) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
-      {/* Header Card */}
       <Card padding="md">
         <div
           style={{
@@ -184,7 +181,6 @@ export function NoticesModule({ role }: NoticesModuleProps) {
         </div>
       </Card>
 
-      {/* Success Notification */}
       {actionSuccessNotice && (
         <div
           style={{
@@ -200,12 +196,11 @@ export function NoticesModule({ role }: NoticesModuleProps) {
           }}
           role="status"
         >
-          <span style={{ color: "var(--color-success)", fontWeight: 700 }}>✓</span>
+          <span style={{ color: "var(--color-success)", fontWeight: 700 }}><Check size={14} /></span>
           <span>{actionSuccessNotice}</span>
         </div>
       )}
 
-      {/* Refined Category Filter Bar */}
       <div
         style={{
           display: "flex",
@@ -269,7 +264,6 @@ export function NoticesModule({ role }: NoticesModuleProps) {
         })}
       </div>
 
-      {/* Notices List */}
       <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
         {visibleNotices.length === 0 ? (
           <div
@@ -282,7 +276,7 @@ export function NoticesModule({ role }: NoticesModuleProps) {
               color: "var(--color-neutral-dark)",
             }}
           >
-            <div style={{ fontSize: "28px", marginBottom: "var(--space-2)" }}>📋</div>
+            <div style={{ marginBottom: "var(--space-2)" }}><FileText size={28} /></div>
             <h4 style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--color-primary)", margin: "0 0 4px" }}>
               No notices in this category
             </h4>
@@ -316,7 +310,6 @@ export function NoticesModule({ role }: NoticesModuleProps) {
                   gap: "var(--space-3)",
                 }}
               >
-                {/* Meta row: Category, Priority, Date, and Author */}
                 <div
                   style={{
                     display: "flex",
@@ -346,7 +339,6 @@ export function NoticesModule({ role }: NoticesModuleProps) {
                   </div>
                 </div>
 
-                {/* Title */}
                 <h3
                   style={{
                     fontSize: "var(--text-base)",
@@ -361,7 +353,6 @@ export function NoticesModule({ role }: NoticesModuleProps) {
                   {n.title}
                 </h3>
 
-                {/* Content */}
                 <p
                   style={{
                     fontSize: "var(--text-sm)",
@@ -376,7 +367,6 @@ export function NoticesModule({ role }: NoticesModuleProps) {
                   {n.content}
                 </p>
 
-                {/* Footer Metadata: Audience & ID */}
                 <div
                   style={{
                     paddingTop: "var(--space-2)",
@@ -393,7 +383,7 @@ export function NoticesModule({ role }: NoticesModuleProps) {
                   <span>
                     Audience: <strong>{formatTargetRoles(n.targetRoles)}</strong>
                   </span>
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--color-neutral)" }}>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--color-text-secondary)" }}>
                     {n.id}
                   </span>
                 </div>
@@ -403,7 +393,6 @@ export function NoticesModule({ role }: NoticesModuleProps) {
         )}
       </div>
 
-      {/* PUBLISH NOTICE MODAL */}
       {isPublishModalOpen && (
         <div
           onClick={(e) => {
@@ -471,7 +460,7 @@ export function NoticesModule({ role }: NoticesModuleProps) {
                   lineHeight: 1,
                 }}
               >
-                ✕
+                
               </button>
             </div>
 

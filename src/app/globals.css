@@ -8,7 +8,7 @@
   --color-primary: #1D1D1F;
   --color-primary-light: #2D2D30;
   --color-neutral: #AAAAAA;
-  --color-neutral-dark: #6E6E73;
+  --color-neutral-dark: #555558;
   --color-neutral-light: #E5E5EA;
   --color-accent: #007AFF;
   --color-accent-hover: #0062CC;
@@ -16,9 +16,9 @@
   --color-border: rgba(0, 0, 0, 0.08);
   --color-border-subtle: rgba(0, 0, 0, 0.04);
   --color-focus-ring: rgba(0, 122, 255, 0.4);
-  --color-success: #34C759;
-  --color-warning: #FF9500;
-  --color-danger: #FF3B30;
+  --color-success: #15803D;
+  --color-warning: #854D0E;
+  --color-danger: #B91C1C;
 
   /* Typography */
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;

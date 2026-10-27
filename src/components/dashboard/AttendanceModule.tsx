@@ -1,4 +1,5 @@
 "use client";
+import { Check, X } from "lucide-react";
 
 import React, { useState, useMemo } from "react";
 import { UserRole, AttendanceRecord, StudentProfile, TeacherProfile, SubjectEnrollment } from "@/types";
@@ -49,7 +50,7 @@ export function AttendanceModule({
   const [filterSubject, setFilterSubject] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
-  // Filter enrollments and selectable students for teachers vs admin
+  
   const teacherEnrollments = useMemo(() => {
     if (role === "teacher") {
       return enrollments.filter((e) => e.teacherId === currentTeacherId);
@@ -78,7 +79,7 @@ export function AttendanceModule({
     return allSubjSet.size > 0 ? Array.from(allSubjSet) : ["Mathematics", "Physics", "Chemistry", "Accountancy"];
   }, [role, faculty, currentTeacherId, teacherEnrollments, enrollments]);
 
-  // Modal State for Teacher / Admin marking attendance
+  
   const [isMarkModalOpen, setIsMarkModalOpen] = useState(false);
   const [markDate, setMarkDate] = useState<string>(getTodayLocalDate());
   const [markStudentId, setMarkStudentId] = useState(students[0]?.id || "std-101");
@@ -92,7 +93,7 @@ export function AttendanceModule({
     null,
   );
 
-  // Edit Attendance Modal State
+  
   const [editRecord, setEditRecord] = useState<AttendanceRecord | null>(null);
   const [editStatus, setEditStatus] = useState<"present" | "absent">("present");
   const [editDate, setEditDate] = useState<string>("");
@@ -123,7 +124,7 @@ export function AttendanceModule({
       return;
     }
 
-    // Prevent duplicate attendance records for the same student, batch, subject, and session date
+    
     const isDuplicate = records.some(
       (rec) =>
         rec.id !== editRecord.id &&
@@ -180,7 +181,7 @@ export function AttendanceModule({
     setTimeout(() => setActionSuccessNotice(null), 4000);
   };
 
-  // Role-isolated filtering
+  
   const visibleRecords = useMemo(() => {
     return records.filter((r) => {
       if (role === "teacher" && r.teacherId !== currentTeacherId) return false;
@@ -202,7 +203,7 @@ export function AttendanceModule({
     filterStatus,
   ]);
 
-  // Statistics calculation
+  
   const totalClasses = visibleRecords.length;
   const presentCount = visibleRecords.filter(
     (r) => r.status === "present",
@@ -238,7 +239,7 @@ export function AttendanceModule({
         ? "Batch Alpha (Class IX-X)"
         : "Batch Higher Secondary (Class XI-XII)");
 
-    // Prevent duplicate attendance records for the same student, batch, subject, and session date
+    
     const isDuplicate = records.some(
       (r) =>
         r.studentId === markStudentId &&
@@ -299,7 +300,6 @@ export function AttendanceModule({
         gap: "var(--space-6)",
       }}
     >
-      {/* Action Notification Banner */}
       {actionSuccessNotice && (
         <div
           style={{
@@ -328,12 +328,11 @@ export function AttendanceModule({
               padding: "0 4px",
             }}
           >
-            ✕
+            
           </button>
         </div>
       )}
 
-      {/* Top Header Card */}
       <Card padding="md">
         <div
           style={{
@@ -398,7 +397,6 @@ export function AttendanceModule({
           )}
         </div>
 
-        {/* Attendance Summary Metrics */}
         <div
           style={{
             display: "grid",
@@ -512,7 +510,6 @@ export function AttendanceModule({
         </div>
       </Card>
 
-      {/* Success Notice Banner */}
       {actionSuccessNotice && (
         <div
           style={{
@@ -525,11 +522,10 @@ export function AttendanceModule({
           }}
           role="status"
         >
-          ✓ {actionSuccessNotice} (Stored in local demo session state)
+          <Check size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> {actionSuccessNotice} (Stored in local demo session state)
         </div>
       )}
 
-      {/* Filter Strip */}
       <div
         style={{
           display: "flex",
@@ -608,7 +604,6 @@ export function AttendanceModule({
         </div>
       </div>
 
-      {/* Attendance Records Table */}
       <div
         style={{
           backgroundColor: "var(--color-surface)",
@@ -617,7 +612,7 @@ export function AttendanceModule({
           overflow: "hidden",
         }}
       >
-        <div style={{ overflowX: "auto" }}>
+        <div tabIndex={0} role="region" aria-label="Attendance records table" style={{ overflowX: "auto" }}>
           <table
             style={{
               width: "100%",
@@ -732,7 +727,7 @@ export function AttendanceModule({
                         color: "var(--color-neutral-dark)",
                       }}
                     >
-                      {r.remarks || "—"}
+                      {r.remarks || "-"}
                     </td>
                     {(role === "academy-admin" || role === "teacher") && (
                       <td style={{ padding: "10px 14px", textAlign: "right" }}>
@@ -760,7 +755,6 @@ export function AttendanceModule({
         </div>
       </div>
 
-      {/* MARK ATTENDANCE MODAL */}
       {isMarkModalOpen && (
         <div
           onClick={(e) => {
@@ -812,12 +806,11 @@ export function AttendanceModule({
                   cursor: "pointer",
                 }}
               >
-                ✕
+                
               </button>
             </div>
 
             <form onSubmit={handleMarkAttendance}>
-              {/* Required Session Date Selection */}
               <div style={{ marginBottom: "var(--space-3)" }}>
                 <label
                   htmlFor="mark-session-date"
@@ -1029,7 +1022,6 @@ export function AttendanceModule({
         </div>
       )}
 
-      {/* EDIT ATTENDANCE MODAL */}
       {editRecord && (
         <div
           onClick={(e) => {
@@ -1092,12 +1084,11 @@ export function AttendanceModule({
                   padding: "0 4px",
                 }}
               >
-                ✕
+                
               </button>
             </div>
 
             <form onSubmit={handleSaveEdit}>
-              {/* Record Summary: Student Name, Original Date, Subject */}
               <div
                 style={{
                   backgroundColor: "var(--color-surface-muted)",
@@ -1130,7 +1121,6 @@ export function AttendanceModule({
                 </div>
               </div>
 
-              {/* Attendance Date: displays original date, editable if explicitly changed */}
               <div style={{ marginBottom: "var(--space-4)" }}>
                 <label
                   htmlFor="edit-session-date"
@@ -1164,7 +1154,6 @@ export function AttendanceModule({
                 />
               </div>
 
-              {/* Status Selection: Both Present and Absent buttons visible at all times */}
               <div style={{ marginBottom: "var(--space-6)" }}>
                 <label
                   style={{
@@ -1213,7 +1202,7 @@ export function AttendanceModule({
                       transition: "all 0.15s ease",
                     }}
                   >
-                    <span>✓</span>
+                    <span><Check size={14} /></span>
                     <span>Present</span>
                   </button>
                   <button
@@ -1252,7 +1241,7 @@ export function AttendanceModule({
                       transition: "all 0.15s ease",
                     }}
                   >
-                    <span>✕</span>
+                    <span><X size={14} /></span>
                     <span>Absent</span>
                   </button>
                 </div>
@@ -1276,7 +1265,6 @@ export function AttendanceModule({
                 </div>
               )}
 
-              {/* Action Buttons: Cancel and Save */}
               <div
                 style={{
                   display: "flex",

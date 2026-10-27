@@ -1,4 +1,5 @@
 "use client";
+import { X } from "lucide-react";
 
 import React, { useState } from "react";
 import {
@@ -26,7 +27,7 @@ type SetupSubTab = "classes" | "subjects" | "batches" | "faculty";
 export function AcademicSetupModule() {
   const [activeSubTab, setActiveSubTab] = useState<SetupSubTab>("batches");
 
-  // Reactive master storage
+  
   const [classes, setClasses] = useDemoStorage<AcademicClass[]>(
     DEMO_STORAGE_KEYS.ACADEMIC_CLASSES,
     DEFAULT_CLASSES
@@ -50,7 +51,7 @@ export function AcademicSetupModule() {
 
   const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
-  // Modal states
+  
   const [isAddClassModalOpen, setIsAddClassModalOpen] = useState(false);
   const [newClassName, setNewClassName] = useState("");
   const [newClassBoards, setNewClassBoards] = useState<string[]>(["ICSE", "CBSE"]);
@@ -77,13 +78,13 @@ export function AcademicSetupModule() {
   const [newTeacherSubjects, setNewTeacherSubjects] = useState<string[]>(["Mathematics"]);
   const [newTeacherBatches, setNewTeacherBatches] = useState("");
 
-  // Dismiss notification helper
+  
   const showNotice = (message: string, type: "success" | "error" = "success") => {
     setNotification({ type, message });
     setTimeout(() => setNotification(null), 4500);
   };
 
-  // --- CLASS & BOARD ACTIONS ---
+  
   const handleToggleClassStatus = (clsId: string) => {
     const targetCls = classes.find((c) => c.id === clsId);
     const newStatus = !targetCls?.isActive;
@@ -164,7 +165,7 @@ export function AcademicSetupModule() {
     showNotice(`Added master record for "${cleanName}".`);
   };
 
-  // --- SUBJECT ACTIONS ---
+  
   const handleToggleSubjectStatus = (subId: string) => {
     const targetSub = subjects.find((s) => s.id === subId);
     const newStatus = !targetSub?.isActive;
@@ -227,7 +228,7 @@ export function AcademicSetupModule() {
     showNotice(`Added subject "${cleanName}" to the catalog.`);
   };
 
-  // --- BATCH ACTIONS ---
+  
   const handleToggleBatchStatus = (batchId: string) => {
     const targetBatch = batches.find((b) => b.id === batchId);
     const newStatus = targetBatch?.status === "active" ? "upcoming" : "active";
@@ -270,7 +271,7 @@ export function AcademicSetupModule() {
     };
     setBatches((prev) => [newBatch, ...prev]);
 
-    // Support legitimate additional assignments: ensure the assigned instructor's profile reflects this subject
+    
     if (teacher && !teacher.assignedSubjects.some((s) => s.toLowerCase() === batchSubjectInput.toLowerCase())) {
       const updatedTeacher: TeacherProfile = {
         ...teacher,
@@ -297,7 +298,7 @@ export function AcademicSetupModule() {
     showNotice(`Created batch "${newBatch.name}" assigned to ${newBatch.teacherName}.`);
   };
 
-  // --- TEACHER ACTIONS ---
+  
   const handleToggleTeacherStatus = (teacherId: string) => {
     const targetTeacher = faculty.find((t) => t.id === teacherId);
     const newStatus = (targetTeacher?.status || "active") === "active" ? "inactive" : "active";
@@ -361,14 +362,13 @@ export function AcademicSetupModule() {
     showNotice(`Registered faculty member "${newProf.name}".`);
   };
 
-  // Filter eligible teachers for selected batch subject
+  
   const eligibleTeachersForBatch = faculty.filter(
     (t) => t.assignedSubjects.includes(batchSubjectInput) || t.assignedSubjects.length === 0
   );
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
-      {/* Module Header Card */}
       <Card padding="md">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "var(--space-3)" }}>
           <div>
@@ -409,7 +409,6 @@ export function AcademicSetupModule() {
           </div>
         </div>
 
-        {/* Sub-Tab Navigation Bar */}
         <div
           style={{
             display: "flex",
@@ -418,6 +417,7 @@ export function AcademicSetupModule() {
             marginTop: "var(--space-4)",
             paddingTop: "var(--space-3)",
             overflowX: "auto",
+                
           }}
           role="tablist"
         >
@@ -500,7 +500,6 @@ export function AcademicSetupModule() {
         </div>
       </Card>
 
-      {/* Action Notification */}
       {notification && (
         <div
           style={{
@@ -518,10 +517,9 @@ export function AcademicSetupModule() {
         </div>
       )}
 
-      {/* --- SUBTAB 1: BATCHES MANAGEMENT --- */}
       {activeSubTab === "batches" && (
         <div style={{ backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-lg)", border: "1px solid var(--color-border)", overflow: "hidden" }}>
-          <div style={{ overflowX: "auto" }}>
+          <div tabIndex={0} role="region" aria-label="Academic setup data table" style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "var(--text-xs)" }}>
               <thead>
                 <tr style={{ backgroundColor: "var(--color-surface-muted)", borderBottom: "1px solid var(--color-border)" }}>
@@ -603,10 +601,8 @@ export function AcademicSetupModule() {
         </div>
       )}
 
-      {/* --- SUBTAB 2: CLASSES & BOARDS --- */}
       {activeSubTab === "classes" && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "var(--space-6)" }}>
-          {/* Grades Card */}
           <Card padding="md">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-3)" }}>
               <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: 0 }}>
@@ -659,7 +655,6 @@ export function AcademicSetupModule() {
             </div>
           </Card>
 
-          {/* Boards Card */}
           <Card padding="md">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-3)" }}>
               <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: 0 }}>
@@ -710,10 +705,9 @@ export function AcademicSetupModule() {
         </div>
       )}
 
-      {/* --- SUBTAB 3: SUBJECTS CATALOG --- */}
       {activeSubTab === "subjects" && (
         <div style={{ backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-lg)", border: "1px solid var(--color-border)", overflow: "hidden" }}>
-          <div style={{ overflowX: "auto" }}>
+          <div tabIndex={0} role="region" aria-label="Academic setup data table" style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "var(--text-xs)" }}>
               <thead>
                 <tr style={{ backgroundColor: "var(--color-surface-muted)", borderBottom: "1px solid var(--color-border)" }}>
@@ -778,10 +772,9 @@ export function AcademicSetupModule() {
         </div>
       )}
 
-      {/* --- SUBTAB 4: FACULTY ALLOCATIONS --- */}
       {activeSubTab === "faculty" && (
         <div style={{ backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-lg)", border: "1px solid var(--color-border)", overflow: "hidden" }}>
-          <div style={{ overflowX: "auto" }}>
+          <div tabIndex={0} role="region" aria-label="Academic setup data table" style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "var(--text-xs)" }}>
               <thead>
                 <tr style={{ backgroundColor: "var(--color-surface-muted)", borderBottom: "1px solid var(--color-border)" }}>
@@ -844,13 +837,12 @@ export function AcademicSetupModule() {
         </div>
       )}
 
-      {/* --- MODAL 1: ADD CLASS --- */}
       {isAddClassModalOpen && (
         <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 110, padding: "var(--space-4)" }}>
           <div style={{ backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-xl)", maxWidth: "440px", width: "100%", padding: "var(--space-6)", border: "1px solid var(--color-border)", boxShadow: "var(--shadow-lg)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-4)" }}>
               <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: 0 }}>Add Academic Grade Record</h3>
-              <button type="button" onClick={() => setIsAddClassModalOpen(false)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: "18px" }}>✕</button>
+              <button type="button" onClick={() => setIsAddClassModalOpen(false)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: "18px" }}><X size={14} /></button>
             </div>
             <form onSubmit={handleCreateClass} style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
               <div>
@@ -891,13 +883,12 @@ export function AcademicSetupModule() {
         </div>
       )}
 
-      {/* --- MODAL 2: ADD SUBJECT --- */}
       {isAddSubjectModalOpen && (
         <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 110, padding: "var(--space-4)" }}>
           <div style={{ backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-xl)", maxWidth: "480px", width: "100%", padding: "var(--space-6)", border: "1px solid var(--color-border)", boxShadow: "var(--shadow-lg)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-4)" }}>
               <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: 0 }}>Add Catalog Subject</h3>
-              <button type="button" onClick={() => setIsAddSubjectModalOpen(false)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: "18px" }}>✕</button>
+              <button type="button" onClick={() => setIsAddSubjectModalOpen(false)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: "18px" }}><X size={14} /></button>
             </div>
             <form onSubmit={handleCreateSubject} style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
               <div>
@@ -972,13 +963,12 @@ export function AcademicSetupModule() {
         </div>
       )}
 
-      {/* --- MODAL 3: CREATE BATCH --- */}
       {isAddBatchModalOpen && (
         <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 110, padding: "var(--space-4)" }}>
           <div style={{ backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-xl)", maxWidth: "520px", width: "100%", padding: "var(--space-6)", border: "1px solid var(--color-border)", boxShadow: "var(--shadow-lg)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-4)" }}>
               <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: 0 }}>Create Classroom Batch</h3>
-              <button type="button" onClick={() => setIsAddBatchModalOpen(false)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: "18px" }}>✕</button>
+              <button type="button" onClick={() => setIsAddBatchModalOpen(false)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: "18px" }}><X size={14} /></button>
             </div>
             <form onSubmit={handleCreateBatch} style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
               <div>
@@ -1086,13 +1076,12 @@ export function AcademicSetupModule() {
         </div>
       )}
 
-      {/* --- MODAL 4: ADD FACULTY --- */}
       {isAddTeacherModalOpen && (
         <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 110, padding: "var(--space-4)" }}>
           <div style={{ backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-xl)", maxWidth: "460px", width: "100%", padding: "var(--space-6)", border: "1px solid var(--color-border)", boxShadow: "var(--shadow-lg)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-4)" }}>
               <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: 0 }}>Register Faculty Record</h3>
-              <button type="button" onClick={() => setIsAddTeacherModalOpen(false)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: "18px" }}>✕</button>
+              <button type="button" onClick={() => setIsAddTeacherModalOpen(false)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: "18px" }}><X size={14} /></button>
             </div>
             <form onSubmit={handleCreateTeacher} style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
               <div>

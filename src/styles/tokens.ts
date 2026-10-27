@@ -1,8 +1,4 @@
-/**
- * Centralized Design Tokens for ArousH Academy
- * Apple-inspired minimalism, premium B2B SaaS aesthetic
- * All values align with CSS variables declared in src/app/globals.css
- */
+
 
 export const colors = {
   background: "#F5F5F7",

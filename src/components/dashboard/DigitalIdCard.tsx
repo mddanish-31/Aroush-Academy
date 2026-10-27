@@ -28,11 +28,11 @@ export function DigitalIdCard({
 }: DigitalIdCardProps) {
   const [activeSide, setActiveSide] = useState<"front" | "back">("front");
 
-  // Format student identifiers dynamically from the active record or linked cardRecord
+  
   const cardStatus = cardRecord?.status || "approved";
   const isOfficiallyIssued = cardStatus === "approved";
   const studentFormattedId = cardRecord?.studentFormattedId || `AA-2026-${student.id.replace("std-", "")}`;
-  const academicSession = cardRecord?.session || "2026–2027";
+  const academicSession = cardRecord?.session || "2026-2027";
   const photoUrl = cardRecord?.photoUrl;
 
   let validThruDateStr = "31 MAR 2027";
@@ -66,12 +66,12 @@ export function DigitalIdCard({
       .toUpperCase();
   }, [student.name]);
 
-  // Safe verification URL payload for demonstration without exposing sensitive data
+  
   const verificationUrl = isOfficiallyIssued
     ? `https://aroush.academy/verify/id?studentId=${encodeURIComponent(student.id)}&session=${encodeURIComponent(academicSession)}`
     : `https://aroush.academy/verify/id?studentId=${encodeURIComponent(student.id)}&status=${encodeURIComponent(cardStatus)}&preview=true`;
 
-  // Generate crisp, mathematical vector QR code SVG synchronously with zero external HTTP requests
+  
   const qrSvgMarkup = useMemo(() => {
     try {
       const qr = new QRCode({
@@ -83,7 +83,7 @@ export function DigitalIdCard({
         background: "#FFFFFF",
         ecl: "M",
       });
-      // Extract raw svg string
+      
       return qr.svg();
     } catch {
       return "";
@@ -91,7 +91,7 @@ export function DigitalIdCard({
   }, [verificationUrl]);
 
 
-  // Auto-print effect when triggered from parent modal
+  
   useEffect(() => {
     if (isModal && autoPrint && typeof window !== "undefined") {
       const timer = setTimeout(() => {
@@ -104,7 +104,7 @@ export function DigitalIdCard({
     }
   }, [isModal, autoPrint, onAutoPrintComplete]);
 
-  // Escape key handler when displayed in modal mode
+  
   useEffect(() => {
     if (!isModal || !onClose) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -124,13 +124,12 @@ export function DigitalIdCard({
     }
   };
 
-  /* -------------------------------------------------------------------------- */
-  /* Reusable Sub-Components: Gold Smartcard Chip & Barcode & Hologram Foil     */
-  /* -------------------------------------------------------------------------- */
+  
+  
+  
   const SmartChipIcon = () => (
     <svg width="24" height="20" viewBox="0 0 24 20" fill="none" style={{ flexShrink: 0 }}>
       <rect x="0.5" y="0.5" width="23" height="19" rx="3.5" fill="url(#chipGoldGrad)" stroke="#B38728" strokeWidth="0.8" />
-      {/* Contact Pads */}
       <line x1="1" y1="7" x2="8" y2="7" stroke="#7A5813" strokeWidth="0.8" />
       <line x1="1" y1="13" x2="8" y2="13" stroke="#7A5813" strokeWidth="0.8" />
       <line x1="16" y1="7" x2="23" y2="7" stroke="#7A5813" strokeWidth="0.8" />
@@ -172,7 +171,6 @@ export function DigitalIdCard({
   const BarcodeGraphic = () => (
     <div style={{ textAlign: "center", marginTop: "12px" }}>
       <svg width="220" height="34" viewBox="0 0 220 34" style={{ display: "inline-block", maxWidth: "100%" }}>
-        {/* Repeating Code-128 barcode simulation */}
         {[
           3, 1, 2, 4, 1, 3, 1, 1, 4, 2, 1, 2, 3, 1, 1, 2, 4, 1, 3, 2, 1, 1, 4, 1,
           2, 3, 1, 2, 1, 4, 2, 1, 3, 1, 2, 1, 4, 1, 3, 2, 1, 1, 3, 2, 1, 4, 1, 2,
@@ -205,9 +203,9 @@ export function DigitalIdCard({
     </div>
   );
 
-  /* -------------------------------------------------------------------------- */
-  /* Front Face of the Card                                                     */
-  /* -------------------------------------------------------------------------- */
+  
+  
+  
   const renderFrontFace = (isPrintVersion = false) => (
     <div
       className={`id-card-face id-card-front ${isPrintVersion ? "id-card-print-face" : ""}`}
@@ -233,7 +231,6 @@ export function DigitalIdCard({
         color: isPrintVersion ? "#111827" : "#F3F4F6",
       }}
     >
-      {/* Background Subtle Geometric Watermark */}
       {!isPrintVersion && (
         <div
           aria-hidden="true"
@@ -250,7 +247,6 @@ export function DigitalIdCard({
         />
       )}
 
-      {/* Top Punch Slot (Realistic badge cutout) */}
       <div
         className="no-print"
         aria-hidden="true"
@@ -266,7 +262,6 @@ export function DigitalIdCard({
         }}
       />
 
-      {/* Card Header: Academy Monogram + Brand + Security Foil */}
       <div
         style={{
           display: "flex",
@@ -279,7 +274,6 @@ export function DigitalIdCard({
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          {/* Academy Monogram Badge */}
           <div
             style={{
               width: "32px",
@@ -327,7 +321,6 @@ export function DigitalIdCard({
           </div>
         </div>
 
-        {/* Security Hologram Micro-Badge */}
         {!isPrintVersion ? (
           <HologramSeal />
         ) : (
@@ -346,9 +339,7 @@ export function DigitalIdCard({
         )}
       </div>
 
-      {/* Middle Row: Student Photo Frame & Primary Information */}
       <div style={{ display: "flex", gap: "14px", alignItems: "center", margin: "14px 0" }}>
-        {/* Student Photo Container */}
         <div
           style={{
             width: "82px",
@@ -368,9 +359,8 @@ export function DigitalIdCard({
             overflow: "hidden",
           }}
         >
-          {/* Avatar / Photo Container */}
           {photoUrl ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
+            
             <img
               src={photoUrl}
               alt={student.name}
@@ -423,9 +413,7 @@ export function DigitalIdCard({
           </div>
         </div>
 
-        {/* Student Identifiers Section */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          {/* Active Status Indicator */}
           <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
             <span
               style={{
@@ -472,7 +460,6 @@ export function DigitalIdCard({
             </span>
           </div>
 
-          {/* Student Full Name */}
           <h4
             style={{
               fontSize: "16px",
@@ -487,7 +474,6 @@ export function DigitalIdCard({
             {student.name}
           </h4>
 
-          {/* Student ID */}
           <div
             style={{
               display: "inline-block",
@@ -501,7 +487,6 @@ export function DigitalIdCard({
             {studentFormattedId}
           </div>
 
-          {/* Class & Board Row */}
           <div
             style={{
               fontSize: "11px",
@@ -514,7 +499,6 @@ export function DigitalIdCard({
             <span style={{ color: isPrintVersion ? "#4B5563" : "#9CA3AF" }}>{student.board}</span>
           </div>
 
-          {/* Academic Session */}
           <div
             style={{
               fontSize: "9.5px",
@@ -527,7 +511,6 @@ export function DigitalIdCard({
         </div>
       </div>
 
-      {/* Enrolled Subjects Micro-Strip */}
       <div
         style={{
           background: isPrintVersion ? "#F9FAFB" : "rgba(255, 255, 255, 0.04)",
@@ -564,7 +547,6 @@ export function DigitalIdCard({
         </div>
       </div>
 
-      {/* Bottom Area: Scannable QR Code Tile + Verification Details */}
       <div
         style={{
           display: "flex",
@@ -576,7 +558,6 @@ export function DigitalIdCard({
           border: isPrintVersion ? "1px solid #D1D5DB" : "1px solid rgba(255, 255, 255, 0.08)",
         }}
       >
-        {/* Scannable High-Contrast QR Code Tile */}
         <div
           style={{
             width: "68px",
@@ -595,7 +576,6 @@ export function DigitalIdCard({
           dangerouslySetInnerHTML={{ __html: qrSvgMarkup }}
         />
 
-        {/* Verification Metadata & Smart Chip Graphic */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "3px" }}>
             <span
@@ -636,7 +616,6 @@ export function DigitalIdCard({
         </div>
       </div>
 
-      {/* Card Micro Footer */}
       <div
         style={{
           marginTop: "10px",
@@ -660,9 +639,9 @@ export function DigitalIdCard({
     </div>
   );
 
-  /* -------------------------------------------------------------------------- */
-  /* Reverse / Back Face of the Card                                            */
-  /* -------------------------------------------------------------------------- */
+  
+  
+  
   const renderBackFace = (isPrintVersion = false) => (
     <div
       className={`id-card-face id-card-back ${isPrintVersion ? "id-card-print-face" : ""}`}
@@ -688,7 +667,6 @@ export function DigitalIdCard({
         color: isPrintVersion ? "#111827" : "#F3F4F6",
       }}
     >
-      {/* Top Punch Slot */}
       <div
         className="no-print"
         aria-hidden="true"
@@ -704,7 +682,6 @@ export function DigitalIdCard({
         }}
       />
 
-      {/* Magnetic Stripe Aesthetic Strip */}
       <div
         style={{
           height: "32px",
@@ -723,7 +700,6 @@ export function DigitalIdCard({
         </span>
       </div>
 
-      {/* Emergency Contact & Guardian Information */}
       <div
         style={{
           background: isPrintVersion ? "#F9FAFB" : "rgba(255, 255, 255, 0.03)",
@@ -761,7 +737,6 @@ export function DigitalIdCard({
         </div>
       </div>
 
-      {/* Academy Campus & Support Information */}
       <div style={{ margin: "4px 0 10px" }}>
         <div
           style={{
@@ -782,7 +757,6 @@ export function DigitalIdCard({
         </div>
       </div>
 
-      {/* Terms and Regulations */}
       <div
         style={{
           fontSize: "7.8px",
@@ -803,7 +777,6 @@ export function DigitalIdCard({
         </p>
       </div>
 
-      {/* Registrar Authorization & Signatory */}
       <div
         style={{
           display: "flex",
@@ -817,7 +790,7 @@ export function DigitalIdCard({
           <div style={{ fontSize: "7px", color: isPrintVersion ? "#6B7280" : "#6B7280", textTransform: "uppercase" }}>
             Security Seal
           </div>
-          <div style={{ fontSize: "8px", fontWeight: 700, color: "#007AFF" }}>
+          <div style={{ fontSize: "8px", fontWeight: 700, color: "var(--color-primary)" }}>
             VERIFIED CREDENTIAL
           </div>
         </div>
@@ -850,14 +823,13 @@ export function DigitalIdCard({
         </div>
       </div>
 
-      {/* Barcode Strip */}
       <BarcodeGraphic />
     </div>
   );
 
-  /* -------------------------------------------------------------------------- */
-  /* Main Container: Lanyard Strap + Clasp + Hanging Card Mockup                */
-  /* -------------------------------------------------------------------------- */
+  
+  
+  
   const previewScreen = (
     <div
       className={isModal ? "printable-document digital-id-card-wrapper" : "digital-id-card-wrapper digital-id-card-inline"}
@@ -869,7 +841,6 @@ export function DigitalIdCard({
         fontFamily: "var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif)",
       }}
     >
-      {/* ----------------- SCREEN ONLY: REALISTIC HANGING LANYARD ASSEMBLY ----------------- */}
       <div
         className="no-print id-card-lanyard-assembly"
         aria-hidden="true"
@@ -881,7 +852,6 @@ export function DigitalIdCard({
           zIndex: 2,
         }}
       >
-        {/* Lanyard Fabric Ribbon running down from top */}
         <div
           style={{
             width: "32px",
@@ -896,7 +866,6 @@ export function DigitalIdCard({
             justifyContent: "center",
           }}
         >
-          {/* Subtle printed ribbon brand line */}
           <span
             style={{
               writingMode: "vertical-rl",
@@ -914,8 +883,6 @@ export function DigitalIdCard({
           </span>
         </div>
 
-        {/* Metal Swivel Clasp Assembly */}
-        {/* Metal Crimp Sleeve */}
         <div
           style={{
             width: "36px",
@@ -930,7 +897,6 @@ export function DigitalIdCard({
             justifyContent: "center",
           }}
         >
-          {/* Rivet in center */}
           <div
             style={{
               width: "4px",
@@ -942,7 +908,6 @@ export function DigitalIdCard({
           />
         </div>
 
-        {/* Metallic Swivel Lobster Hook entering the slot */}
         <div
           style={{
             width: "14px",
@@ -957,7 +922,6 @@ export function DigitalIdCard({
         />
       </div>
 
-      {/* Status Warning Watermark Banner for unapproved cards */}
       {!isOfficiallyIssued && (
         <div
           className="no-print"
@@ -997,22 +961,20 @@ export function DigitalIdCard({
           <span>ℹ️</span>
           <span>
             {cardStatus === "draft"
-              ? "Draft Preview — Not Officially Issued"
+              ? "Draft Preview - Not Officially Issued"
               : cardStatus === "pending-approval"
-              ? "Pending Approval — Not Officially Issued"
+              ? "Pending Approval - Not Officially Issued"
               : cardStatus === "rejected"
-              ? `Rejected — Reason: ${cardRecord?.rejectionReason || "Requirements not met"}`
+              ? `Rejected - Reason: ${cardRecord?.rejectionReason || "Requirements not met"}`
               : "Inactive / Deactivated Credential"}
           </span>
         </div>
       )}
 
-      {/* ----------------- SCREEN ONLY: CARD VIEW WITH ACTIVE FACE ----------------- */}
       <div className="no-print" style={{ zIndex: 1, position: "relative" }}>
         {activeSide === "front" ? renderFrontFace(false) : renderBackFace(false)}
       </div>
 
-      {/* ----------------- SCREEN ONLY: CONTROL BAR (FLIP + PRINT) ----------------- */}
       <div
         className="no-print id-card-controls-bar"
         style={{
@@ -1025,7 +987,6 @@ export function DigitalIdCard({
           alignItems: "center",
         }}
       >
-        {/* Front / Back Side Switcher */}
         <div
           style={{
             display: "inline-flex",
@@ -1050,7 +1011,7 @@ export function DigitalIdCard({
               transition: "all 0.15s ease",
             }}
           >
-            🪪 Card Front
+            Card Front
           </button>
           <button
             type="button"
@@ -1067,11 +1028,10 @@ export function DigitalIdCard({
               transition: "all 0.15s ease",
             }}
           >
-            🔄 Reverse Side
+            Reverse Side
           </button>
         </div>
 
-        {/* Action Buttons */}
         <div style={{ display: "flex", gap: "8px", width: "100%", justifyContent: "center" }}>
           {onClose && (
             <Button variant="secondary" size="sm" onClick={onClose} type="button">
@@ -1091,7 +1051,6 @@ export function DigitalIdCard({
           </Button>
         </div>
 
-        {/* Verification & Offline Notice */}
         <div
           style={{
             fontSize: "11px",
@@ -1105,11 +1064,10 @@ export function DigitalIdCard({
         </div>
       </div>
 
-      {/* ----------------- PRINT ONLY: DEDICATED HIGH-CONTRAST DUAL-SIDE SHEET ----------------- */}
       <div
         className="digital-id-card-print-sheet"
         style={{
-          display: "none", // Displayed only via @media print in globals.css
+          display: "none", 
         }}
       >
         <div className="id-card-print-block">
@@ -1124,7 +1082,7 @@ export function DigitalIdCard({
     </div>
   );
 
-  /* Modal Wrapper when isModal === true */
+  
   if (isModal) {
     return (
       <div

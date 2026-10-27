@@ -1,12 +1,4 @@
-/**
- * AROUSH ACADEMY — Central Attendance Domain Logic & Calculations
- *
- * Provides shared, consistent, and strictly validated attendance functions across:
- * 1. Academy Admin Workspace
- * 2. Teacher Session Marking & History
- * 3. Student Attendance Portal
- * 4. Parent Ward Tracking Portal
- */
+
 
 import type {
   AttendanceRecord,
@@ -35,8 +27,8 @@ export interface AttendanceStats {
   totalClasses: number;
   attendedClasses: number;
   absentClasses: number;
-  percentage: number; // 0 - 100
-  // Compatibility aliases
+  percentage: number; 
+  
   total: number;
   present: number;
   absent: number;
@@ -46,9 +38,7 @@ export interface AttendanceStats {
   rate: number;
 }
 
-/**
- * Normalizes an individual attendance record safely to support legacy or partial entries.
- */
+
 export function normalizeAttendanceRecord(r: AttendanceRecord): AttendanceRecord {
   const status: AttendanceStatus =
     r.status === "present" || r.status === "absent" || r.status === "late" || r.status === "excused"
@@ -71,25 +61,15 @@ export function normalizeAttendanceRecord(r: AttendanceRecord): AttendanceRecord
   };
 }
 
-/**
- * Normalizes a list of attendance records.
- */
+
 export function normalizeAttendanceList(list: unknown): AttendanceRecord[] {
   if (!Array.isArray(list)) return [];
   return list.map((item) => normalizeAttendanceRecord(item as AttendanceRecord));
 }
 
-/**
- * Shared calculation helper for attendance statistics.
- * Computes:
- * - Total Classes: Number of finalized attendance sessions applicable to that student/subject.
- * - Attended Classes: Number of sessions marked Present.
- * - Absent Classes: Total Classes minus Attended Classes.
- * - Attendance Percentage: (Attended Classes / Total Classes) * 100.
- * Handles zero sessions cleanly with 0% instead of NaN.
- */
+
 export function calculateAttendanceStats(records: AttendanceRecord[]): AttendanceStats {
-  // Deduplicate records by unique session and student
+  
   const uniqueRecords: AttendanceRecord[] = [];
   const seenSessions = new Set<string>();
 
@@ -110,7 +90,7 @@ export function calculateAttendanceStats(records: AttendanceRecord[]): Attendanc
     if (r.status === "present") {
       attendedClasses++;
     } else if (r.status === "late") {
-      // Legacy compatibility: count late as attended
+      
       attendedClasses++;
       late++;
     } else if (r.status === "excused") {
@@ -118,7 +98,7 @@ export function calculateAttendanceStats(records: AttendanceRecord[]): Attendanc
     }
   }
 
-  // Absent Classes = Total Classes minus Attended Classes
+  
   const absentClasses = Math.max(0, totalClasses - attendedClasses);
   const percentage = totalClasses > 0 ? Math.round((attendedClasses / totalClasses) * 100) : 0;
 
@@ -146,9 +126,7 @@ export interface SubjectAttendanceSummary {
   lastSessionDate?: string;
 }
 
-/**
- * Generates subject-wise attendance summaries.
- */
+
 export function calculateSubjectBreakdown(records: AttendanceRecord[]): SubjectAttendanceSummary[] {
   const map = new Map<string, AttendanceRecord[]>();
   for (const r of records) {
@@ -174,14 +152,12 @@ export function calculateSubjectBreakdown(records: AttendanceRecord[]): SubjectA
 }
 
 export interface MonthlyAttendanceSummary {
-  monthKey: string; // e.g. "2026-10"
-  monthLabel: string; // e.g. "October 2026"
+  monthKey: string; 
+  monthLabel: string; 
   stats: AttendanceStats;
 }
 
-/**
- * Aggregates attendance records by month.
- */
+
 export function calculateMonthlyBreakdown(records: AttendanceRecord[]): MonthlyAttendanceSummary[] {
   const map = new Map<string, AttendanceRecord[]>();
   for (const r of records) {
@@ -218,9 +194,7 @@ export interface StudentAttendanceSummary {
   lastDate?: string;
 }
 
-/**
- * Aggregates attendance statistics by student across all enrolled subjects.
- */
+
 export function calculateStudentBreakdown(
   records: AttendanceRecord[],
   students: StudentProfile[]
@@ -264,10 +238,7 @@ export function calculateStudentBreakdown(
   return results.sort((a, b) => a.studentName.localeCompare(b.studentName));
 }
 
-/**
- * Stable Session ID generator.
- * Format: sess-{batch-slug}-{date}
- */
+
 export function generateSessionId(batchIdentifier: string, date: string): string {
   const slug = batchIdentifier
     .toLowerCase()
@@ -277,17 +248,14 @@ export function generateSessionId(batchIdentifier: string, date: string): string
   return `sess-${slug}-${date}`;
 }
 
-/**
- * Enforces exactly one record per student per session.
- * Reopening and resaving updates existing records without duplication.
- */
+
 export function upsertSessionAttendance(
   existingRecords: AttendanceRecord[],
   newSessionRecords: AttendanceRecord[]
 ): AttendanceRecord[] {
   const recordMap = new Map<string, AttendanceRecord>();
 
-  // Load existing records keyed by sessionId + studentId
+  
   for (const r of existingRecords) {
     const key = `${r.sessionId}::${r.studentId}`;
     recordMap.set(key, r);
@@ -299,7 +267,7 @@ export function upsertSessionAttendance(
     const prev = recordMap.get(key);
 
     if (prev) {
-      // Retain original record ID and audit history, update status/remarks and timestamp
+      
       recordMap.set(key, {
         ...prev,
         ...incoming,
@@ -318,13 +286,11 @@ export function upsertSessionAttendance(
     }
   }
 
-  // Preserve descending date ordering
+  
   return Array.from(recordMap.values()).sort((a, b) => b.date.localeCompare(a.date));
 }
 
-/**
- * Admin Correction with mandatory reason and immutable audit trail.
- */
+
 export function applyAttendanceCorrection(
   records: AttendanceRecord[],
   recordId: string,
@@ -399,10 +365,7 @@ export interface ScheduledSessionItem {
   stats: AttendanceStats;
 }
 
-/**
- * Builds scheduled academic sessions based on timetable slots and October 2026 dates,
- * cross-referenced against saved attendance records and active student enrollments.
- */
+
 export function getScheduledAcademicSessions(
   timetable: TimetableSlot[],
   batches: BatchDefinition[],
@@ -434,14 +397,14 @@ export function getScheduledAcademicSessions(
     const daySlots = timetable.filter((slot) => slot.dayOfWeek === dayOfWeek);
 
     for (const slot of daySlots) {
-      // Find matching batch
+      
       const matchedBatch = batches.find(
         (b) => b.name === slot.batch || b.subject.includes(slot.subject)
       );
       const batchId = matchedBatch?.id || slot.batch.toLowerCase().replace(/[^a-z0-9]/g, "-");
       const sessionId = generateSessionId(batchId, dateStr);
 
-      // Find enrolled students in this subject and batch
+      
       const matchingEnrollments = enrollments.filter(
         (e) =>
           (e.batchName === slot.batch || e.subjectName === slot.subject) &&
@@ -452,7 +415,7 @@ export function getScheduledAcademicSessions(
       const enrolledStudentIds = Array.from(new Set(matchingEnrollments.map((e) => e.studentId)));
       const enrolledStudentList = students.filter((s) => enrolledStudentIds.includes(s.id));
 
-      // Find attendance records matching this session (by sessionId or batch+subject+date)
+      
       const matchingRecords = attendanceRecords.filter(
         (r) =>
           r.sessionId === sessionId ||

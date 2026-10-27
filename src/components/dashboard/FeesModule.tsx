@@ -1,4 +1,6 @@
 "use client";
+import Link from "next/link";
+import { Check, X, Clock, AlertCircle, Camera, ExternalLink, RotateCcw } from "lucide-react";
 
 import React, { useState, useMemo } from "react";
 import {
@@ -56,7 +58,7 @@ export function FeesModule({
   studentId = "std-101",
   parentStudent,
 }: FeesModuleProps) {
-  // Shared Demo Storage
+  
   const [payments, setPayments] = useDemoStorage<PaymentTransaction[]>(
     DEMO_STORAGE_KEYS.PAYMENTS,
     SAMPLE_PAYMENTS
@@ -98,7 +100,7 @@ export function FeesModule({
     SAMPLE_FEE_CONFIGURATIONS
   );
 
-  // Derived active billing period
+  
   const currentBillingMonth = useMemo(() => {
     if (!obligations || obligations.length === 0) return "2026-10";
     const sorted = Array.from(new Set(obligations.map((o) => o.month))).sort();
@@ -111,27 +113,27 @@ export function FeesModule({
     return sorted.length > 1 ? sorted[sorted.length - 2] : "2026-09";
   }, [obligations]);
 
-  // Admin Sub-Tab State
+  
   const [adminTab, setAdminTab] = useState<
     "overview" | "review" | "ledgers" | "config" | "destinations" | "receipts"
   >("overview");
 
-  // Filters for Admin
+  
   const [reviewStatusFilter, setReviewStatusFilter] = useState<string>("all");
   const [reviewSubjectFilter, setReviewSubjectFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  // Ledger Sub-Tab Student Selection
+  
   const [selectedLedgerStudentId, setSelectedLedgerStudentId] = useState<string>(
     studentId || "std-101"
   );
 
-  // Modals State
+  
   const [submissionDetailModal, setSubmissionDetailModal] = useState<PaymentSubmission | null>(null);
   const [rejectReasonInput, setRejectReasonInput] = useState<string>("");
   const [isRejecting, setIsRejecting] = useState<boolean>(false);
 
-  // Adjustment Modal State
+  
   const [adjustmentModal, setAdjustmentModal] = useState<{
     isOpen: boolean;
     obligation: MonthlyFeeObligation;
@@ -141,7 +143,7 @@ export function FeesModule({
   const [adjAmount, setAdjAmount] = useState<string>("");
   const [adjReason, setAdjReason] = useState<string>("");
 
-  // Payment Destination Edit Modal (Admin Only)
+  
   const [editingDestination, setEditingDestination] = useState<PaymentDestination | null>(null);
   const [destFormUpi, setDestFormUpi] = useState<string>("");
   const [destFormHolder, setDestFormHolder] = useState<string>("");
@@ -153,7 +155,7 @@ export function FeesModule({
   const [destQrPreview, setDestQrPreview] = useState<string>("");
   const [destFormError, setDestFormError] = useState<string>("");
 
-  // Student/Parent Online Payment Submission Modal
+  
   const [payModal, setPayModal] = useState<{
     isOpen: boolean;
     obligation: MonthlyFeeObligation;
@@ -171,7 +173,7 @@ export function FeesModule({
   const [copiedAccount, setCopiedAccount] = useState<boolean>(false);
   const [copiedIfsc, setCopiedIfsc] = useState<boolean>(false);
 
-  // Receipt Modal State
+  
   const [activeReceiptModal, setActiveReceiptModal] = useState<{
     isOpen: boolean;
     receipt: VerifiedFeeReceipt;
@@ -181,44 +183,44 @@ export function FeesModule({
     enrollment: SubjectEnrollment;
   } | null>(null);
 
-  // Fee Revision Modal (Admin)
+  
   const [revisionModal, setRevisionModal] = useState<FeeConfigurationRule | null>(null);
   const [revisedFeeInput, setRevisedFeeInput] = useState<string>("");
   const [revisionDateInput, setRevisionDateInput] = useState<string>("2026-11-01");
   const [revisionReasonInput, setRevisionReasonInput] = useState<string>("");
 
-  // Bill Generation Modal (Admin)
+  
   const [isGenerateBillsOpen, setIsGenerateBillsOpen] = useState<boolean>(false);
   const [generateMonthInput, setGenerateMonthInput] = useState<string>("2026-11");
   const [generationFeedback, setGenerationFeedback] = useState<string>("");
 
-  // Demo Reseed / Reset Modal & Toast
+  
   const [showResetConfirmModal, setShowResetConfirmModal] = useState<boolean>(false);
   const [resetNotification, setResetNotification] = useState<string>("");
 
-  // Target Student for Student or Parent Role
+  
   const effectiveStudent = useMemo(() => {
     if (role === "student") {
       return students.find((s) => s.id === studentId) || students[0];
     }
     if (role === "parent") {
-      return parentStudent || students[0];
+      return parentStudent || null;
     }
     return students.find((s) => s.id === selectedLedgerStudentId) || students[0];
   }, [role, studentId, parentStudent, students, selectedLedgerStudentId]);
 
-  // Student's Enrollments
+  
   const studentEnrollments = useMemo(() => {
     if (!effectiveStudent) return [];
     return enrollments.filter((e) => e.studentId === effectiveStudent.id);
   }, [effectiveStudent, enrollments]);
 
-  // Teacher's Enrollments
+  
   const teacherEnrollments = useMemo(() => {
     return enrollments.filter((e) => e.teacherId === currentTeacherId);
   }, [enrollments, currentTeacherId]);
 
-  // Derived KPI Metrics
+  
   const adminKPIs = useMemo(() => {
     let totalCharged = 0;
     let realizedCollections = 0;
@@ -299,7 +301,7 @@ export function FeesModule({
     };
   }, [studentEnrollments, obligations, payments, adjustments, currentBillingMonth]);
 
-  // Status Badge Helper
+  
   const renderStatusBadge = (status: FeePaymentStatus) => {
     switch (status) {
       case "paid":
@@ -322,9 +324,9 @@ export function FeesModule({
     }
   };
 
-  // -------------------------------------------------------------
-  // ADMIN ACTIONS: Payment Approval & Rejection
-  // -------------------------------------------------------------
+  
+  
+  
   const handleApproveSubmission = (subm: PaymentSubmission) => {
     if (role !== "academy-admin") return;
     if (subm.status !== "pending") return;
@@ -335,7 +337,7 @@ export function FeesModule({
     const verifiedDate = new Date().toISOString().slice(0, 10);
     const finalRef = subm.referenceId || receiptNo;
 
-    // Resolve the actual student and enrollment associated with the submission
+    
     const actualStudent = students.find((s) => s.id === subm.studentId);
     const actualEnrollment =
       enrollments.find((e) => e.id === subm.enrollmentId) ||
@@ -345,7 +347,7 @@ export function FeesModule({
           e.subjectName.toLowerCase() === subm.subjectName.toLowerCase()
       );
 
-    // 1. Create verified payment transaction
+    
     const newTx: PaymentTransaction = {
       id: txId,
       obligationId: subm.obligationId,
@@ -361,13 +363,13 @@ export function FeesModule({
       notes: `Verified ${subm.paymentMethod.toUpperCase()} proof (${subm.proofFileName || "Screenshot Attached"})`,
     };
 
-    // Calculate balance remaining
+    
     const obligation = obligations.find((o) => o.id === subm.obligationId);
     const currentCalc = obligation
       ? calculateAccountBalance(obligation, [...payments, newTx], adjustments)
       : { balance: 0 };
 
-    // 2. Create verified receipt using actual student and enrollment metadata
+    
     const newReceipt: VerifiedFeeReceipt = {
       id: `rec-${Date.now()}`,
       receiptNumber: receiptNo,
@@ -391,7 +393,7 @@ export function FeesModule({
       remainingBalanceAfterPayment: currentCalc.balance,
     };
 
-    // 3. Update submission record
+    
     const updatedSubmissions = submissions.map((s) =>
       s.id === subm.id
         ? {
@@ -408,7 +410,7 @@ export function FeesModule({
     setReceipts((prev) => [newReceipt, ...prev]);
     setSubmissions(updatedSubmissions);
 
-    // 4. Central Audit Log
+    
     recordApprove({
       action: "Approve Fee Payment Submission",
       target: `Receipt ${receiptNo} for ${subm.studentName} (${subm.subjectName})`,
@@ -449,7 +451,7 @@ export function FeesModule({
 
     setSubmissions(updatedSubmissions);
 
-    // Central Audit Log
+    
     recordReject({
       action: "Reject Fee Payment Submission",
       target: `Submission ${subm.id} (${subm.studentName} - ${subm.subjectName})`,
@@ -472,9 +474,9 @@ export function FeesModule({
     setRejectReasonInput("");
   };
 
-  // -------------------------------------------------------------
-  // ADMIN ACTIONS: Traceable Fee Adjustment
-  // -------------------------------------------------------------
+  
+  
+  
   const handleSaveAdjustment = () => {
     if (!adjustmentModal) return;
     const amountNum = parseFloat(adjAmount);
@@ -523,9 +525,9 @@ export function FeesModule({
     setAdjReason("");
   };
 
-  // -------------------------------------------------------------
-  // ADMIN ACTIONS: Payment Destination Configuration (Admin Only)
-  // -------------------------------------------------------------
+  
+  
+  
   const handleOpenEditDestination = (dest: PaymentDestination) => {
     if (role !== "academy-admin") return;
     setEditingDestination(dest);
@@ -610,9 +612,9 @@ export function FeesModule({
     });
   };
 
-  // -------------------------------------------------------------
-  // ADMIN ACTIONS: Fee Revisions & Bill Generation
-  // -------------------------------------------------------------
+  
+  
+  
   const handleSaveFeeRevision = () => {
     if (role !== "academy-admin" || !revisionModal) return;
     const newFee = parseFloat(revisedFeeInput);
@@ -653,7 +655,7 @@ export function FeesModule({
 
   const handleGenerateNextMonthBills = () => {
     if (role !== "academy-admin") return;
-    const month = generateMonthInput; // e.g. "2026-11"
+    const month = generateMonthInput; 
     const monthLabel = formatBillingMonthLabel(month);
     const dueDate = `${month}-15`;
 
@@ -666,10 +668,10 @@ export function FeesModule({
         continue;
       }
 
-      // Check joining date policy: student cannot be billed before enrollment date
+      
       const enrollmentMonth = enr.enrollmentDate.slice(0, 7);
       if (enrollmentMonth > month) {
-        continue; // Do not charge prior to enrollment
+        continue; 
       }
 
       const newOb: MonthlyFeeObligation = {
@@ -713,9 +715,9 @@ export function FeesModule({
     setIsGenerateBillsOpen(false);
   };
 
-  // -------------------------------------------------------------
-  // STUDENT / PARENT: Online Payment Submission Workflow
-  // -------------------------------------------------------------
+  
+  
+  
   const handleOpenPayModal = (
     obligation: MonthlyFeeObligation,
     enrollment: SubjectEnrollment,
@@ -803,13 +805,13 @@ export function FeesModule({
       return;
     }
 
-    // Screenshot proof is mandatory
+    
     if (!payProofFile) {
       setPayFormError("Please upload a payment screenshot of your successful transaction.");
       return;
     }
 
-    // Check for duplicate pending submission for this obligation
+    
     const isDupPending = submissions.some(
       (s) => s.obligationId === payModal.obligation.id && s.status === "pending"
     );
@@ -891,7 +893,7 @@ export function FeesModule({
     setPayModal(null);
   };
 
-  // Helper to open receipt voucher directly from obligation
+  
   const handleOpenReceiptForObligation = (
     obligation: MonthlyFeeObligation,
     enrollment: SubjectEnrollment,
@@ -947,7 +949,7 @@ export function FeesModule({
     handleOpenReceiptVoucher(syntheticReceipt);
   };
 
-  // Helper to open receipt voucher
+  
   const handleOpenReceiptVoucher = (rec: VerifiedFeeReceipt) => {
     const ob = obligations.find((o) => o.id === rec.obligationId) || {
       id: rec.obligationId,
@@ -1011,7 +1013,7 @@ export function FeesModule({
     });
   };
 
-  // Safe Demo Reset / Reseed Action
+  
   const handleConfirmResetFeeDemo = () => {
     resetFeeDemoStorage();
     setPayments(SAMPLE_PAYMENTS);
@@ -1042,12 +1044,36 @@ export function FeesModule({
     setTimeout(() => setResetNotification(""), 4000);
   };
 
-  // -------------------------------------------------------------
-  // RENDER: Role-Specific Views
-  // -------------------------------------------------------------
+  
+  
+  
+  if (role === "parent" && !effectiveStudent) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
+        <Card padding="lg">
+          <div style={{ textAlign: "center", padding: "var(--space-8)" }}>
+            <p style={{ fontSize: "var(--text-base)", color: "var(--color-primary)", margin: "0 0 var(--space-4)" }}>
+              Your account is not linked to a student yet
+            </p>
+            <Link
+              href="/#enquiry"
+              style={{
+                color: "var(--color-primary)",
+                fontWeight: 600,
+                textDecoration: "underline",
+                fontSize: "var(--text-sm)",
+              }}
+            >
+              Contact Academy Office
+            </Link>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
-      {/* SECTION 1: HEADER & ROLE CONTEXT */}
       <Card padding="md" style={{ borderLeft: "4px solid var(--color-accent)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-3)" }}>
           <div>
@@ -1058,8 +1084,8 @@ export function FeesModule({
                   : role === "teacher"
                   ? "Faculty Subject Fee Tracking"
                   : role === "parent"
-                  ? `Ward Fee Account & Receipts — ${effectiveStudent?.name || "Student"}`
-                  : `My Enrolled Subject Fees & Receipts — ${effectiveStudent?.name || "Student"}`}
+                  ? `Ward Fee Account & Receipts - ${effectiveStudent?.name || "Student"}`
+                  : `My Enrolled Subject Fees & Receipts - ${effectiveStudent?.name || "Student"}`}
               </h2>
               <Badge variant="accent" size="sm">
                 Subject-Wise Isolation
@@ -1085,7 +1111,7 @@ export function FeesModule({
               title="Reset fee demo data back to initial seed state"
               style={{ fontSize: "11px", padding: "4px 10px", display: "flex", alignItems: "center", gap: "4px" }}
             >
-              <span>↺</span> Reset Fee Demo Data
+              <RotateCcw size={12} aria-hidden="true" /> Reset Fee Demo Data
             </Button>
           </div>
         </div>
@@ -1105,18 +1131,15 @@ export function FeesModule({
               alignItems: "center",
             }}
           >
-            <span>✓ {resetNotification}</span>
+            <span><Check size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} />{resetNotification}</span>
             <button
               onClick={() => setResetNotification("")}
               style={{ background: "none", border: "none", cursor: "pointer", color: "inherit", fontWeight: 700 }}
-            >
-              ✕
-            </button>
+            ><X size={14} /></button>
           </div>
         )}
       </Card>
 
-      {/* SECTION 2: METRICS BAR */}
       <div
         style={{
           display: "grid",
@@ -1284,10 +1307,8 @@ export function FeesModule({
         )}
       </div>
 
-      {/* SECTION 3: ACADEMY ADMIN WORKSPACE */}
       {role === "academy-admin" && (
         <Card padding="lg">
-          {/* Sub-Tab Navigation Strip */}
           <div
             style={{
               display: "flex",
@@ -1330,15 +1351,13 @@ export function FeesModule({
             ))}
           </div>
 
-          {/* ADMIN SUB-TAB 1: OVERVIEW & ANALYTICS */}
           {adminTab === "overview" && (
             <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
-              {/* Subject Breakdown */}
               <div>
                 <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: "0 0 var(--space-2)" }}>
                   Subject-Wise Tuition Collection Summary
                 </h3>
-                <div style={{ overflowX: "auto" }}>
+                <div tabIndex={0} role="region" aria-label="Fee ledger table" style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-xs)", textAlign: "left" }}>
                     <thead>
                       <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>
@@ -1390,12 +1409,11 @@ export function FeesModule({
                 </div>
               </div>
 
-              {/* Faculty Breakdown */}
               <div>
                 <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: "0 0 var(--space-2)" }}>
                   Faculty-Wise Realization Status
                 </h3>
-                <div style={{ overflowX: "auto" }}>
+                <div tabIndex={0} role="region" aria-label="Fee ledger table" style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-xs)", textAlign: "left" }}>
                     <thead>
                       <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>
@@ -1442,7 +1460,6 @@ export function FeesModule({
                 </div>
               </div>
 
-              {/* Searchable Student Fee Accounts */}
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-2)", flexWrap: "wrap", gap: "var(--space-2)" }}>
                   <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: 0 }}>
@@ -1456,7 +1473,7 @@ export function FeesModule({
                     style={{ padding: "6px 12px", fontSize: "11px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", minWidth: "260px" }}
                   />
                 </div>
-                <div style={{ overflowX: "auto" }}>
+                <div tabIndex={0} role="region" aria-label="Fee ledger table" style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-xs)", textAlign: "left" }}>
                     <thead>
                       <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>
@@ -1532,7 +1549,6 @@ export function FeesModule({
             </div>
           )}
 
-          {/* ADMIN SUB-TAB 2: PAYMENT REVIEW */}
           {adminTab === "review" && (
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-3)", flexWrap: "wrap", gap: "var(--space-2)" }}>
@@ -1572,7 +1588,7 @@ export function FeesModule({
                 </div>
               </div>
 
-              <div style={{ overflowX: "auto" }}>
+              <div tabIndex={0} role="region" aria-label="Fee ledger table" style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-xs)", textAlign: "left" }}>
                   <thead>
                     <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>
@@ -1597,7 +1613,7 @@ export function FeesModule({
                           </td>
                           <td style={{ padding: "10px" }}>
                             <div style={{ fontWeight: 700 }}>{subm.studentName}</div>
-                            <span style={{ fontSize: "11px", color: "var(--color-accent)" }}>{subm.subjectName} ({subm.teacherName})</span>
+                            <span style={{ fontSize: "11px", color: "var(--color-primary)" }}>{subm.subjectName} ({subm.teacherName})</span>
                           </td>
                           <td style={{ padding: "10px" }}>{subm.monthLabel}</td>
                           <td style={{ padding: "10px", fontWeight: 700, color: "var(--color-primary)" }}>
@@ -1645,7 +1661,6 @@ export function FeesModule({
             </div>
           )}
 
-          {/* ADMIN SUB-TAB 3: STUDENT FEE LEDGERS */}
           {adminTab === "ledgers" && (
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-4)", flexWrap: "wrap", gap: "var(--space-2)" }}>
@@ -1670,14 +1685,13 @@ export function FeesModule({
                   >
                     {students.map((s) => (
                       <option key={s.id} value={s.id}>
-                        {s.name} ({s.classGrade}) — Enrolled {s.joiningDate}
+                        {s.name} ({s.classGrade}) - Enrolled {s.joiningDate}
                       </option>
                     ))}
                   </select>
                 </div>
               </div>
 
-              {/* Student Details Banner */}
               <div
                 style={{
                   backgroundColor: "var(--color-surface-muted)",
@@ -1700,10 +1714,9 @@ export function FeesModule({
                 </div>
               </div>
 
-              {/* Subject Ledgers */}
               <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
                 {studentEnrollments.map((enr) => {
-                  // Find all obligations for this enrollment
+                  
                   const enrObligations = obligations.filter((o) => o.enrollmentId === enr.id);
 
                   return (
@@ -1719,52 +1732,54 @@ export function FeesModule({
                         </div>
                       </div>
 
-                      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px", textAlign: "left" }}>
-                        <thead>
-                          <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>
-                            <th style={{ padding: "6px 8px" }}>Billing Period</th>
-                            <th style={{ padding: "6px 8px" }}>Original Charge</th>
-                            <th style={{ padding: "6px 8px" }}>Adjustments</th>
-                            <th style={{ padding: "6px 8px" }}>Net Payable</th>
-                            <th style={{ padding: "6px 8px" }}>Verified Paid</th>
-                            <th style={{ padding: "6px 8px" }}>Balance Due</th>
-                            <th style={{ padding: "6px 8px" }}>Status</th>
-                            <th style={{ padding: "6px 8px", textAlign: "right" }}>Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {enrObligations.map((ob) => {
-                            const calc = calculateAccountBalance(ob, payments, adjustments);
-                            return (
-                              <tr key={ob.id} style={{ borderBottom: "1px solid var(--color-border-subtle)" }}>
-                                <td style={{ padding: "8px", fontWeight: 600 }}>{ob.monthLabel} (Due {ob.dueDate})</td>
-                                <td style={{ padding: "8px" }}>₹{calc.originalFee.toLocaleString("en-IN")}</td>
-                                <td style={{ padding: "8px", color: calc.totalAdjustments > 0 ? "var(--color-success)" : "inherit" }}>
-                                  {calc.totalAdjustments > 0 ? `-₹${calc.totalAdjustments.toLocaleString("en-IN")}` : "₹0"}
-                                </td>
-                                <td style={{ padding: "8px", fontWeight: 600 }}>₹{calc.netCharge.toLocaleString("en-IN")}</td>
-                                <td style={{ padding: "8px", color: "var(--color-success)", fontWeight: 600 }}>
-                                  ₹{calc.paidAmount.toLocaleString("en-IN")}
-                                </td>
-                                <td style={{ padding: "8px", color: calc.balance > 0 ? "var(--color-warning)" : "inherit", fontWeight: 600 }}>
-                                  ₹{calc.balance.toLocaleString("en-IN")}
-                                </td>
-                                <td style={{ padding: "8px" }}>{renderStatusBadge(calc.status)}</td>
-                                <td style={{ padding: "8px", textAlign: "right" }}>
-                                  <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={() => setAdjustmentModal({ isOpen: true, obligation: ob, enrollment: enr })}
-                                    style={{ fontSize: "10px", padding: "2px 8px" }}
-                                  >
-                                    + Add Adjustment
-                                  </Button>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
+                      <div tabIndex={0} role="region" aria-label="Billing period breakdown table" style={{ overflowX: "auto" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px", textAlign: "left" }}>
+                          <thead>
+                            <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>
+                              <th style={{ padding: "6px 8px" }}>Billing Period</th>
+                              <th style={{ padding: "6px 8px" }}>Original Charge</th>
+                              <th style={{ padding: "6px 8px" }}>Adjustments</th>
+                              <th style={{ padding: "6px 8px" }}>Net Payable</th>
+                              <th style={{ padding: "6px 8px" }}>Verified Paid</th>
+                              <th style={{ padding: "6px 8px" }}>Balance Due</th>
+                              <th style={{ padding: "6px 8px" }}>Status</th>
+                              <th style={{ padding: "6px 8px", textAlign: "right" }}>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {enrObligations.map((ob) => {
+                              const calc = calculateAccountBalance(ob, payments, adjustments);
+                              return (
+                                <tr key={ob.id} style={{ borderBottom: "1px solid var(--color-border-subtle)" }}>
+                                  <td style={{ padding: "8px", fontWeight: 600 }}>{ob.monthLabel} (Due {ob.dueDate})</td>
+                                  <td style={{ padding: "8px" }}>₹{calc.originalFee.toLocaleString("en-IN")}</td>
+                                  <td style={{ padding: "8px", color: calc.totalAdjustments > 0 ? "var(--color-success)" : "inherit" }}>
+                                    {calc.totalAdjustments > 0 ? `-₹${calc.totalAdjustments.toLocaleString("en-IN")}` : "₹0"}
+                                  </td>
+                                  <td style={{ padding: "8px", fontWeight: 600 }}>₹{calc.netCharge.toLocaleString("en-IN")}</td>
+                                  <td style={{ padding: "8px", color: "var(--color-success)", fontWeight: 600 }}>
+                                    ₹{calc.paidAmount.toLocaleString("en-IN")}
+                                  </td>
+                                  <td style={{ padding: "8px", color: calc.balance > 0 ? "var(--color-warning)" : "inherit", fontWeight: 600 }}>
+                                    ₹{calc.balance.toLocaleString("en-IN")}
+                                  </td>
+                                  <td style={{ padding: "8px" }}>{renderStatusBadge(calc.status)}</td>
+                                  <td style={{ padding: "8px", textAlign: "right" }}>
+                                    <Button
+                                      variant="secondary"
+                                      size="sm"
+                                      onClick={() => setAdjustmentModal({ isOpen: true, obligation: ob, enrollment: enr })}
+                                      style={{ fontSize: "10px", padding: "2px 8px" }}
+                                    >
+                                      + Add Adjustment
+                                    </Button>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
                     </Card>
                   );
                 })}
@@ -1772,7 +1787,6 @@ export function FeesModule({
             </div>
           )}
 
-          {/* ADMIN SUB-TAB 4: FEE CONFIGURATION & BILLING */}
           {adminTab === "config" && (
             <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-2)" }}>
@@ -1798,8 +1812,7 @@ export function FeesModule({
                 </div>
               )}
 
-              {/* Fee Rules Table */}
-              <div style={{ overflowX: "auto" }}>
+              <div tabIndex={0} role="region" aria-label="Fee ledger table" style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-xs)", textAlign: "left" }}>
                   <thead>
                     <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>
@@ -1825,7 +1838,7 @@ export function FeesModule({
                         <td style={{ padding: "10px", color: "var(--color-neutral-dark)", fontSize: "11px" }}>
                           {cfg.notes}
                           {cfg.revisedFrom && (
-                            <div style={{ color: "var(--color-accent)", fontSize: "10px", marginTop: "2px" }}>
+                            <div style={{ color: "var(--color-text-secondary)", fontSize: "10px", marginTop: "2px" }}>
                               Revised from ₹{cfg.revisedFrom} on {cfg.revisedAt}
                             </div>
                           )}
@@ -1848,7 +1861,6 @@ export function FeesModule({
                 </table>
               </div>
 
-              {/* Joining Policy Box */}
               <div
                 style={{
                   borderLeft: "4px solid var(--color-accent)",
@@ -1870,7 +1882,6 @@ export function FeesModule({
             </div>
           )}
 
-          {/* ADMIN SUB-TAB 5: PAYMENT DESTINATIONS (ADMIN ONLY) */}
           {adminTab === "destinations" && (
             <div>
               <div
@@ -1896,7 +1907,7 @@ export function FeesModule({
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "var(--space-2)" }}>
                         <div>
                           <h4 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: 0 }}>{dest.subjectName}</h4>
-                          <span style={{ fontSize: "11px", color: "var(--color-accent)" }}>Faculty: {dest.teacherName}</span>
+                          <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>Faculty: {dest.teacherName}</span>
                         </div>
                         <Badge variant={dest.isActive ? "success" : "neutral"} size="sm">
                           {dest.isActive ? "ACTIVE" : "DISABLED"}
@@ -1940,7 +1951,6 @@ export function FeesModule({
             </div>
           )}
 
-          {/* ADMIN SUB-TAB 6: RECEIPTS & REPORTS */}
           {adminTab === "receipts" && (
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-3)", flexWrap: "wrap", gap: "var(--space-2)" }}>
@@ -1954,7 +1964,7 @@ export function FeesModule({
                 </div>
               </div>
 
-              <div style={{ overflowX: "auto" }}>
+              <div tabIndex={0} role="region" aria-label="Fee ledger table" style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-xs)", textAlign: "left" }}>
                   <thead>
                     <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>
@@ -1998,19 +2008,18 @@ export function FeesModule({
         </Card>
       )}
 
-      {/* SECTION 4: TEACHER VIEW */}
       {role === "teacher" && (
         <Card padding="lg">
           <div style={{ marginBottom: "var(--space-4)" }}>
             <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: 0 }}>
-              My Assigned Students — Subject Fee Ledger
+              My Assigned Students - Subject Fee Ledger
             </h3>
             <p style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", margin: "2px 0 0" }}>
               Read-only subject payment records for students enrolled in your faculty batches.
             </p>
           </div>
 
-          <div style={{ overflowX: "auto" }}>
+          <div tabIndex={0} role="region" aria-label="Fee ledger table" style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-xs)", textAlign: "left" }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>
@@ -2064,10 +2073,8 @@ export function FeesModule({
         </Card>
       )}
 
-      {/* SECTION 5: STUDENT & PARENT VIEW */}
       {(role === "student" || role === "parent") && (
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
-          {/* Enrolled Subjects & Pay Action */}
           <Card padding="lg">
             <div style={{ marginBottom: "var(--space-4)" }}>
               <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: 0 }}>
@@ -2145,13 +2152,13 @@ export function FeesModule({
 
                       {pendingSubm && (
                         <div style={{ padding: "6px 8px", backgroundColor: "rgba(255, 149, 0, 0.1)", border: "1px solid rgba(255, 149, 0, 0.3)", borderRadius: "var(--radius-sm)", fontSize: "10px", color: "#D97706", marginBottom: "var(--space-2)" }}>
-                          <strong>⏳ Payment Submitted:</strong> ₹{pendingSubm.amount.toLocaleString("en-IN")} (Ref: {pendingSubm.referenceId}) is awaiting Admin reconciliation. Balance will update upon verification.
+                          <strong><Clock size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> Payment Submitted:</strong> ₹{pendingSubm.amount.toLocaleString("en-IN")} (Ref: {pendingSubm.referenceId}) is awaiting Admin reconciliation. Balance will update upon verification.
                         </div>
                       )}
 
                       {!pendingSubm && rejectedSubm && (
                         <div style={{ padding: "6px 8px", backgroundColor: "rgba(255, 59, 48, 0.08)", border: "1px solid rgba(255, 59, 48, 0.25)", borderRadius: "var(--radius-sm)", fontSize: "10px", color: "#DC2626", marginBottom: "var(--space-2)" }}>
-                          <strong>⚠️ Last Transfer Rejected:</strong> {rejectedSubm.rejectionReason}
+                          <strong><AlertCircle size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> Last Transfer Rejected:</strong> {rejectedSubm.rejectionReason}
                         </div>
                       )}
                     </div>
@@ -2193,7 +2200,7 @@ export function FeesModule({
                         </>
                       ) : (
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-                          <Badge variant="success" size="sm">✓ Paid</Badge>
+                          <Badge variant="success" size="sm">Paid</Badge>
                           <Button
                             variant="secondary"
                             size="sm"
@@ -2215,12 +2222,11 @@ export function FeesModule({
             </div>
           </Card>
 
-          {/* Payment Submissions Queue & Status */}
           <Card padding="lg">
             <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: "0 0 var(--space-3)" }}>
               My Transfer Submissions ({submissions.filter((s) => s.studentId === effectiveStudent?.id).length})
             </h3>
-            <div style={{ overflowX: "auto" }}>
+            <div tabIndex={0} role="region" aria-label="Fee ledger table" style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-xs)", textAlign: "left" }}>
                 <thead>
                   <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>
@@ -2277,12 +2283,11 @@ export function FeesModule({
             </div>
           </Card>
 
-          {/* Official Fee Receipts */}
           <Card padding="lg">
             <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: "0 0 var(--space-3)" }}>
               Official Fee Receipts &amp; Vouchers
             </h3>
-            <div style={{ overflowX: "auto" }}>
+            <div tabIndex={0} role="region" aria-label="Fee ledger table" style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-xs)", textAlign: "left" }}>
                 <thead>
                   <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>
@@ -2322,9 +2327,6 @@ export function FeesModule({
         </div>
       )}
 
-      {/* ------------------------------------------------------------- */}
-      {/* MODAL 1: Payment Review & Approval/Rejection (Admin Only) */}
-      {/* ------------------------------------------------------------- */}
       {submissionDetailModal && (
         <div
           role="dialog"
@@ -2342,7 +2344,7 @@ export function FeesModule({
         >
           <Card padding="lg" style={{ maxWidth: "540px", width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
             <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 700, margin: "0 0 var(--space-2)" }}>
-              Inspect Payment Submission — {submissionDetailModal.id}
+              Inspect Payment Submission - {submissionDetailModal.id}
             </h3>
 
             <div style={{ fontSize: "var(--text-xs)", display: "flex", flexDirection: "column", gap: "6px", margin: "var(--space-3) 0", padding: "var(--space-3)", backgroundColor: "var(--color-surface-muted)", borderRadius: "var(--radius-md)" }}>
@@ -2369,14 +2371,12 @@ export function FeesModule({
               )}
             </div>
 
-            {/* Uploaded Payment Screenshot Proof Inspection */}
             {submissionDetailModal.proofFileData ? (
               <div style={{ margin: "var(--space-3) 0", padding: "10px", border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)", backgroundColor: "#FFFFFF" }}>
                 <div style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-primary)", marginBottom: "6px", display: "flex", justifyContent: "space-between" }}>
-                  <span>📷 Attached Payment Screenshot Proof:</span>
+                  <span><Camera size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> Attached Payment Screenshot Proof:</span>
                   <span style={{ color: "var(--color-neutral-dark)", fontWeight: 400 }}>{submissionDetailModal.proofFileName}</span>
                 </div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={submissionDetailModal.proofFileData}
                   alt="Payment Proof Screenshot"
@@ -2385,11 +2385,10 @@ export function FeesModule({
               </div>
             ) : submissionDetailModal.proofFileName ? (
               <div style={{ padding: "8px 12px", backgroundColor: "var(--color-surface-muted)", borderRadius: "var(--radius-sm)", border: "1px dashed var(--color-border)", fontSize: "11px", color: "var(--color-neutral-dark)", margin: "var(--space-2) 0" }}>
-                📷 Attached Screenshot File: <strong>{submissionDetailModal.proofFileName}</strong>
+                <Camera size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> Attached Screenshot File: <strong>{submissionDetailModal.proofFileName}</strong>
               </div>
             ) : null}
 
-            {/* Rejection Form Input */}
             {isRejecting ? (
               <div style={{ margin: "var(--space-3) 0" }}>
                 <label style={{ fontSize: "11px", fontWeight: 600, display: "block", marginBottom: "4px", color: "#FF3B30" }}>
@@ -2423,7 +2422,7 @@ export function FeesModule({
                     Reject Submission...
                   </Button>
                   <Button variant="primary" size="sm" onClick={() => handleApproveSubmission(submissionDetailModal)}>
-                    ✓ Approve &amp; Generate Receipt
+                    <Check size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> Approve &amp; Generate Receipt
                   </Button>
                 </>
               )}
@@ -2444,9 +2443,6 @@ export function FeesModule({
         </div>
       )}
 
-      {/* ------------------------------------------------------------- */}
-      {/* MODAL 2: Student/Parent Online Payment Flow (10-Step Wizard) */}
-      {/* ------------------------------------------------------------- */}
       {payModal && (
         <div
           role="dialog"
@@ -2463,7 +2459,6 @@ export function FeesModule({
           }}
         >
           <Card padding="lg" style={{ maxWidth: "520px", width: "100%", maxHeight: "92vh", overflowY: "auto", borderRadius: "var(--radius-lg)", boxShadow: "0 20px 40px rgba(0,0,0,0.2)" }}>
-            {/* Header with Title and Close Action */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "var(--space-3)" }}>
               <div>
                 <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 700, margin: 0, color: "var(--color-primary)" }}>
@@ -2487,12 +2482,9 @@ export function FeesModule({
                   padding: "4px 8px",
                   borderRadius: "var(--radius-sm)",
                 }}
-              >
-                ✕
-              </button>
+              ><X size={14} /></button>
             </div>
 
-            {/* Prominent Outstanding Amount */}
             <div
               style={{
                 display: "flex",
@@ -2518,7 +2510,6 @@ export function FeesModule({
               </div>
             </div>
 
-            {/* Admin Destination Resolution & Method Selection */}
             {(() => {
               const dest = destinations.find(
                 (d) =>
@@ -2549,7 +2540,6 @@ export function FeesModule({
 
               return (
                 <div>
-                  {/* Step 1: Select Payment Method */}
                   <div style={{ marginBottom: "var(--space-3)" }}>
                     <label
                       htmlFor="payment-method-select"
@@ -2588,7 +2578,6 @@ export function FeesModule({
                     </select>
 
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-2)" }}>
-                      {/* UPI Option */}
                       <button
                         type="button"
                         onClick={() => setPayMethodInput("upi")}
@@ -2617,7 +2606,6 @@ export function FeesModule({
                         </div>
                       </button>
 
-                      {/* Bank Transfer Option */}
                       <button
                         type="button"
                         onClick={() => setPayMethodInput("bank_transfer")}
@@ -2649,7 +2637,6 @@ export function FeesModule({
                     </div>
                   </div>
 
-                  {/* Step 2: Method-Specific Instructions */}
                   {payMethodInput === "upi" ? (
                     <div style={{ padding: "12px", backgroundColor: "var(--color-surface-muted)", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", marginBottom: "var(--space-3)" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
@@ -2661,10 +2648,8 @@ export function FeesModule({
                         </span>
                       </div>
 
-                      {/* QR Code when configured */}
                       {dest.qrImageUrl ? (
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "10px", backgroundColor: "#FFFFFF", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", margin: "6px 0 10px" }}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={dest.qrImageUrl}
                             alt={`${dest.subjectName} UPI QR Code`}
@@ -2676,7 +2661,6 @@ export function FeesModule({
                         </div>
                       ) : null}
 
-                      {/* UPI ID Row */}
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", padding: "6px 8px", backgroundColor: "#FFFFFF", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", margin: "6px 0" }}>
                         <div style={{ fontSize: "11px", overflow: "hidden", textOverflow: "ellipsis" }}>
                           UPI ID: <strong style={{ color: "var(--color-accent)" }}>{dest.upiId}</strong>
@@ -2693,11 +2677,10 @@ export function FeesModule({
                           }}
                           style={{ fontSize: "10px", padding: "3px 8px", flexShrink: 0 }}
                         >
-                          {copiedUpi ? "✓ Copied" : "Copy UPI ID"}
+                          {copiedUpi ? "Copied" : "Copy UPI ID"}
                         </Button>
                       </div>
 
-                      {/* Open in UPI App Deep-link */}
                       <a
                         href={`upi://pay?pa=${encodeURIComponent(dest.upiId)}&pn=${encodeURIComponent(dest.accountHolderName)}&am=${encodeURIComponent(payAmountInput || payModal.balance)}&cu=INR&tn=${encodeURIComponent(`Aroush Academy ${payModal.enrollment.subjectName} Fee`)}`}
                         style={{
@@ -2713,7 +2696,7 @@ export function FeesModule({
                           margin: "8px 0 6px",
                         }}
                       >
-                        🚀 Open in UPI App
+                        <ExternalLink size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> Open in UPI App
                       </a>
 
                       <p style={{ fontSize: "10px", color: "var(--color-neutral-dark)", margin: "4px 0 0", lineHeight: 1.4 }}>
@@ -2732,7 +2715,7 @@ export function FeesModule({
                           onClick={() => handleCopyBankDetails(dest)}
                           style={{ fontSize: "10px", padding: "3px 8px" }}
                         >
-                          {copiedBank ? "✓ Copied Details" : "Copy All Details"}
+                          {copiedBank ? "Copied Details" : "Copy All Details"}
                         </Button>
                       </div>
 
@@ -2754,7 +2737,7 @@ export function FeesModule({
                               onClick={() => handleCopyAccountNumber(dest.accountNumber)}
                               style={{ fontSize: "9px", padding: "1px 5px", lineHeight: 1.2 }}
                             >
-                              {copiedAccount ? "✓ Copied" : "Copy"}
+                              {copiedAccount ? "Copied" : "Copy"}
                             </Button>
                           </div>
                           <strong style={{ fontFamily: "monospace", fontSize: "12px" }}>{dest.accountNumber}</strong>
@@ -2768,7 +2751,7 @@ export function FeesModule({
                               onClick={() => handleCopyIfsc(dest.ifscCode)}
                               style={{ fontSize: "9px", padding: "1px 5px", lineHeight: 1.2 }}
                             >
-                              {copiedIfsc ? "✓ Copied" : "Copy"}
+                              {copiedIfsc ? "Copied" : "Copy"}
                             </Button>
                           </div>
                           <strong style={{ fontFamily: "monospace", fontSize: "12px" }}>{dest.ifscCode}</strong>
@@ -2781,7 +2764,6 @@ export function FeesModule({
                     </div>
                   )}
 
-                  {/* Step 3: Mandatory Screenshot Proof Upload */}
                   <div style={{ margin: "var(--space-3) 0" }}>
                     <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-primary)", display: "block", marginBottom: "3px" }}>
                       Upload Payment Screenshot (Required) <span style={{ color: "var(--color-accent)" }}>*</span>:
@@ -2816,7 +2798,7 @@ export function FeesModule({
                             <circle cx="8.5" cy="8.5" r="1.5"/>
                             <polyline points="21 15 16 10 5 21"/>
                           </svg>
-                          <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-accent)" }}>
+                          <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-primary)" }}>
                             Click to Upload Payment Screenshot
                           </span>
                           <span style={{ fontSize: "9px", color: "var(--color-neutral-dark)" }}>
@@ -2827,7 +2809,6 @@ export function FeesModule({
                     ) : (
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)", backgroundColor: "var(--color-surface-muted)" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={payProofFile.dataUrl}
                             alt="Screenshot Preview"
@@ -2871,7 +2852,6 @@ export function FeesModule({
                     )}
                   </div>
 
-                  {/* Step 4: Amount & Transfer Date */}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-2)", margin: "var(--space-3) 0" }}>
                     <div>
                       <label style={{ fontSize: "11px", fontWeight: 600, display: "block", marginBottom: "3px" }}>
@@ -2898,7 +2878,6 @@ export function FeesModule({
                     </div>
                   </div>
 
-                  {/* Optional Reference field (secondary) */}
                   <div style={{ marginBottom: "var(--space-3)" }}>
                     <label style={{ fontSize: "11px", fontWeight: 600, display: "block", marginBottom: "2px", color: "var(--color-neutral-dark)" }}>
                       Bank UTR / Reference ID (Optional):
@@ -2912,7 +2891,6 @@ export function FeesModule({
                     />
                   </div>
 
-                  {/* Demo Verification Notice */}
                   <div style={{ fontSize: "10px", color: "var(--color-neutral-dark)", backgroundColor: "var(--color-surface-muted)", padding: "6px 10px", borderRadius: "var(--radius-sm)", marginBottom: "var(--space-3)", lineHeight: 1.4 }}>
                     ℹ️ <strong>Verification Notice:</strong> Submissions are manually verified by the Academy Admin against the institution&rsquo;s bank account. Outstanding balance is reduced only after Admin verification.
                   </div>
@@ -2923,7 +2901,6 @@ export function FeesModule({
                     </div>
                   )}
 
-                  {/* Actions */}
                   <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--space-2)", marginTop: "var(--space-3)" }}>
                     <Button variant="secondary" size="sm" onClick={() => setPayModal(null)}>
                       Cancel
@@ -2950,9 +2927,6 @@ export function FeesModule({
         </div>
       )}
 
-      {/* ------------------------------------------------------------- */}
-      {/* MODAL 3: Traceable Adjustment Modal (Admin Only) */}
-      {/* ------------------------------------------------------------- */}
       {adjustmentModal && (
         <div
           role="dialog"
@@ -3032,9 +3006,6 @@ export function FeesModule({
         </div>
       )}
 
-      {/* ------------------------------------------------------------- */}
-      {/* MODAL 4: Payment Destination Edit Modal (Admin Only) */}
-      {/* ------------------------------------------------------------- */}
       {editingDestination && (
         <div
           role="dialog"
@@ -3052,7 +3023,7 @@ export function FeesModule({
         >
           <Card padding="lg" style={{ maxWidth: "520px", width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
             <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 700, margin: "0 0 2px" }}>
-              Configure Receiving Destination — {editingDestination.subjectName}
+              Configure Receiving Destination - {editingDestination.subjectName}
             </h3>
             <span style={{ fontSize: "11px", color: "var(--color-accent)", display: "block", marginBottom: "var(--space-3)" }}>
               Assigned Faculty: {editingDestination.teacherName}
@@ -3170,9 +3141,6 @@ export function FeesModule({
         </div>
       )}
 
-      {/* ------------------------------------------------------------- */}
-      {/* MODAL 5: Fee Revision Modal (Admin Only) */}
-      {/* ------------------------------------------------------------- */}
       {revisionModal && (
         <div
           role="dialog"
@@ -3190,7 +3158,7 @@ export function FeesModule({
         >
           <Card padding="lg" style={{ maxWidth: "460px", width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
             <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 700, margin: "0 0 2px" }}>
-              Revise Monthly Fee — {revisionModal.classGrade} {revisionModal.subjectName}
+              Revise Monthly Fee - {revisionModal.classGrade} {revisionModal.subjectName}
             </h3>
             <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", display: "block", marginBottom: "var(--space-3)" }}>
               Current Fee: <strong>₹{revisionModal.monthlyFee}/mo</strong>. Revisions take effect on future billing periods.
@@ -3235,9 +3203,6 @@ export function FeesModule({
         </div>
       )}
 
-      {/* ------------------------------------------------------------- */}
-      {/* MODAL 6: Bill Generation Modal (Admin Only) */}
-      {/* ------------------------------------------------------------- */}
       {isGenerateBillsOpen && (
         <div
           role="dialog"
@@ -3283,9 +3248,6 @@ export function FeesModule({
         </div>
       )}
 
-      {/* ------------------------------------------------------------- */}
-      {/* MODAL 7: Fee Receipt Voucher Modal (FeeReceiptModal) */}
-      {/* ------------------------------------------------------------- */}
       {activeReceiptModal && (
         <FeeReceiptModal
           isOpen={activeReceiptModal.isOpen}
@@ -3299,9 +3261,6 @@ export function FeesModule({
         />
       )}
 
-      {/* ------------------------------------------------------------- */}
-      {/* MODAL 8: Reset Fee Demo Data Confirmation Modal */}
-      {/* ------------------------------------------------------------- */}
       {showResetConfirmModal && (
         <div
           role="dialog"

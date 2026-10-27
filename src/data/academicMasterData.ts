@@ -1,22 +1,15 @@
-/**
- * AROUSH ACADEMY — Academic Master Data Records
- *
- * Source of truth for dynamic academic setup:
- * - Classes / Grades
- * - Educational Boards
- * - Academy Subjects Catalog
- */
+
 
 export interface AcademicClass {
   id: string;
-  name: string; // e.g. "Class IX", "Class X", "Class XI", "Class XII"
-  supportedBoards: string[]; // ["ICSE", "CBSE", "West Bengal Board"]
+  name: string; 
+  supportedBoards: string[]; 
   isActive: boolean;
 }
 
 export interface AcademicBoard {
   id: string;
-  name: string; // "ICSE", "CBSE", "West Bengal Board"
+  name: string; 
   code: string;
   isActive: boolean;
 }
@@ -25,7 +18,7 @@ export interface AcademicSubject {
   id: string;
   name: string;
   code: string;
-  applicableClassIds: string[]; // Array of AcademicClass ids e.g. ["cls-9", "cls-10", "cls-11", "cls-12"]
+  applicableClassIds: string[]; 
   defaultMonthlyFee: number;
   isActive: boolean;
   description?: string;

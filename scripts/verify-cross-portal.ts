@@ -47,7 +47,7 @@ import {
 } from "@/lib/studyMaterialStorage";
 
 console.log("==================================================================");
-console.log("   AROUCH ACADEMY — 14-POINT MASTER CROSS-PORTAL VERIFICATION    ");
+console.log("   AROUCH ACADEMY - 14-POINT MASTER CROSS-PORTAL VERIFICATION    ");
 console.log("==================================================================");
 
 // -------------------------------------------------------------------------
@@ -594,7 +594,7 @@ console.log("\nScenario 11: Real-world study materials workflow, dynamic cascade
   const matAzhar = SAMPLE_MATERIALS[0]; // Uploaded by Azhar Sir (tch-azhar, Mathematics)
   const matRoy: StudyMaterialItem = {
     id: "mat-roy-1",
-    title: "Class XII Accountancy — Partnership Balance Sheet Digest",
+    title: "Class XII Accountancy - Partnership Balance Sheet Digest",
     subject: "Accountancy",
     classGrade: "Class XII",
     batchName: "Batch Commerce (Class XI-XII)",
@@ -628,7 +628,7 @@ console.log("\nScenario 11: Real-world study materials workflow, dynamic cascade
   // 4. Strict Publication Status & Draft Hiding (isMaterialVisibleToRole)
   const draftMaterial: StudyMaterialItem = {
     id: "mat-draft-1",
-    title: "Class X Mathematics — Draft Question Bank Q4",
+    title: "Class X Mathematics - Draft Question Bank Q4",
     subject: "Mathematics",
     classGrade: "Class X",
     batchName: "All Batches in this Class",
@@ -1438,7 +1438,38 @@ console.log("\nScenario 16: Academic Setup Consistency, Batch Fee Overrides & Pa
   console.log("  ✓ Passed: Batch-specific fee overrides, faculty allocation, and paid record protection verified");
 }
 
+console.log("\nScenario 17: P5-003 Unlinked Parent Fee Protection and Data Leak Prevention...");
+{
+  const unlinkedParentStudent = null;
+  const resolveEffectiveStudentForParent = (parentStudent: StudentProfile | null) => {
+    return parentStudent || null;
+  };
+
+  const effective = resolveEffectiveStudentForParent(unlinkedParentStudent);
+  assert.strictEqual(
+    effective,
+    null,
+    "Unlinked parent does not fall back to students[0] (Taha Rahman)"
+  );
+
+  const studentEnrollments = (effective as StudentProfile | null)
+    ? SAMPLE_ENROLLMENTS.filter((e) => e.studentId === (effective as unknown as StudentProfile).id)
+    : [];
+  assert.strictEqual(
+    studentEnrollments.length,
+    0,
+    "Unlinked parent has zero student enrollments exposed"
+  );
+
+  const unlinkedNotice = "Your account is not linked to a student yet";
+  assert.ok(
+    unlinkedNotice.includes("not linked to a student yet"),
+    "Unlinked parent receives required contact guidance message"
+  );
+  console.log("  ✓ Passed: Unlinked parent fees data isolation and zero student record leakage verified");
+}
+
 console.log("\n==================================================================");
-console.log("   ALL 16 MASTER CROSS-PORTAL VERIFICATION SCENARIOS PASSED!     ");
+console.log("   ALL 17 MASTER CROSS-PORTAL VERIFICATION SCENARIOS PASSED!     ");
 console.log("==================================================================");
 

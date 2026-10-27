@@ -1,20 +1,6 @@
 "use client";
 
-/**
- * AROUSH ACADEMY — Centralized, Typed Audit Trail Service
- *
- * PURPOSE & ARCHITECTURE:
- * Provides a standardized, typed audit logging service recording all state-changing
- * operations across Academy Admin, Teacher, Student, and Parent portals.
- *
- * GUARANTEES:
- * 1. Consistent schema (ISO timestamp, actor, role, action, type, entity, diff, outcome).
- * 2. Strict sanitization (redacts credentials, passwords, tokens, private phone numbers).
- * 3. Idempotent de-duplication (guards against React strict-mode re-renders or double-clicks).
- * 4. Bounded demo persistence (persists up to 500 recent entries in demo session storage).
- * 5. Reactive sync via window storage event dispatch.
- * 6. Explicit demo boundary: Client-side storage is non-authoritative and not production-secure.
- */
+
 
 import type {
   AuditLogEntry,
@@ -49,7 +35,7 @@ export interface AuditEventInput {
   timestamp?: string;
 }
 
-// In-memory de-duplication cache
+
 interface DedupeRecord {
   signature: string;
   timestamp: number;
@@ -60,22 +46,20 @@ let lastDedupe: DedupeRecord | null = null;
 const DEDUPE_WINDOW_MS = 350;
 const MAX_STORED_AUDIT_ENTRIES = 500;
 
-/**
- * Strips sensitive tokens, credentials, and full phone numbers from audit text.
- */
+
 export function sanitizeAuditText(input: string): string {
   if (!input) return "";
   let text = input;
 
-  // Redact potential passwords or tokens
+  
   text = text.replace(
     /\b(password|token|secret|key|apikey|bearer)\b\s*[:=]\s*(?:["'][^"']*["']|[^\s,;]+)/gi,
     "$1=[REDACTED]"
   );
 
-  // Mask guardian phone numbers (e.g. 10-digit Indian mobile numbers with optional prefix)
+  
   text = text.replace(/(?<!\d)(?:(?:\+?91|0)[\s-]?)?[6-9](?:[\s-]?\d){9}(?!\d)/g, (match) => {
-    // Keep first 2 and last 2 digits, mask the rest
+    
     const digits = match.replace(/\D/g, "");
     const last10 = digits.slice(-10);
     if (last10.length === 10) {
@@ -87,9 +71,7 @@ export function sanitizeAuditText(input: string): string {
   return text;
 }
 
-/**
- * Sanitizes diff before/after values to prevent storing confidential data.
- */
+
 export function sanitizeDiff(diff?: AuditFieldChange[]): AuditFieldChange[] | undefined {
   if (!diff || !Array.isArray(diff)) return undefined;
 
@@ -126,9 +108,7 @@ export function sanitizeDiff(diff?: AuditFieldChange[]): AuditFieldChange[] | un
   });
 }
 
-/**
- * Automatically infers the Audit Category if not explicitly provided.
- */
+
 export function inferCategory(entityType?: string, action?: string): AuditCategory {
   const combined = `${entityType || ""} ${action || ""}`.toLowerCase();
   if (
@@ -165,14 +145,12 @@ export function inferCategory(entityType?: string, action?: string): AuditCatego
   return "system";
 }
 
-/**
- * Records a single typed audit event to demo storage and dispatches change events.
- */
+
 export function recordAuditEvent(input: AuditEventInput): AuditLogEntry {
   const now = new Date();
   const timestamp = input.timestamp || now.toISOString();
 
-  // Resolve actor name
+  
   const performedBy =
     input.performedBy?.trim() ||
     (input.actorRole === "academy-admin"
@@ -193,7 +171,7 @@ export function recordAuditEvent(input: AuditEventInput): AuditLogEntry {
   const sanitizedTarget = sanitizeAuditText(input.target);
   const sanitizedDiff = sanitizeDiff(input.diff);
 
-  // De-duplication check: identical signature within DEDUPE_WINDOW_MS
+  
   const signature = `${input.actorRole || ""}|${input.action}|${input.entityId || ""}|${sanitizedDetails}`;
   const nowMs = now.getTime();
   if (
@@ -223,14 +201,14 @@ export function recordAuditEvent(input: AuditEventInput): AuditLogEntry {
     correlationId: input.correlationId,
   };
 
-  // Cache for de-duplication
+  
   lastDedupe = {
     signature,
     timestamp: nowMs,
     entry: newEntry,
   };
 
-  // Persist to Demo Storage
+  
   try {
     const existing = getDemoStorage<AuditLogEntry[]>(
       DEMO_STORAGE_KEYS.AUDIT_LOGS,
@@ -242,7 +220,7 @@ export function recordAuditEvent(input: AuditEventInput): AuditLogEntry {
     );
     setDemoStorage(DEMO_STORAGE_KEYS.AUDIT_LOGS, updated);
 
-    // Dispatch custom event for real-time dashboard reactivity
+    
     if (typeof window !== "undefined") {
       window.dispatchEvent(
         new CustomEvent("aroush-demo-storage-change", {
@@ -257,51 +235,37 @@ export function recordAuditEvent(input: AuditEventInput): AuditLogEntry {
   return newEntry;
 }
 
-/**
- * Convenience helper: Record a CREATE operation
- */
+
 export function recordCreate(params: Omit<AuditEventInput, "actionType">): AuditLogEntry {
   return recordAuditEvent({ ...params, actionType: "CREATE" });
 }
 
-/**
- * Convenience helper: Record an UPDATE operation
- */
+
 export function recordUpdate(params: Omit<AuditEventInput, "actionType">): AuditLogEntry {
   return recordAuditEvent({ ...params, actionType: "UPDATE" });
 }
 
-/**
- * Convenience helper: Record a DELETE operation
- */
+
 export function recordDelete(params: Omit<AuditEventInput, "actionType">): AuditLogEntry {
   return recordAuditEvent({ ...params, actionType: "DELETE" });
 }
 
-/**
- * Convenience helper: Record an APPROVE operation
- */
+
 export function recordApprove(params: Omit<AuditEventInput, "actionType">): AuditLogEntry {
   return recordAuditEvent({ ...params, actionType: "APPROVE" });
 }
 
-/**
- * Convenience helper: Record a REJECT operation
- */
+
 export function recordReject(params: Omit<AuditEventInput, "actionType">): AuditLogEntry {
   return recordAuditEvent({ ...params, actionType: "REJECT" });
 }
 
-/**
- * Convenience helper: Record a CANCEL operation
- */
+
 export function recordCancel(params: Omit<AuditEventInput, "actionType">): AuditLogEntry {
   return recordAuditEvent({ ...params, actionType: "CANCEL" });
 }
 
-/**
- * Retrieves the current audit log history from demo storage.
- */
+
 export function getStoredAuditLogs(): AuditLogEntry[] {
   return getDemoStorage<AuditLogEntry[]>(
     DEMO_STORAGE_KEYS.AUDIT_LOGS,
@@ -309,9 +273,7 @@ export function getStoredAuditLogs(): AuditLogEntry[] {
   );
 }
 
-/**
- * Resets audit logs back to default sample records.
- */
+
 export function resetAuditLogsToSample(): boolean {
   setDemoStorage(DEMO_STORAGE_KEYS.AUDIT_LOGS, SAMPLE_AUDIT_LOGS);
   if (typeof window !== "undefined") {

@@ -93,10 +93,7 @@ export const SAMPLE_STUDENTS: StudentProfile[] = [
   },
 ];
 
-/**
- * Distinct student-subject enrollment relationships.
- * A student enrolled in multiple subjects appears with separate teachers.
- */
+
 export const SAMPLE_ENROLLMENTS: SubjectEnrollment[] = [
   {
     id: "enr-101-math",
@@ -217,11 +214,9 @@ export const SAMPLE_ENROLLMENTS: SubjectEnrollment[] = [
   },
 ];
 
-/**
- * Monthly fee obligations for each enrollment across Oct 2026 (current) & Sep 2026 (previous).
- */
+
 export const SAMPLE_OBLIGATIONS: MonthlyFeeObligation[] = [
-  // Current Month: October 2026
+  
   {
     id: "ob-101-math-2026-10",
     enrollmentId: "enr-101-math",
@@ -331,7 +326,7 @@ export const SAMPLE_OBLIGATIONS: MonthlyFeeObligation[] = [
     dueDate: "2026-10-15",
   },
 
-  // Previous Month: September 2026
+  
   {
     id: "ob-101-math-2026-09",
     enrollmentId: "enr-101-math",
@@ -394,12 +389,9 @@ export const SAMPLE_OBLIGATIONS: MonthlyFeeObligation[] = [
   },
 ];
 
-/**
- * Individual payment transactions.
- * Supports partial payments and multiple records for one monthly fee obligation.
- */
+
 export const SAMPLE_PAYMENTS: PaymentTransaction[] = [
-  // Taha Rahman Oct Math paid in full via Cash
+  
   {
     id: "tx-801",
     obligationId: "ob-101-math-2026-10",
@@ -414,7 +406,7 @@ export const SAMPLE_PAYMENTS: PaymentTransaction[] = [
     isGatewayVerified: false,
     notes: "Cash received in classroom session",
   },
-  // Ananya Verma Oct Math partially paid (₹1000 of ₹1500)
+  
   {
     id: "tx-803",
     obligationId: "ob-102-math-2026-10",
@@ -429,7 +421,7 @@ export const SAMPLE_PAYMENTS: PaymentTransaction[] = [
     isGatewayVerified: false,
     notes: "Installment 1 of 2 received by teacher",
   },
-  // Fatima Sheikh Sep Accountancy had two split payments (₹1000 + ₹800)
+  
   {
     id: "tx-804",
     obligationId: "ob-104-acc-2026-09",
@@ -458,7 +450,7 @@ export const SAMPLE_PAYMENTS: PaymentTransaction[] = [
     isGatewayVerified: false,
     notes: "Remaining balance cleared in cash",
   },
-  // Taha Rahman Sep Math paid in full
+  
   {
     id: "tx-806",
     obligationId: "ob-101-math-2026-09",
@@ -473,7 +465,7 @@ export const SAMPLE_PAYMENTS: PaymentTransaction[] = [
     isGatewayVerified: false,
     notes: "Full month fee cleared",
   },
-  // Ananya Verma Sep Math paid in full
+  
   {
     id: "tx-807",
     obligationId: "ob-102-math-2026-09",
@@ -488,7 +480,7 @@ export const SAMPLE_PAYMENTS: PaymentTransaction[] = [
     isGatewayVerified: false,
     notes: "Cleared on time",
   },
-  // Zayd Al-Mansoor Sep Math paid in full
+  
   {
     id: "tx-808",
     obligationId: "ob-103-math-2026-09",
@@ -505,9 +497,7 @@ export const SAMPLE_PAYMENTS: PaymentTransaction[] = [
   },
 ];
 
-/**
- * Calculates payment status and balance for an obligation given a set of payments.
- */
+
 export function calculateObligationStatus(
   obligation: MonthlyFeeObligation,
   payments: PaymentTransaction[]
@@ -527,8 +517,8 @@ export function calculateObligationStatus(
   } else if (paidAmount > 0) {
     status = "partially-paid";
   } else {
-    // Check if overdue against dueDate (assuming current date is 2026-10-10)
-    // Sep 15 is in the past, so Sep unpaid is overdue
+    
+    
     if (new Date(obligation.dueDate) < new Date("2026-10-10")) {
       status = "overdue";
     } else {
@@ -539,16 +529,14 @@ export function calculateObligationStatus(
   return { paidAmount, balance, status, matchingPayments };
 }
 
-/**
- * Compiles complete summary for a list of enrollments with both Oct 2026 & Sep 2026 status.
- */
+
 export function buildEnrollmentSummaries(
   enrollments: SubjectEnrollment[],
   obligations: MonthlyFeeObligation[] = SAMPLE_OBLIGATIONS,
   payments: PaymentTransaction[] = SAMPLE_PAYMENTS
 ): EnrollmentFeeSummary[] {
   return enrollments.map((enrollment) => {
-    // Current month obligation (Oct 2026)
+    
     const currentOb = obligations.find(
       (o) => o.enrollmentId === enrollment.id && o.month === "2026-10"
     ) || {
@@ -566,7 +554,7 @@ export function buildEnrollmentSummaries(
 
     const currentCalc = calculateObligationStatus(currentOb, payments);
 
-    // Previous month obligation (Sep 2026)
+    
     const prevOb = obligations.find(
       (o) => o.enrollmentId === enrollment.id && o.month === "2026-09"
     );
@@ -594,10 +582,7 @@ export function buildEnrollmentSummaries(
 
 export const SAMPLE_UPI_QR_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200"><rect width="200" height="200" fill="%23FFFFFF"/><rect x="20" y="20" width="50" height="50" fill="%23000000"/><rect x="26" y="26" width="38" height="38" fill="%23FFFFFF"/><rect x="32" y="32" width="26" height="26" fill="%23000000"/><rect x="130" y="20" width="50" height="50" fill="%23000000"/><rect x="136" y="26" width="38" height="38" fill="%23FFFFFF"/><rect x="142" y="32" width="26" height="26" fill="%23000000"/><rect x="20" y="130" width="50" height="50" fill="%23000000"/><rect x="26" y="136" width="38" height="38" fill="%23FFFFFF"/><rect x="32" y="142" width="26" height="26" fill="%23000000"/><rect x="85" y="25" width="10" height="20" fill="%23000000"/><rect x="105" y="25" width="10" height="10" fill="%23000000"/><rect x="85" y="55" width="30" height="10" fill="%23000000"/><rect x="25" y="85" width="20" height="10" fill="%23000000"/><rect x="55" y="85" width="10" height="30" fill="%23000000"/><rect x="85" y="85" width="30" height="30" fill="%23007AFF"/><rect x="90" y="90" width="20" height="20" fill="%23FFFFFF"/><text x="100" y="104" font-family="sans-serif" font-size="10" font-weight="bold" fill="%23007AFF" text-anchor="middle">UPI</text><rect x="130" y="85" width="15" height="15" fill="%23000000"/><rect x="160" y="85" width="20" height="10" fill="%23000000"/><rect x="85" y="130" width="10" height="30" fill="%23000000"/><rect x="105" y="145" width="25" height="15" fill="%23000000"/><rect x="145" y="130" width="20" height="20" fill="%23000000"/><rect x="130" y="165" width="40" height="15" fill="%23000000"/></svg>`;
 
-/**
- * Admin-configured payment destinations for each subject and faculty.
- * Strictly configured and managed by Academy Admin.
- */
+
 export const SAMPLE_PAYMENT_DESTINATIONS: PaymentDestination[] = [
   {
     id: "dest-math-azhar",
@@ -683,10 +668,7 @@ export const SAMPLE_PAYMENT_DESTINATIONS: PaymentDestination[] = [
   },
 ];
 
-/**
- * Sample payment submissions tracking online UPI and Bank Transfer submissions
- * from students and parents.
- */
+
 export const SAMPLE_PAYMENT_SUBMISSIONS: PaymentSubmission[] = [
   {
     id: "subm-2026-10-001",
@@ -763,9 +745,7 @@ export const SAMPLE_PAYMENT_SUBMISSIONS: PaymentSubmission[] = [
   },
 ];
 
-/**
- * Sample fee adjustments (discounts, fee waivers, administrative corrections).
- */
+
 export const SAMPLE_FEE_ADJUSTMENTS: FeeAdjustment[] = [
   {
     id: "adj-2026-10-001",
@@ -783,9 +763,7 @@ export const SAMPLE_FEE_ADJUSTMENTS: FeeAdjustment[] = [
   },
 ];
 
-/**
- * Sample verified receipts.
- */
+
 export const SAMPLE_FEE_RECEIPTS: VerifiedFeeReceipt[] = [
   {
     id: "rec-2026-10-001",
@@ -853,9 +831,7 @@ export const SAMPLE_FEE_RECEIPTS: VerifiedFeeReceipt[] = [
   },
 ];
 
-/**
- * Standard fee configurations per subject and grade level.
- */
+
 export const SAMPLE_FEE_CONFIGURATIONS: FeeConfigurationRule[] = [
   {
     id: "cfg-class10-math",
@@ -922,9 +898,7 @@ export const SAMPLE_FEE_CONFIGURATIONS: FeeConfigurationRule[] = [
   },
 ];
 
-/**
- * Calculates net balance and status considering obligations, verified payments, and adjustments.
- */
+
 export function calculateAccountBalance(
   obligation: MonthlyFeeObligation,
   payments: PaymentTransaction[],
@@ -955,7 +929,7 @@ export function calculateAccountBalance(
   } else if (paidAmount > 0) {
     status = "partially-paid";
   } else {
-    // Current date threshold
+    
     const dueDate = new Date(obligation.dueDate);
     const now = new Date("2026-10-10");
     if (dueDate < now) {
@@ -977,9 +951,7 @@ export function calculateAccountBalance(
   };
 }
 
-/**
- * Formats a billing month key (e.g. "2026-10") into a human-readable label (e.g. "October 2026").
- */
+
 export function formatBillingMonthLabel(monthKey: string): string {
   const [year, month] = (monthKey || "").split("-");
   if (year && month) {
@@ -991,9 +963,7 @@ export function formatBillingMonthLabel(monthKey: string): string {
   return monthKey;
 }
 
-/**
- * Generates a collision-resistant unique receipt number.
- */
+
 export function generateUniqueReceiptNumber(
   existingReceipts: VerifiedFeeReceipt[],
   billingMonth?: string
@@ -1024,11 +994,7 @@ export function generateUniqueReceiptNumber(
   return `REC-${yearMonth}-${nextSeq}`;
 }
 
-/**
- * Calculates initial billing fee according to the Aroush Academy mid-month joining policy:
- * - Students joining on or before the 15th of the month are charged full fee (100%).
- * - Students joining after the 15th of the month receive a 50% pro-rata orientation fee.
- */
+
 export function calculateMidMonthFee(
   joiningDateStr: string,
   standardFee: number
@@ -1055,9 +1021,7 @@ export function calculateMidMonthFee(
   }
 }
 
-/**
- * Checks if a bill already exists for the given student, subject, and month.
- */
+
 export function isBillDuplicate(
   studentId: string,
   subjectName: string,

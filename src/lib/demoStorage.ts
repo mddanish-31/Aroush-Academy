@@ -1,20 +1,6 @@
 "use client";
 
-/**
- * AROUSH ACADEMY — Client-Side Demo Data Persistence Utility
- *
- * PURPOSE & ARCHITECTURE:
- * This utility provides safe, typed, client-side session persistence for interactive
- * demo mutations (fee transactions, teacher evaluations, authored mock exams, exam results,
- * created batches, attendance entries, and published notices).
- *
- * STRICT DEMO SCOPE:
- * - Backed by `sessionStorage` (scoped to the active browser tab session).
- * - Storage is strictly local to the client browser and is NOT an authoritative database.
- * - Sensitive authentication credentials, passwords, or tokens are NEVER stored here.
- * - Handles missing, corrupted, or disabled storage gracefully with in-memory fallbacks.
- * - Avoids SSR/client hydration mismatches by syncing storage post-mount on the client.
- */
+
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 
@@ -51,10 +37,10 @@ export const DEMO_STORAGE_KEYS = {
 
 export type DemoStorageKey = (typeof DEMO_STORAGE_KEYS)[keyof typeof DEMO_STORAGE_KEYS];
 
-// In-memory runtime cache for client-side role and tab switching
+
 const memoryCache: Record<string, unknown> = {};
 
-// BroadcastChannel singleton for instantaneous cross-tab synchronization
+
 let crossTabBroadcastChannel: BroadcastChannel | null = null;
 
 function getCrossTabChannel(): BroadcastChannel | null {
@@ -71,9 +57,7 @@ function getCrossTabChannel(): BroadcastChannel | null {
   return crossTabBroadcastChannel;
 }
 
-/**
- * Detects whether sessionStorage and localStorage are available in the current runtime environment.
- */
+
 export function isDemoStorageAvailable(): boolean {
   if (typeof window === "undefined") return false;
   try {
@@ -86,16 +70,13 @@ export function isDemoStorageAvailable(): boolean {
   }
 }
 
-/**
- * Safely retrieves and parses a stored demo record with fallback and type validation.
- * Checks in-memory cache, sessionStorage (tab scope), and mirrors from localStorage (cross-tab scope).
- */
+
 export function getDemoStorage<T>(
   key: string,
   fallback: T,
   validator?: (data: unknown) => data is T
 ): T {
-  // Check memory cache first
+  
   if (memoryCache[key] !== undefined) {
     const cached = memoryCache[key];
     if (validator) {
@@ -112,16 +93,16 @@ export function getDemoStorage<T>(
   try {
     let raw = window.sessionStorage.getItem(key);
 
-    // If not in this tab's sessionStorage, retrieve from localStorage (cross-tab / persisted)
+    
     if (!raw) {
       try {
         raw = window.localStorage.getItem(key);
         if (raw) {
-          // Populate current tab's sessionStorage to align state
+          
           window.sessionStorage.setItem(key, raw);
         }
       } catch {
-        // Ignore localStorage retrieval errors in restricted modes
+        
       }
     }
 
@@ -131,7 +112,7 @@ export function getDemoStorage<T>(
 
     const parsed = JSON.parse(raw);
 
-    // Basic structural validation: if fallback is array, parsed must be array
+    
     if (Array.isArray(fallback) && !Array.isArray(parsed)) {
       console.warn(`[DemoStorage] Key "${key}" expected Array but found ${typeof parsed}. Falling back.`);
       return fallback;
@@ -142,7 +123,7 @@ export function getDemoStorage<T>(
       return fallback;
     }
 
-    // Populate memory cache for instant client access
+    
     memoryCache[key] = parsed;
     return parsed as T;
   } catch (error) {
@@ -151,12 +132,9 @@ export function getDemoStorage<T>(
   }
 }
 
-/**
- * Safely persists a demo record to memory cache, sessionStorage, and localStorage,
- * and notifies active tabs via BroadcastChannel.
- */
+
 export function setDemoStorage<T>(key: string, value: T): boolean {
-  // Always update in-memory runtime cache
+  
   memoryCache[key] = value;
 
   if (typeof window === "undefined") {
@@ -170,7 +148,7 @@ export function setDemoStorage<T>(key: string, value: T): boolean {
     try {
       window.localStorage.setItem(key, serialized);
     } catch {
-      // Ignore localStorage quota or restriction errors
+      
     }
 
     const channel = getCrossTabChannel();
@@ -185,9 +163,7 @@ export function setDemoStorage<T>(key: string, value: T): boolean {
   }
 }
 
-/**
- * Removes a specific demo key from memory cache, sessionStorage, and localStorage.
- */
+
 export function removeDemoStorage(key: string): boolean {
   delete memoryCache[key];
   if (typeof window === "undefined") return false;
@@ -196,7 +172,7 @@ export function removeDemoStorage(key: string): boolean {
     try {
       window.localStorage.removeItem(key);
     } catch {
-      // Ignore
+      
     }
 
     const channel = getCrossTabChannel();
@@ -209,9 +185,7 @@ export function removeDemoStorage(key: string): boolean {
   }
 }
 
-/**
- * Resets all AROUSH Academy demo storage keys back to default sample data across all tabs.
- */
+
 export function clearAllDemoStorage(): boolean {
   for (const k of Object.values(DEMO_STORAGE_KEYS)) {
     delete memoryCache[k];
@@ -220,7 +194,7 @@ export function clearAllDemoStorage(): boolean {
         window.sessionStorage.removeItem(k);
         window.localStorage.removeItem(k);
       } catch {
-        // Ignore errors
+        
       }
     }
   }
@@ -234,10 +208,7 @@ export function clearAllDemoStorage(): boolean {
   return true;
 }
 
-/**
- * Resets only fee-related demo keys to fallback sample data across all tabs.
- * Does not disturb other modules like attendance, timetable, or mock exams.
- */
+
 export function resetFeeDemoStorage(): boolean {
   const feeKeys = [
     DEMO_STORAGE_KEYS.PAYMENTS,
@@ -247,7 +218,7 @@ export function resetFeeDemoStorage(): boolean {
     DEMO_STORAGE_KEYS.FEE_ADJUSTMENTS,
     DEMO_STORAGE_KEYS.FEE_RECEIPTS,
     DEMO_STORAGE_KEYS.FEE_CONFIGURATIONS,
-    // Also clean up any legacy v1 fee keys if present
+    
     "aroush_demo_payments_v1",
     "aroush_demo_obligations_v1",
     "aroush_demo_payment_destinations_v1",
@@ -264,7 +235,7 @@ export function resetFeeDemoStorage(): boolean {
         window.sessionStorage.removeItem(k);
         window.localStorage.removeItem(k);
       } catch {
-        // Ignore
+        
       }
     }
   }
@@ -279,22 +250,14 @@ export function resetFeeDemoStorage(): boolean {
   return true;
 }
 
-/**
- * Custom React hook for seamless demo data persistence across role and tab switching.
- *
- * Guarantees:
- * 1. ZERO SSR/client hydration mismatch (initial render matches server fallback).
- * 2. Instant client-side hydration from sessionStorage.
- * 3. Immediate in-memory availability when switching roles within the dashboard.
- * 4. Cross-component synchronization via window event dispatch.
- */
+
 export function useDemoStorage<T>(
   key: string,
   fallback: T,
   validator?: (data: unknown) => data is T
 ): [T, React.Dispatch<React.SetStateAction<T>>, boolean] {
-  // If already in memoryCache on the client, initialize directly to avoid flicker.
-  // During SSR or initial page load before hydration, memoryCache is empty, matching fallback.
+  
+  
   const [state, setState] = useState<T>(() => {
     if (memoryCache[key] !== undefined) {
       const cached = memoryCache[key];
@@ -308,7 +271,7 @@ export function useDemoStorage<T>(
   const [isHydrated, setIsHydrated] = useState<boolean>(false);
   const isInitialMount = useRef<boolean>(true);
 
-  // Client-side hydration from sessionStorage on mount
+  
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
@@ -318,9 +281,9 @@ export function useDemoStorage<T>(
     }
   }, [key, fallback, validator]);
 
-  // Synchronize with external changes or other instances of this key across components and browser tabs
+  
   useEffect(() => {
-    // 1. Same-window custom event handler
+    
     const handleStorageChange = (e: Event) => {
       const customEvent = e as CustomEvent<{ key: string; value?: unknown }>;
       if (customEvent.detail && customEvent.detail.key === key) {
@@ -333,7 +296,7 @@ export function useDemoStorage<T>(
       }
     };
 
-    // 2. Cross-tab BroadcastChannel event handler
+    
     const ch = getCrossTabChannel();
     const handleBroadcastMessage = (event: MessageEvent) => {
       if (!event.data) return;
@@ -344,7 +307,7 @@ export function useDemoStorage<T>(
           try {
             window.sessionStorage.setItem(key, JSON.stringify(val));
           } catch {
-            // Ignore
+            
           }
           setState(val as T);
         }
@@ -353,7 +316,7 @@ export function useDemoStorage<T>(
         try {
           window.sessionStorage.removeItem(key);
         } catch {
-          // Ignore
+          
         }
         setState(fallback);
       } else if (event.data.type === "reset" || event.data.type === "reset-fee") {
@@ -362,7 +325,7 @@ export function useDemoStorage<T>(
       }
     };
 
-    // 3. Native browser window "storage" event handler (cross-tab fallback for all modern browsers)
+    
     const handleWindowStorage = (e: StorageEvent) => {
       if (e.key === key) {
         if (e.newValue) {
@@ -373,19 +336,19 @@ export function useDemoStorage<T>(
               try {
                 window.sessionStorage.setItem(key, e.newValue);
               } catch {
-                // Ignore
+                
               }
               setState(parsed as T);
             }
           } catch {
-            // Ignore parse errors
+            
           }
         } else {
           delete memoryCache[key];
           try {
             window.sessionStorage.removeItem(key);
           } catch {
-            // Ignore
+            
           }
           setState(fallback);
         }
@@ -417,7 +380,7 @@ export function useDemoStorage<T>(
     };
   }, [key, fallback, validator]);
 
-  // Wrapped state setter that updates state, runtime memory cache, sessionStorage, and localStorage
+  
   const setStoredState: React.Dispatch<React.SetStateAction<T>> = useCallback(
     (action) => {
       setState((prev) => {

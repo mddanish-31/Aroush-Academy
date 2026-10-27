@@ -54,19 +54,19 @@ export const siteSettings: SiteSettings = {
         {
           title: "Class V-VIII",
           description: "Middle school conceptual foundations in Science and Mathematics.",
-          href: "/#courses-v-viii",
+          href: "/#course-v-viii",
           icon: "GraduationCap",
         },
         {
           title: "Class IX-X",
           description: "Intensive board examination prep for ICSE, CBSE, and WB Board.",
-          href: "/#courses-ix-x",
+          href: "/#course-ix-x",
           icon: "Award",
         },
         {
           title: "Class XI-XII",
           description: "Higher secondary Commerce, Science, and Arts stream coaching.",
-          href: "/#courses-xi-xii",
+          href: "/#course-xi-xii",
           icon: "BookMarked",
         },
       ],

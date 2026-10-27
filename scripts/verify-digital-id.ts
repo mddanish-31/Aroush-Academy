@@ -6,7 +6,7 @@ import { DEMO_STORAGE_KEYS, getDemoStorage, setDemoStorage } from "@/lib/demoSto
 import type { StudentIdCardRecord, StudentIdCardStatus, AuditLogEntry } from "@/types";
 
 console.log("==================================================================");
-console.log("   AROUCH ACADEMY — DIGITAL STUDENT ID MANAGEMENT VERIFICATION    ");
+console.log("   AROUCH ACADEMY - DIGITAL STUDENT ID MANAGEMENT VERIFICATION    ");
 console.log("==================================================================");
 
 // -------------------------------------------------------------------------
@@ -213,13 +213,13 @@ const createdDraft = createCard({
   studentFormattedId: `AA-2026-${studentWithoutCard.id.replace("std-", "")}`,
   classGrade: studentWithoutCard.classGrade,
   board: studentWithoutCard.board,
-  session: "2026–2027",
+  session: "2026-2027",
   joiningDate: studentWithoutCard.joiningDate,
   enrolledSubjects: ["Accountancy", "Economics"],
   batches: ["Commerce Senior"],
   guardianName: studentWithoutCard.guardianName,
   guardianPhone: studentWithoutCard.guardianPhone,
-  campusName: "AROUCH ACADEMY — Central Campus",
+  campusName: "AROUCH ACADEMY - Central Campus",
   campusAddress: "42 Knowledge Park, Sector 5, Salt Lake, Kolkata 700091",
   campusPhone: "+91 33 2950 1200",
   campusEmail: "admin@aroush.academy",
@@ -242,13 +242,13 @@ assert.throws(() => {
     studentFormattedId: `AA-2026-${studentWithoutCard.id.replace("std-", "")}`,
     classGrade: studentWithoutCard.classGrade,
     board: studentWithoutCard.board,
-    session: "2026–2027",
+    session: "2026-2027",
     joiningDate: studentWithoutCard.joiningDate,
     enrolledSubjects: ["Accountancy"],
     batches: ["Commerce Senior"],
     guardianName: studentWithoutCard.guardianName,
     guardianPhone: studentWithoutCard.guardianPhone,
-    campusName: "AROUCH ACADEMY — Central Campus",
+    campusName: "AROUCH ACADEMY - Central Campus",
     campusAddress: "42 Knowledge Park, Kolkata",
     campusPhone: "+91 33 2950 1200",
     campusEmail: "admin@aroush.academy",
@@ -268,7 +268,7 @@ assert.throws(() => {
     studentFormattedId: "",
     classGrade: "Class X",
     board: "CBSE",
-    session: "2026–2027",
+    session: "2026-2027",
     joiningDate: "2026-04-01",
     enrolledSubjects: [],
     batches: [],

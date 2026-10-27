@@ -10,9 +10,7 @@ import type {
   TeacherProfile,
 } from "@/types";
 
-/**
- * Demo Timetable Schedule for ArousH Academy (Park Circus Center)
- */
+
 export const SAMPLE_TIMETABLE: TimetableSlot[] = [
   {
     id: "time-1",
@@ -203,9 +201,7 @@ export const SAMPLE_TIMETABLE: TimetableSlot[] = [
   },
 ];
 
-/**
- * Attendance Records for October 2026
- */
+
 export const SAMPLE_ATTENDANCE: AttendanceRecord[] = [
   {
     id: "att-101-1",
@@ -343,9 +339,7 @@ export const SAMPLE_ATTENDANCE: AttendanceRecord[] = [
   },
 ];
 
-/**
- * Assessment Records and Mock Examination Series
- */
+
 export const SAMPLE_ASSESSMENTS: AssessmentRecord[] = [
   {
     id: "exam-1",
@@ -592,13 +586,11 @@ export const SAMPLE_ISSUED_CERTIFICATES: IssuedCertificateRecord[] = [
   },
 ];
 
-/**
- * Study Material and Free Resources Repository
- */
+
 export const SAMPLE_MATERIALS: StudyMaterialItem[] = [
   {
     id: "mat-1",
-    title: "Class X Mathematics — Coordinate Geometry Master Formula Guide",
+    title: "Class X Mathematics - Coordinate Geometry Master Formula Guide",
     subject: "Mathematics",
     classGrade: "Class X",
     type: "Formula Sheet",
@@ -606,7 +598,7 @@ export const SAMPLE_MATERIALS: StudyMaterialItem[] = [
     uploadedBy: "Azhar Sir",
     teacherId: "tch-azhar",
     date: "2026-10-02",
-    content: `CLASS X MATHEMATICS — COORDINATE GEOMETRY FORMULA GUIDE
+    content: `CLASS X MATHEMATICS - COORDINATE GEOMETRY FORMULA GUIDE
 Subject: Mathematics • Grade: Class X (ICSE/CBSE) • Faculty: Azhar Sir
 
 1. DISTANCE FORMULA:
@@ -639,7 +631,7 @@ Subject: Mathematics • Grade: Class X (ICSE/CBSE) • Faculty: Azhar Sir
   },
   {
     id: "mat-2",
-    title: "ICSE Class X Quadratic Equations — High-Yield Word Problems (Solved)",
+    title: "ICSE Class X Quadratic Equations - High-Yield Word Problems (Solved)",
     subject: "Mathematics",
     classGrade: "Class X",
     type: "Worksheet",
@@ -647,7 +639,7 @@ Subject: Mathematics • Grade: Class X (ICSE/CBSE) • Faculty: Azhar Sir
     uploadedBy: "Azhar Sir",
     teacherId: "tch-azhar",
     date: "2026-09-29",
-    content: `ICSE CLASS X QUADRATIC EQUATIONS — SOLVED WORD PROBLEMS
+    content: `ICSE CLASS X QUADRATIC EQUATIONS - SOLVED WORD PROBLEMS
 Subject: Mathematics • Grade: Class X • Faculty: Azhar Sir
 
 PROBLEM 1 (SPEED & DISTANCE):
@@ -684,7 +676,7 @@ Answer: The number is 46.`,
   },
   {
     id: "mat-3",
-    title: "Class X Physics — Light Refraction & Spherical Lenses Numerical Bank",
+    title: "Class X Physics - Light Refraction & Spherical Lenses Numerical Bank",
     subject: "Physics",
     classGrade: "Class X",
     type: "Practice Paper",
@@ -692,7 +684,7 @@ Answer: The number is 46.`,
     uploadedBy: "Dr. Tariq Alvi",
     teacherId: "tch-alvi",
     date: "2026-09-22",
-    content: `CLASS X PHYSICS — LIGHT REFRACTION & SPHERICAL LENSES NUMERICAL BANK
+    content: `CLASS X PHYSICS - LIGHT REFRACTION & SPHERICAL LENSES NUMERICAL BANK
 Subject: Physics • Grade: Class X • Faculty: Dr. Tariq Alvi
 
 FUNDAMENTAL FORMULAS:
@@ -729,7 +721,7 @@ Application: Correction of Myopia (nearsightedness).`,
   },
   {
     id: "mat-4",
-    title: "Class XII Higher Mathematics — Integration Techniques & Standard Forms",
+    title: "Class XII Higher Mathematics - Integration Techniques & Standard Forms",
     subject: "Mathematics",
     classGrade: "Class XII",
     type: "PDF Notes",
@@ -740,7 +732,7 @@ Application: Correction of Myopia (nearsightedness).`,
   },
   {
     id: "mat-5",
-    title: "Class XI-XII Accountancy — Partnership Fundamentals & Reconstitution",
+    title: "Class XI-XII Accountancy - Partnership Fundamentals & Reconstitution",
     subject: "Accountancy",
     classGrade: "Class XII",
     type: "PDF Notes",
@@ -751,13 +743,11 @@ Application: Correction of Myopia (nearsightedness).`,
   },
 ];
 
-/**
- * Official Academy Notices & Circulars
- */
+
 export const SAMPLE_NOTICES: NoticeItem[] = [
   {
     id: "not-1",
-    title: "Pre-Board Mock Examination Series Schedule (October–November 2026)",
+    title: "Pre-Board Mock Examination Series Schedule (October-November 2026)",
     category: "Examination",
     date: "2026-10-08",
     content:
@@ -801,9 +791,7 @@ export const SAMPLE_NOTICES: NoticeItem[] = [
   },
 ];
 
-/**
- * Batches and Faculty Schedule Roster
- */
+
 export const SAMPLE_BATCHES: BatchDefinition[] = [
   {
     id: "btc-alpha",
@@ -869,18 +857,14 @@ function parseGradeFlags(text: string) {
   };
 }
 
-/**
- * Determines whether a batch is compatible with a student's grade/class.
- * Ensures Class IX/X students cannot enroll in Class XI-XII batches, and vice versa,
- * while respecting multi-class batches (e.g. Class IX-X, Class XI-XII).
- */
+
 export function isBatchMatchingClass(batch: BatchDefinition, studentClass: string): boolean {
   if (!batch.classGrade && !batch.name) return true;
   const bGrade = (batch.classGrade || "").trim().toLowerCase();
   const sGrade = (studentClass || "").trim().toLowerCase();
   const bName = (batch.name || "").toLowerCase();
 
-  // Direct exact match
+  
   if (bGrade === sGrade) return true;
 
   const s = parseGradeFlags(studentClass);
@@ -900,25 +884,19 @@ export function isBatchMatchingClass(batch: BatchDefinition, studentClass: strin
   return bGrade === sGrade || bName.includes(sGrade);
 }
 
-/**
- * Determines whether a batch is compatible with a subject name.
- * Supports composite subjects like "Physics & Chemistry" or "Accountancy & Economics".
- */
+
 export function isBatchMatchingSubject(batch: BatchDefinition, subjectName: string): boolean {
   if (!batch.subject) return true;
   const bSub = batch.subject.trim().toLowerCase();
   const sSub = subjectName.trim().toLowerCase();
   if (bSub === sSub) return true;
   if (bSub.includes(sSub) || sSub.includes(bSub)) return true;
-  // Handle "English" vs "English Language & Literature"
+  
   if (bSub.includes("english") && sSub.includes("english")) return true;
   return false;
 }
 
-/**
- * Filters faculty members who are active and qualified to teach a given subject.
- * Returns only valid, active faculty assignments without unvetted fallbacks.
- */
+
 export function getEligibleFacultyForSubject(faculty: TeacherProfile[], subjectName: string): TeacherProfile[] {
   const activeFaculty = faculty.filter((f) => (f.status || "active") === "active");
   return activeFaculty.filter((f) => {
@@ -937,9 +915,7 @@ export function getEligibleFacultyForSubject(faculty: TeacherProfile[], subjectN
 }
 
 
-/**
- * System and Ledger Audit Logs
- */
+
 export const SAMPLE_AUDIT_LOGS: AuditLogEntry[] = [
   {
     id: "log-1",

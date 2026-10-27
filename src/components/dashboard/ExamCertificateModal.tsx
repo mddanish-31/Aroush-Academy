@@ -77,7 +77,6 @@ export function ExamCertificateModal({
           outlineOffset: "-4px",
         }}
       >
-        {/* Distinction Banner: Officially Issued vs Sample Preview */}
         <div
           style={{
             backgroundColor: isIssued ? "#34C759" : "#FF9500",
@@ -92,10 +91,9 @@ export function ExamCertificateModal({
             marginBottom: "var(--space-4)",
           }}
         >
-          {isIssued ? "★ OFFICIALLY ISSUED CERTIFICATE (SESSION RECORD) ★" : "★ SAMPLE PREVIEW / NOT OFFICIALLY ISSUED ★"}
+          {isIssued ? "ACADEMIC RECORD - SESSION" : "SAMPLE PREVIEW"}
         </div>
 
-        {/* Certificate Header & Crest */}
         <div style={{ textAlign: "center", marginBottom: "var(--space-6)" }}>
           <div
             style={{
@@ -129,7 +127,7 @@ export function ExamCertificateModal({
             ArousH Academy of Coaching &amp; Excellence
           </div>
           <div style={{ fontSize: "11px", color: "var(--color-neutral-dark)", marginBottom: "var(--space-3)" }}>
-            Park Circus Academic Center &bull; Est. 2018 &bull; Kolkata
+            Park Circus Academic Center - Est. 2018 - Kolkata
           </div>
 
           <h1
@@ -147,7 +145,6 @@ export function ExamCertificateModal({
           <div style={{ width: "80px", height: "3px", backgroundColor: "#007AFF", margin: "8px auto 0" }} />
         </div>
 
-        {/* Certificate Body */}
         <div style={{ textAlign: "center", marginBottom: "var(--space-6)", lineHeight: 1.8 }}>
           <p style={{ fontSize: "var(--text-sm)", color: "var(--color-neutral-dark)", margin: "0 0 4px" }}>
             This is proudly awarded in recognition of distinguished academic achievement to:
@@ -166,7 +163,7 @@ export function ExamCertificateModal({
           </div>
 
           <p style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", margin: 0 }}>
-            Candidate ID: <strong style={{ color: "var(--color-primary)" }}>AA-2026-{certificate.studentId.replace("std-", "")}</strong> &bull; Class: <strong style={{ color: "var(--color-primary)" }}>{certificate.classGrade} ({certificate.board})</strong>
+            Candidate ID: <strong style={{ color: "var(--color-primary)" }}>AA-2026-{certificate.studentId.replace("std-", "")}</strong> - Class: <strong style={{ color: "var(--color-primary)" }}>{certificate.classGrade} ({certificate.board})</strong>
           </p>
 
           <div
@@ -192,7 +189,6 @@ export function ExamCertificateModal({
           </div>
         </div>
 
-        {/* Eligibility Verification Box */}
         <div
           style={{
             display: "flex",
@@ -217,7 +213,6 @@ export function ExamCertificateModal({
           </Badge>
         </div>
 
-        {/* Signatures & Seal Section */}
         <div
           style={{
             display: "grid",
@@ -244,26 +239,26 @@ export function ExamCertificateModal({
                 width: "42px",
                 height: "42px",
                 borderRadius: "var(--radius-full)",
-                border: "1px dashed #007AFF",
+                border: "1px dashed var(--color-border)",
                 margin: "0 auto",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: "9px",
                 fontWeight: 700,
-                color: "#007AFF",
+                color: "var(--color-neutral-dark)",
               }}
             >
-              SEAL
+              AA
             </div>
             <div style={{ fontSize: "9px", color: "var(--color-neutral-dark)", marginTop: "2px" }}>
-              Academic Directorate
+              ArousH Academy
             </div>
           </div>
 
           <div>
             <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--color-primary)" }}>
-              Central Examination Office
+              Academic Records Desk
             </div>
             <div style={{ fontSize: "10px", color: "var(--color-neutral-dark)", marginTop: "2px" }}>
               Certified Date: {certificate.issuedDate}
@@ -271,7 +266,6 @@ export function ExamCertificateModal({
           </div>
         </div>
 
-        {/* Verification Tracking Number & Disclaimer */}
         <div
           style={{
             fontSize: "10px",
@@ -284,11 +278,13 @@ export function ExamCertificateModal({
         >
           <div>Certificate Reference: <strong>{certificate.certificateNumber}</strong></div>
           <div style={{ marginTop: "2px" }}>
-            Notice: This certificate is a sample frontend demonstration rendered from active academy test ledgers. Official physical certificates are issued with holographic security seals.
+            Notice: This certificate is an academic demonstration record generated from classroom assessment data.
+          </div>
+          <div style={{ marginTop: "4px", fontWeight: 600, color: "var(--color-primary)" }}>
+            Demo copy, not a legal record
           </div>
         </div>
 
-        {/* Actions Row (Hidden when printing via .no-print) */}
         <div
           className="no-print"
           style={{
@@ -311,7 +307,7 @@ export function ExamCertificateModal({
               Close Preview
             </Button>
             <Button variant="primary" size="sm" onClick={handlePrint} type="button">
-              🖨️ Print / Save as PDF
+              Print / Save as PDF
             </Button>
           </div>
         </div>

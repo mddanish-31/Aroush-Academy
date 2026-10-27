@@ -1,4 +1,5 @@
 "use client";
+import { Video, Calendar, Clock, Users, User, FileText, AlertCircle, ExternalLink } from "lucide-react";
 
 import React, { useState, useMemo, useEffect } from "react";
 import type {
@@ -42,30 +43,30 @@ export function ClassroomModule({
   currentTeacherId = "tch-azhar",
   currentStudentId = "std-101",
 }: ClassroomModuleProps) {
-  // Shared persistent online class schedule dataset across all 4 roles
+  
   const [sessions, setSessions] = useDemoStorage<ClassroomSession[]>(
     DEMO_STORAGE_KEYS.CLASSROOM_SESSIONS,
     SAMPLE_CLASSROOM_SESSIONS
   );
 
-  // Dynamic catalogs from demo storage
+  
   const [faculty] = useDemoStorage(DEMO_STORAGE_KEYS.FACULTY, SAMPLE_TEACHERS);
   const [batches] = useDemoStorage(DEMO_STORAGE_KEYS.BATCHES, SAMPLE_BATCHES);
   const [subjects] = useDemoStorage(DEMO_STORAGE_KEYS.ACADEMIC_SUBJECTS, DEFAULT_SUBJECTS);
   const [enrollments] = useDemoStorage(DEMO_STORAGE_KEYS.ENROLLMENTS, SAMPLE_ENROLLMENTS);
   const [students] = useDemoStorage(DEMO_STORAGE_KEYS.STUDENTS, SAMPLE_STUDENTS);
 
-  // Active student object (for Student & Parent roles)
+  
   const currentStudent = useMemo(() => {
     return students.find((s) => s.id === currentStudentId) || null;
   }, [students, currentStudentId]);
 
-  // Active teacher object
+  
   const activeTeacher = useMemo(() => {
     return faculty.find((t) => t.id === currentTeacherId) || faculty[0];
   }, [faculty, currentTeacherId]);
 
-  // Teacher-eligible subjects and batches
+  
   const teacherEligibleSubjects = useMemo(() => {
     if (role !== "teacher" || !activeTeacher) return subjects.map((s) => s.name);
     return activeTeacher.assignedSubjects.length > 0
@@ -85,7 +86,7 @@ export function ClassroomModule({
     );
   }, [role, activeTeacher, batches]);
 
-  // Filters
+  
   const [statusTab, setStatusTab] = useState<"all" | "scheduled" | "completed" | "cancelled">("all");
   const [filterSubject, setFilterSubject] = useState<string>("all");
   const [filterBatch, setFilterBatch] = useState<string>("all");
@@ -93,7 +94,7 @@ export function ClassroomModule({
   const [filterProvider, setFilterProvider] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  // Notification Banner
+  
   const [notification, setNotification] = useState<{
     type: "success" | "error" | "info";
     message: string;
@@ -104,12 +105,12 @@ export function ClassroomModule({
     setTimeout(() => setNotification(null), 5000);
   };
 
-  // Modals
+  
   const [detailsSession, setDetailsSession] = useState<ClassroomSession | null>(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState<boolean>(false);
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
 
-  // Scheduling Form State
+  
   const [formTopic, setFormTopic] = useState<string>("");
   const [formSubject, setFormSubject] = useState<string>("Mathematics");
   const [formBatch, setFormBatch] = useState<string>("Batch Alpha (Class IX-X)");
@@ -125,7 +126,7 @@ export function ClassroomModule({
   const [formStatus, setFormStatus] = useState<ClassroomSessionStatus>("scheduled");
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Close modals on Escape key
+  
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -137,13 +138,13 @@ export function ClassroomModule({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Recent meeting URLs used by the current teacher for 1-click reuse
+  
   const recentMeetingUrls = useMemo(() => {
     const teacherId = role === "teacher" ? currentTeacherId : formTeacherId;
     return getTeacherRecentMeetingUrls(teacherId, sessions);
   }, [role, currentTeacherId, formTeacherId, sessions]);
 
-  // Open Create Schedule Modal
+  
   const openCreateModal = () => {
     setEditingSessionId(null);
     setFormTopic("");
@@ -161,7 +162,7 @@ export function ClassroomModule({
     setIsFormModalOpen(true);
   };
 
-  // Open Edit Schedule Modal
+  
   const openEditModal = (session: ClassroomSession) => {
     setEditingSessionId(session.id);
     setFormTopic(session.topic);
@@ -171,7 +172,7 @@ export function ClassroomModule({
     setFormProvider(resolvedProvider);
     setFormUrl(session.meetingUrl || session.meetingLinkDemo || "https://meet.google.com/");
     setFormDate(session.date);
-    // Convert 12hr e.g. "04:30 PM" to 24hr for time inputs if needed
+    
     setFormStartTime(session.startTime.includes("M") ? "16:30" : session.startTime);
     setFormEndTime(session.endTime.includes("M") ? "18:00" : session.endTime);
     const instr = Array.isArray(session.instructions)
@@ -185,12 +186,12 @@ export function ClassroomModule({
     setIsFormModalOpen(true);
   };
 
-  // Save Schedule Handler
+  
   const handleSaveSchedule = (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
 
-    // Validate Form Fields
+    
     const validation = validateOnlineClassPayload({
       topic: formTopic,
       subject: formSubject,
@@ -218,7 +219,7 @@ export function ClassroomModule({
     const finalProvider = formProvider === "other" ? detectMeetingProvider(cleanUrl) : formProvider;
 
     if (editingSessionId) {
-      // In-place update
+      
       setSessions((prev) =>
         prev.map((s) =>
           s.id === editingSessionId
@@ -260,7 +261,7 @@ export function ClassroomModule({
         sourcePortal: role,
       });
     } else {
-      // Create new online class session
+      
       const newSession: ClassroomSession = {
         id: `cls-online-${Date.now()}`,
         topic: formTopic.trim(),
@@ -302,7 +303,7 @@ export function ClassroomModule({
     setIsFormModalOpen(false);
   };
 
-  // Status Action Handlers
+  
   const handleCancelSession = (session: ClassroomSession) => {
     setSessions((prev) =>
       prev.map((s) => (s.id === session.id ? { ...s, status: "cancelled" } : s))
@@ -378,14 +379,14 @@ export function ClassroomModule({
     });
   };
 
-  // Join Meeting Handler (Opens external URL in new browser tab)
+  
   const handleJoinMeeting = (session: ClassroomSession) => {
     const url = session.meetingUrl || session.meetingLinkDemo;
     if (!url || session.status === "cancelled") return;
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  // Role-Isolated Base Sessions (Strict Scope Enforcement)
+  
   const roleBaseSessions = useMemo(() => {
     if (role === "teacher") {
       return sessions.filter((s) => s.teacherId === currentTeacherId);
@@ -394,14 +395,14 @@ export function ClassroomModule({
       if (!currentStudentId) return [];
       return getStudentOnlineClasses(currentStudentId, enrollments, sessions);
     }
-    // Academy Admin sees complete academy schedule
+    
     return sessions;
   }, [role, sessions, currentTeacherId, currentStudentId, enrollments]);
 
-  // Filtered Visible Sessions
+  
   const visibleSessions = useMemo(() => {
     return roleBaseSessions.filter((session) => {
-      // Status Tab Filter
+      
       if (statusTab !== "all") {
         if (statusTab === "scheduled" && session.status !== "scheduled" && session.status !== "upcoming") {
           return false;
@@ -410,7 +411,7 @@ export function ClassroomModule({
         if (statusTab === "cancelled" && session.status !== "cancelled") return false;
       }
 
-      // Dropdown Filters
+      
       if (filterSubject !== "all" && session.subject !== filterSubject) return false;
       if (filterBatch !== "all" && session.batchName !== filterBatch) return false;
       if (filterTeacher !== "all" && session.teacherId !== filterTeacher) return false;
@@ -419,7 +420,7 @@ export function ClassroomModule({
         if (prov !== filterProvider) return false;
       }
 
-      // Search Query Filter
+      
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesTopic = session.topic.toLowerCase().includes(q);
@@ -447,7 +448,7 @@ export function ClassroomModule({
     searchQuery,
   ]);
 
-  // Metric Counts calculated from actual underlying records
+  
   const totalClassesCount = roleBaseSessions.length;
   const scheduledCount = roleBaseSessions.filter(
     (s) => s.status === "scheduled" || s.status === "upcoming"
@@ -457,7 +458,6 @@ export function ClassroomModule({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
-      {/* Notification Banner */}
       {notification && (
         <div
           style={{
@@ -497,12 +497,11 @@ export function ClassroomModule({
               padding: "0 4px",
             }}
           >
-            ✕
+            
           </button>
         </div>
       )}
 
-      {/* Header Card */}
       <Card padding="md">
         <div
           style={{
@@ -557,7 +556,6 @@ export function ClassroomModule({
             </p>
           </div>
 
-          {/* Schedule Button for Teacher & Admin */}
           {(role === "teacher" || role === "academy-admin") && (
             <Button variant="primary" size="sm" onClick={openCreateModal}>
               + Schedule Online Class
@@ -565,7 +563,6 @@ export function ClassroomModule({
           )}
         </div>
 
-        {/* KPI Summary Metrics */}
         <div
           style={{
             display: "grid",
@@ -643,7 +640,6 @@ export function ClassroomModule({
           </div>
         </div>
 
-        {/* Filter Strip */}
         <div
           style={{
             display: "flex",
@@ -655,7 +651,6 @@ export function ClassroomModule({
             borderTop: "1px solid var(--color-border)",
           }}
         >
-          {/* Status Tabs */}
           <div
             style={{
               display: "flex",
@@ -735,7 +730,6 @@ export function ClassroomModule({
             </button>
           </div>
 
-          {/* Admin Faculty Filter */}
           {role === "academy-admin" && (
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
@@ -762,7 +756,6 @@ export function ClassroomModule({
             </div>
           )}
 
-          {/* Subject Filter */}
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <span style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
               Subject:
@@ -787,7 +780,6 @@ export function ClassroomModule({
             </select>
           </div>
 
-          {/* Batch Filter */}
           {(role === "academy-admin" || role === "teacher") && (
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
@@ -814,7 +806,6 @@ export function ClassroomModule({
             </div>
           )}
 
-          {/* Provider Filter */}
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <span style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
               Provider:
@@ -837,7 +828,6 @@ export function ClassroomModule({
             </select>
           </div>
 
-          {/* Search Query */}
           <div style={{ flex: "1 1 200px" }}>
             <input
               type="text"
@@ -857,11 +847,10 @@ export function ClassroomModule({
         </div>
       </Card>
 
-      {/* Online Classes Listing Grid */}
       {visibleSessions.length === 0 ? (
         <Card padding="lg">
           <div style={{ textAlign: "center", padding: "var(--space-8)" }}>
-            <div style={{ fontSize: "32px", marginBottom: "8px" }}>🌐</div>
+            <div style={{ marginBottom: "8px" }}><Video size={32} /></div>
             <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, marginBottom: "4px" }}>
               {role === "parent" && !currentStudent
                 ? "No Linked Student Found"
@@ -912,7 +901,6 @@ export function ClassroomModule({
                 }}
               >
                 <div>
-                  {/* Top Badges: Subject, Provider, Status */}
                   <div
                     style={{
                       display: "flex",
@@ -966,7 +954,6 @@ export function ClassroomModule({
                     )}
                   </div>
 
-                  {/* Topic / Title */}
                   <h3
                     style={{
                       fontSize: "var(--text-base)",
@@ -980,7 +967,6 @@ export function ClassroomModule({
                     {session.topic}
                   </h3>
 
-                  {/* Timing & Date */}
                   <div
                     style={{
                       display: "flex",
@@ -991,11 +977,10 @@ export function ClassroomModule({
                       marginBottom: "4px",
                     }}
                   >
-                    <span>📅 {session.date}</span>
-                    <span>⏰ {session.startTime} – {session.endTime}</span>
+                    <span><Calendar size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} />{session.date}</span>
+                    <span><Clock size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} />{session.startTime} - {session.endTime}</span>
                   </div>
 
-                  {/* Batch & Teacher */}
                   <div
                     style={{
                       fontSize: "var(--text-xs)",
@@ -1003,10 +988,9 @@ export function ClassroomModule({
                       marginBottom: "6px",
                     }}
                   >
-                    <span>👥 {session.batchName}</span> &bull; <span>👤 {session.teacherName}</span>
+                    <span><Users size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} />{session.batchName}</span> &bull; <span><User size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} />{session.teacherName}</span>
                   </div>
 
-                  {/* Instructions Preview */}
                   {session.instructions && (
                     <div
                       style={{
@@ -1023,12 +1007,11 @@ export function ClassroomModule({
                         overflow: "hidden",
                       }}
                     >
-                      📝 {Array.isArray(session.instructions) ? session.instructions[0] : session.instructions}
+                      <FileText size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} />{Array.isArray(session.instructions) ? session.instructions[0] : session.instructions}
                     </div>
                   )}
                 </div>
 
-                {/* Bottom Action Area */}
                 <div>
                   <div
                     style={{
@@ -1041,7 +1024,6 @@ export function ClassroomModule({
                       flexWrap: "wrap",
                     }}
                   >
-                    {/* Primary Join Action (Disabled if cancelled or missing URL) */}
                     <div>
                       {isJoinable ? (
                         <Button
@@ -1050,7 +1032,7 @@ export function ClassroomModule({
                           onClick={() => handleJoinMeeting(session)}
                           title={`Open ${getProviderLabel(session.meetingProvider)} meeting in a new browser tab`}
                         >
-                          Join Meeting ↗
+                          Join Meeting <ExternalLink size={12} style={{ display: "inline-block", verticalAlign: "middle", marginLeft: "4px" }} aria-hidden="true" />
                         </Button>
                       ) : isCancelled ? (
                         <span
@@ -1074,7 +1056,6 @@ export function ClassroomModule({
                       )}
                     </div>
 
-                    {/* Secondary & Admin/Teacher Controls */}
                     <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
                       <Button
                         variant="secondary"
@@ -1132,9 +1113,6 @@ export function ClassroomModule({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 1. CLASS DETAILS MODAL                                                    */}
-      {/* ========================================================================= */}
       {detailsSession && (
         <div
           onClick={(e) => {
@@ -1207,7 +1185,7 @@ export function ClassroomModule({
                   padding: "0 4px",
                 }}
               >
-                ✕
+                
               </button>
             </div>
 
@@ -1232,7 +1210,7 @@ export function ClassroomModule({
               </div>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ color: "var(--color-neutral-dark)" }}>Time Interval:</span>
-                <strong>{detailsSession.startTime} – {detailsSession.endTime}</strong>
+                <strong>{detailsSession.startTime} - {detailsSession.endTime}</strong>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ color: "var(--color-neutral-dark)" }}>Batch &amp; Grade:</span>
@@ -1268,7 +1246,6 @@ export function ClassroomModule({
               )}
             </div>
 
-            {/* Instructions / Notes Block */}
             {detailsSession.instructions && (
               <div style={{ marginTop: "var(--space-3)", fontSize: "var(--text-xs)" }}>
                 <strong style={{ display: "block", marginBottom: "4px" }}>Instructions &amp; Prerequisites:</strong>
@@ -1280,7 +1257,6 @@ export function ClassroomModule({
               </div>
             )}
 
-            {/* Modal Actions */}
             <div
               style={{
                 display: "flex",
@@ -1295,7 +1271,7 @@ export function ClassroomModule({
                   size="sm"
                   onClick={() => handleJoinMeeting(detailsSession)}
                 >
-                  Join Meeting in New Tab ↗
+                  Join Meeting in New Tab <ExternalLink size={12} style={{ display: "inline-block", verticalAlign: "middle", marginLeft: "4px" }} aria-hidden="true" />
                 </Button>
               )}
               <Button
@@ -1310,9 +1286,6 @@ export function ClassroomModule({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 2. SCHEDULE / EDIT ONLINE CLASS MODAL                                     */}
-      {/* ========================================================================= */}
       {isFormModalOpen && (
         <div
           onClick={(e) => {
@@ -1369,12 +1342,11 @@ export function ClassroomModule({
                   padding: "0 4px",
                 }}
               >
-                ✕
+                
               </button>
             </div>
 
             <form onSubmit={handleSaveSchedule}>
-              {/* Validation Error Banner */}
               {formError && (
                 <div
                   style={{
@@ -1389,11 +1361,10 @@ export function ClassroomModule({
                   }}
                   role="alert"
                 >
-                  ⚠️ {formError}
+                  <AlertCircle size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} />{formError}
                 </div>
               )}
 
-              {/* Class Topic / Title */}
               <div style={{ marginBottom: "var(--space-3)" }}>
                 <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>
                   Class Title / Topic: *
@@ -1418,7 +1389,6 @@ export function ClassroomModule({
                 />
               </div>
 
-              {/* Subject & Batch Selectors (Restricted to teacher's permitted subjects/batches) */}
               <div
                 style={{
                   display: "grid",
@@ -1482,13 +1452,11 @@ export function ClassroomModule({
                 </div>
               </div>
 
-              {/* Meeting Provider & Meeting URL */}
               <div style={{ marginBottom: "var(--space-3)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
                   <label style={{ fontSize: "var(--text-xs)", fontWeight: 600 }}>
                     Meeting Provider: *
                   </label>
-                  {/* Reuse Existing Recurring Meeting URL */}
                   {recentMeetingUrls.length > 0 && (
                     <select
                       onChange={(e) => {
@@ -1521,7 +1489,6 @@ export function ClassroomModule({
                   )}
                 </div>
 
-                {/* Provider Radio Pills */}
                 <div style={{ display: "flex", gap: "var(--space-2)", marginBottom: "8px" }}>
                   <label
                     style={{
@@ -1550,7 +1517,7 @@ export function ClassroomModule({
                         }
                       }}
                     />
-                    🟢 Google Meet
+                    Google Meet
                   </label>
 
                   <label
@@ -1580,7 +1547,7 @@ export function ClassroomModule({
                         }
                       }}
                     />
-                    🔵 Zoom
+                    Zoom
                   </label>
 
                   <label
@@ -1605,11 +1572,10 @@ export function ClassroomModule({
                       checked={formProvider === "other"}
                       onChange={() => setFormProvider("other")}
                     />
-                    🔗 Other
+                    Other
                   </label>
                 </div>
 
-                {/* Meeting URL Input */}
                 <input
                   type="url"
                   required
@@ -1633,7 +1599,6 @@ export function ClassroomModule({
                 </span>
               </div>
 
-              {/* Date & Timings */}
               <div
                 style={{
                   display: "grid",
@@ -1712,7 +1677,6 @@ export function ClassroomModule({
                 </div>
               </div>
 
-              {/* Admin Faculty Selector */}
               {role === "academy-admin" && (
                 <div style={{ marginBottom: "var(--space-3)" }}>
                   <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>
@@ -1739,7 +1703,6 @@ export function ClassroomModule({
                 </div>
               )}
 
-              {/* Instructions / Notes */}
               <div style={{ marginBottom: "var(--space-3)" }}>
                 <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>
                   Instructions / Notes for Students: (Optional)
@@ -1761,7 +1724,6 @@ export function ClassroomModule({
                 />
               </div>
 
-              {/* Status Selector (when editing) */}
               {editingSessionId && (
                 <div style={{ marginBottom: "var(--space-4)" }}>
                   <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>
@@ -1786,7 +1748,6 @@ export function ClassroomModule({
                 </div>
               )}
 
-              {/* Form Buttons */}
               <div
                 style={{
                   display: "flex",

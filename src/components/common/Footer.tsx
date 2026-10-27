@@ -84,22 +84,22 @@ export function Footer() {
             </h3>
             <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
               <li>
-                <Link href="/#courses-v-viii" className="nav-link" style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}>
+                <Link href="/#course-v-viii" className="nav-link" style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}>
                   Class V-VIII (Foundation)
                 </Link>
               </li>
               <li>
-                <Link href="/#courses-ix-x" className="nav-link" style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}>
+                <Link href="/#course-ix-x" className="nav-link" style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}>
                   Class IX-X (Board Intensive)
                 </Link>
               </li>
               <li>
-                <Link href="/#courses-xi-xii" className="nav-link" style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}>
+                <Link href="/#course-xi-xii" className="nav-link" style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}>
                   Class XI-XII (Commerce &amp; Science)
                 </Link>
               </li>
               <li>
-                <Link href="/#courses-xi-xii" className="nav-link" style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}>
+                <Link href="/#course-xi-xii" className="nav-link" style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}>
                   Class XI-XII (Humanities &amp; Arts)
                 </Link>
               </li>

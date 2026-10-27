@@ -1,18 +1,8 @@
-/**
- * AROUSH ACADEMY — Study Material Download & Filename Utility
- *
- * Provides native browser download capabilities for demo study materials.
- * Generates safe filenames, structures text extracts with clear demo notices,
- * and handles Blob object URL creation and revocation.
- */
+
 
 import type { StudyMaterialItem } from "../types";
 
-/**
- * Generates a safe, sanitized filesystem filename from a material title.
- * Removes non-alphanumeric/non-dash/non-underscore characters, converts spaces to underscores,
- * caps length to 50 characters, and guarantees a safe .txt extension.
- */
+
 export function sanitizeFilename(title: string | null | undefined, fallbackId = "resource"): string {
   if (!title || typeof title !== "string") {
     return `${fallbackId}.txt`;
@@ -27,18 +17,14 @@ export function sanitizeFilename(title: string | null | undefined, fallbackId = 
   return clean ? `${clean}.txt` : `${fallbackId}.txt`;
 }
 
-/**
- * Formats study material plain text into a structured educational extract
- * with a clear banner distinguishing locally generated demo files from
- * official board publications or original server-stored PDFs.
- */
+
 export function formatDownloadableContent(item: StudyMaterialItem): string {
   const divider = "=".repeat(78);
   const subDivider = "-".repeat(78);
 
   return [
     divider,
-    "AROUSH ACADEMY — DIGITAL STUDY RESOURCE (DEMO EXTRACT)",
+    "AROUSH ACADEMY - DIGITAL STUDY RESOURCE (DEMO EXTRACT)",
     divider,
     "NOTICE: Locally generated text file for interactive demo preview.",
     "Provided for curriculum demonstration at ArousH Academy (Kolkata).",
@@ -61,10 +47,7 @@ export function formatDownloadableContent(item: StudyMaterialItem): string {
   ].join("\n");
 }
 
-/**
- * Initiates a real browser file download using native Blob and temporary object URL,
- * revoking the temporary object URL after download initiation.
- */
+
 export function triggerTextDownload(content: string, filename: string): boolean {
   if (typeof window === "undefined" || typeof document === "undefined") {
     return false;

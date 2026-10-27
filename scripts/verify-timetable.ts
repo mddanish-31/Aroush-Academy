@@ -19,7 +19,7 @@ import { SAMPLE_ENROLLMENTS } from "@/data/enrollmentFeeData";
 import type { TimetableSlot } from "@/types";
 
 console.log("==================================================================");
-console.log("   AROUCH ACADEMY — TIMETABLE SYSTEM COMPREHENSIVE VERIFICATION   ");
+console.log("   AROUCH ACADEMY - TIMETABLE SYSTEM COMPREHENSIVE VERIFICATION   ");
 console.log("==================================================================\n");
 
 // -------------------------------------------------------------------------
@@ -720,7 +720,7 @@ console.log("\nPoint 19: Comprehensive 30-, 45-, 60-, and 90-minute Responsive I
   const layout60 = calculateSlotLayout(s60, e60, 8, 20, 30);
   assert.strictEqual(layout60.heightPx, 60, "60-min session occupies exactly 60px");
   const isMedium60 = layout60.heightPx >= 50 && layout60.heightPx < 70;
-  assert.strictEqual(isMedium60, true, "60-min class qualifies as Medium Card (50px–69px, renders subject + time + batch)");
+  assert.strictEqual(isMedium60, true, "60-min class qualifies as Medium Card (50px-69px, renders subject + time + batch)");
 
   // 4. 90-minute session (e.g. 04:30 PM - 06:00 PM)
   const slot90: TimetableSlot = {

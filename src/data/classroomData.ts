@@ -4,10 +4,7 @@ import type {
   ClassroomParticipant,
 } from "@/types";
 
-/**
- * Scheduled and Historical Online Classroom Sessions
- * Integrated with ArousH Academy Weekly Timetable, Batches, and External Meeting Links (Google Meet & Zoom)
- */
+
 export const SAMPLE_CLASSROOM_SESSIONS: ClassroomSession[] = [
   {
     id: "cls-math-101",
@@ -187,7 +184,7 @@ export const SAMPLE_CLASSROOM_SESSIONS: ClassroomSession[] = [
   },
 ];
 
-// Preserved for backward compatibility
+
 export const INITIAL_CHAT_MESSAGES: Record<string, ClassroomChatMessage[]> = {};
 
 export function getSessionParticipants(

@@ -1,5 +1,5 @@
 /**
- * AROUSH ACADEMY — Browser QA & Workflow Simulation Suite
+ * AROUSH ACADEMY - Browser QA & Workflow Simulation Suite
  *
  * Simulates real user browser workflows and state transitions for:
  * 1. Fee Management: Admin approval of Student B while Student A is selected in ledger,
@@ -42,7 +42,7 @@ import type {
 } from "@/types";
 
 console.log("==================================================================");
-console.log("   AROUCH ACADEMY — BROWSER QA WORKFLOW SIMULATION SUITE          ");
+console.log("   AROUCH ACADEMY - BROWSER QA WORKFLOW SIMULATION SUITE          ");
 console.log("==================================================================\n");
 
 let passedCount = 0;
@@ -431,7 +431,7 @@ check(
   () => {
     const draftMaterial: StudyMaterialItem = {
       id: "mat-qa-draft-01",
-      title: "Class X Physics — Work, Energy & Power Draft Notes",
+      title: "Class X Physics - Work, Energy & Power Draft Notes",
       subject: "Physics",
       classGrade: "Class X",
       batchName: "All Batches in this Class",
@@ -477,7 +477,7 @@ check(
   () => {
     const publishedMaterial: StudyMaterialItem = {
       id: "mat-qa-pub-01",
-      title: "Class X Physics — Work, Energy & Power Final Notes",
+      title: "Class X Physics - Work, Energy & Power Final Notes",
       subject: "Physics",
       classGrade: "Class X",
       batchName: "All Batches in this Class",

@@ -1,6 +1,4 @@
-/**
- * Shared Type Definitions for ArousH Academy
- */
+
 
 export type UserRole =
   | "academy-admin"
@@ -215,7 +213,7 @@ export interface NavLink {
 }
 
 export interface CookiePreferences {
-  necessary: boolean; // Always true, cannot be disabled
+  necessary: boolean; 
   functional: boolean;
   analytics: boolean;
   marketing: boolean;

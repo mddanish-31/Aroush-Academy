@@ -4,9 +4,7 @@ import type {
   SubjectEnrollment,
 } from "@/types";
 
-/**
- * Validates that a meeting URL is present, uses HTTPS, and is a well-formed web URL.
- */
+
 export function isValidMeetingUrl(url: string): boolean {
   if (!url || typeof url !== "string") return false;
   const trimmed = url.trim();
@@ -19,9 +17,7 @@ export function isValidMeetingUrl(url: string): boolean {
   }
 }
 
-/**
- * Automatically identifies the meeting provider from the URL hostname if not explicitly selected.
- */
+
 export function detectMeetingProvider(url: string): MeetingProvider {
   if (!url) return "other";
   const lower = url.toLowerCase();
@@ -30,9 +26,7 @@ export function detectMeetingProvider(url: string): MeetingProvider {
   return "other";
 }
 
-/**
- * Human-readable display label for supported external meeting providers.
- */
+
 export function getProviderLabel(provider?: MeetingProvider): string {
   switch (provider) {
     case "google-meet":
@@ -45,9 +39,7 @@ export function getProviderLabel(provider?: MeetingProvider): string {
   }
 }
 
-/**
- * Accessible badges and branding colors for meeting providers.
- */
+
 export function getProviderBadgeStyle(provider?: MeetingProvider): {
   bg: string;
   color: string;
@@ -62,7 +54,7 @@ export function getProviderBadgeStyle(provider?: MeetingProvider): {
         color: "#1E8E3E",
         border: "rgba(52, 168, 83, 0.35)",
         label: "Google Meet",
-        icon: "🟢",
+        icon: "Video",
       };
     case "zoom":
       return {
@@ -70,7 +62,7 @@ export function getProviderBadgeStyle(provider?: MeetingProvider): {
         color: "#0B5CFF",
         border: "rgba(45, 140, 255, 0.35)",
         label: "Zoom Meeting",
-        icon: "🔵",
+        icon: "Video",
       };
     case "other":
     default:
@@ -79,15 +71,12 @@ export function getProviderBadgeStyle(provider?: MeetingProvider): {
         color: "#424245",
         border: "rgba(110, 110, 115, 0.35)",
         label: "External Video Link",
-        icon: "🔗",
+        icon: "Link",
       };
   }
 }
 
-/**
- * Derives student-scoped online classes from verified enrollments.
- * A student sees only classes for their active enrolled subjects and matching batch.
- */
+
 export function getStudentOnlineClasses(
   studentId: string,
   enrollments: SubjectEnrollment[],
@@ -95,7 +84,7 @@ export function getStudentOnlineClasses(
 ): ClassroomSession[] {
   if (!studentId) return [];
 
-  // Active enrollments for this student
+  
   const studentEnrollments = enrollments.filter(
     (e) => e.studentId === studentId && e.status === "active"
   );
@@ -104,11 +93,11 @@ export function getStudentOnlineClasses(
 
   return sessions.filter((session) => {
     return studentEnrollments.some((enr) => {
-      // Must match subject
+      
       const subjectMatches =
         enr.subjectName.toLowerCase().trim() === session.subject.toLowerCase().trim();
 
-      // Must match batch
+      
       const batchMatches =
         enr.batchName.toLowerCase().trim() === session.batchName.toLowerCase().trim() ||
         Boolean(session.batchId && enr.batchId && enr.batchId === session.batchId);
@@ -118,10 +107,7 @@ export function getStudentOnlineClasses(
   });
 }
 
-/**
- * Checks whether an online class is currently joinable.
- * Cancelled meetings and meetings with missing/invalid URLs CANNOT be joined.
- */
+
 export function isMeetingJoinable(session: ClassroomSession): boolean {
   if (session.status === "cancelled") return false;
   const url = session.meetingUrl || session.meetingLinkDemo;
@@ -129,9 +115,7 @@ export function isMeetingJoinable(session: ClassroomSession): boolean {
   return isValidMeetingUrl(url);
 }
 
-/**
- * Validates scheduling form inputs for required fields, HTTPS URL, and valid time bounds.
- */
+
 export function validateOnlineClassPayload(payload: {
   topic: string;
   subject: string;
@@ -169,7 +153,7 @@ export function validateOnlineClassPayload(payload: {
     return { isValid: false, error: "End time is required." };
   }
 
-  // Check end time > start time if 24hr or comparable
+  
   if (payload.startTime >= payload.endTime) {
     return { isValid: false, error: "Meeting end time must be after the start time." };
   }
@@ -177,10 +161,7 @@ export function validateOnlineClassPayload(payload: {
   return { isValid: true };
 }
 
-/**
- * Extracts distinct valid recurring meeting URLs previously used by a teacher.
- * Allows quick 1-click reuse of recurring Google Meet or Zoom room URLs.
- */
+
 export function getTeacherRecentMeetingUrls(
   teacherId: string,
   sessions: ClassroomSession[]

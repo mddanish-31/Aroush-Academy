@@ -16,7 +16,7 @@ type FilterTab = "all" | "pending" | "approved" | "rejected";
 export function RegistrationApprovalsModule() {
   const { registrationRequests, approveRegistration, rejectRegistration } = useAuth();
 
-  // Academic student records for explicit identity matching
+  
   const [students] = useDemoStorage<StudentProfile[]>(
     DEMO_STORAGE_KEYS.STUDENTS,
     SAMPLE_STUDENTS
@@ -27,15 +27,15 @@ export function RegistrationApprovalsModule() {
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [actionNotice, setActionNotice] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  // Review & Match modal state (Flow B)
+  
   const [reviewModalReq, setReviewModalReq] = useState<RegistrationRequest | null>(null);
   const [matchedStudentId, setMatchedStudentId] = useState<string>("");
 
-  // Reject confirmation modal state
+  
   const [rejectModalReq, setRejectModalReq] = useState<RegistrationRequest | null>(null);
   const [rejectionReason, setRejectionReason] = useState("Incomplete verification details. Please re-apply with required documents.");
 
-  // Metric counts
+  
   const counts = useMemo(() => {
     let pending = 0;
     let approved = 0;
@@ -53,7 +53,7 @@ export function RegistrationApprovalsModule() {
     };
   }, [registrationRequests]);
 
-  // Filtered requests
+  
   const filteredRequests = useMemo(() => {
     return registrationRequests.filter((req) => {
       if (activeTab !== "all" && req.status !== activeTab) {
@@ -74,12 +74,12 @@ export function RegistrationApprovalsModule() {
     });
   }, [registrationRequests, activeTab, searchQuery]);
 
-  // Open Review & Match Modal
+  
   const openReviewModal = (req: RegistrationRequest) => {
     setReviewModalReq(req);
     setActionNotice(null);
 
-    // Intelligent match suggestion based on applicant name or ward name
+    
     const targetName = req.role === "parent" ? (req.wardName || req.name) : req.name;
     const cleanTarget = targetName.toLowerCase().trim();
     const candidate = students.find(
@@ -231,7 +231,6 @@ export function RegistrationApprovalsModule() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
-      {/* Header and Summary Stats */}
       <Card padding="md">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "var(--space-3)", marginBottom: "var(--space-4)" }}>
           <div>
@@ -249,7 +248,6 @@ export function RegistrationApprovalsModule() {
           </div>
         </div>
 
-        {/* Metric Summary Counters */}
         <div
           style={{
             display: "grid",
@@ -338,7 +336,6 @@ export function RegistrationApprovalsModule() {
         </div>
       </Card>
 
-      {/* Action Notification Alert */}
       {actionNotice && (
         <div
           style={{
@@ -361,12 +358,11 @@ export function RegistrationApprovalsModule() {
             onClick={() => setActionNotice(null)}
             style={{ border: "none", background: "none", cursor: "pointer", fontSize: "14px", color: "inherit" }}
           >
-            ✕
+            
           </button>
         </div>
       )}
 
-      {/* Filter Tabs and Search Bar */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-3)" }}>
         <div
           style={{
@@ -429,9 +425,8 @@ export function RegistrationApprovalsModule() {
         />
       </div>
 
-      {/* Registrations List Table */}
       <div style={{ backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-lg)", border: "1px solid var(--color-border)", overflow: "hidden" }}>
-        <div style={{ overflowX: "auto" }}>
+        <div tabIndex={0} role="region" aria-label="Registration approvals table" style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "var(--text-xs)" }}>
             <thead>
               <tr style={{ backgroundColor: "var(--color-surface-muted)", borderBottom: "1px solid var(--color-border)" }}>
@@ -449,7 +444,7 @@ export function RegistrationApprovalsModule() {
                 <tr>
                   <td colSpan={7} style={{ padding: "var(--space-10) var(--space-4)", textAlign: "center" }}>
                     <div style={{ fontSize: "28px", marginBottom: "var(--space-2)" }}>
-                      {activeTab === "pending" ? "✓" : "🔍"}
+                      {activeTab === "pending" ? "Review" : "Inspect"}
                     </div>
                     <div style={{ fontWeight: 600, fontSize: "var(--text-sm)", color: "var(--color-primary)", marginBottom: "4px" }}>
                       {activeTab === "pending"
@@ -480,7 +475,6 @@ export function RegistrationApprovalsModule() {
                         transition: "background-color var(--transition-fast)",
                       }}
                     >
-                      {/* Applicant Name & Ref */}
                       <td style={{ padding: "12px 14px", verticalAlign: "middle" }}>
                         <div style={{ fontWeight: 600, color: "var(--color-primary)" }}>
                           {req.name}
@@ -490,14 +484,12 @@ export function RegistrationApprovalsModule() {
                         </div>
                       </td>
 
-                      {/* Contact Identifier */}
                       <td style={{ padding: "12px 14px", verticalAlign: "middle" }}>
                         <div style={{ color: "var(--color-primary)", wordBreak: "break-all" }}>
                           {req.identifier}
                         </div>
                       </td>
 
-                      {/* Role & Academic Details */}
                       <td style={{ padding: "12px 14px", verticalAlign: "middle" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                           <Badge
@@ -519,7 +511,6 @@ export function RegistrationApprovalsModule() {
                         </div>
                       </td>
 
-                      {/* Linked Academic Record */}
                       <td style={{ padding: "12px 14px", verticalAlign: "middle" }}>
                         {matchedStudent ? (
                           <div>
@@ -541,14 +532,12 @@ export function RegistrationApprovalsModule() {
                         )}
                       </td>
 
-                      {/* Submitted On */}
                       <td style={{ padding: "12px 14px", verticalAlign: "middle", whiteSpace: "nowrap" }}>
                         <div style={{ color: "var(--color-neutral-dark)" }}>
                           {req.submittedAt}
                         </div>
                       </td>
 
-                      {/* Status Badge */}
                       <td style={{ padding: "12px 14px", verticalAlign: "middle" }}>
                         {req.status === "pending" && (
                           <Badge variant="warning" size="sm">
@@ -603,7 +592,6 @@ export function RegistrationApprovalsModule() {
                         )}
                       </td>
 
-                      {/* Administrative Actions */}
                       <td style={{ padding: "12px 14px", verticalAlign: "middle", textAlign: "right" }}>
                         {req.status === "pending" ? (
                           <div style={{ display: "inline-flex", gap: "var(--space-2)", alignItems: "center" }}>
@@ -658,7 +646,6 @@ export function RegistrationApprovalsModule() {
         </div>
       </div>
 
-      {/* --- REVIEW & IDENTITY MATCHING MODAL (Flow B) --- */}
       {reviewModalReq && (
         <div
           role="dialog"
@@ -700,11 +687,10 @@ export function RegistrationApprovalsModule() {
                 onClick={() => setReviewModalReq(null)}
                 style={{ border: "none", background: "none", cursor: "pointer", fontSize: "18px" }}
               >
-                ✕
+                
               </button>
             </div>
 
-            {/* Applicant Summary Card */}
             <div
               style={{
                 padding: "var(--space-3) var(--space-4)",
@@ -725,7 +711,6 @@ export function RegistrationApprovalsModule() {
               {reviewModalReq.wardName && <div><strong>Stated Ward Name:</strong> {reviewModalReq.wardName}</div>}
             </div>
 
-            {/* Record Matcher Dropdown */}
             <div style={{ marginBottom: "var(--space-4)" }}>
               <label style={{ fontSize: "var(--text-xs)", fontWeight: 700, display: "block", marginBottom: "6px" }}>
                 Select Matching Academic Student Record *
@@ -754,11 +739,11 @@ export function RegistrationApprovalsModule() {
 
               {matchedStudentId ? (
                 <div style={{ marginTop: "8px", padding: "8px 12px", backgroundColor: "rgba(52, 199, 89, 0.08)", border: "1px solid rgba(52, 199, 89, 0.25)", borderRadius: "var(--radius-sm)", fontSize: "11px", color: "var(--color-positive)" }}>
-                  ✓ This account will be securely bound to <strong>{students.find((s) => s.id === matchedStudentId)?.name} ({matchedStudentId.toUpperCase()})</strong>. Portal sign-in will exclusively resolve this student&apos;s records.
+                  This account will be securely bound to <strong>{students.find((s) => s.id === matchedStudentId)?.name} ({matchedStudentId.toUpperCase()})</strong>. Portal sign-in will exclusively resolve this student&apos;s records.
                 </div>
               ) : (
                 <div style={{ marginTop: "8px", padding: "8px 12px", backgroundColor: "rgba(255, 149, 0, 0.08)", border: "1px solid rgba(255, 149, 0, 0.3)", borderRadius: "var(--radius-sm)", fontSize: "11px", color: "var(--color-warning)" }}>
-                  ⚠️ Notice: If approved without an academic student link, this account cannot access personal student modules. It will remain in &quot;Requires Review&quot; state until linked.
+                  Notice: If approved without an academic student link, this account cannot access personal student modules. It will remain in &quot;Requires Review&quot; state until linked.
                 </div>
               )}
             </div>
@@ -781,7 +766,6 @@ export function RegistrationApprovalsModule() {
         </div>
       )}
 
-      {/* --- REJECTION CONFIRMATION MODAL --- */}
       {rejectModalReq && (
         <div
           role="dialog"

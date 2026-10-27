@@ -1,4 +1,5 @@
 "use client";
+import { User } from "lucide-react";
 
 import React from "react";
 import type { TimetableSlot } from "@/types";
@@ -15,16 +16,7 @@ export interface TimetableEventCardProps {
   onClick?: (slot: TimetableSlot) => void;
 }
 
-/**
- * Responsive, unified event-card component adhering to the information hierarchy:
- * - Short cards (< 50px, e.g. 30m–45m sessions):
- *     Renders Subject + Complete Time range with zero text clipping.
- *     Full batch and teacher details are available via tooltip and click modal.
- * - Medium cards (50px–69px, e.g. 50m–60m sessions):
- *     Renders Subject + Complete Time + Batch.
- * - Tall cards (>= 70px, e.g. 75m, 90m, 120m sessions):
- *     Renders Subject + Complete Time + Batch + Teacher & Class Grade footer.
- */
+
 export function TimetableEventCard({
   slot,
   startMinutes,
@@ -39,8 +31,8 @@ export function TimetableEventCard({
   const isCancelled = slot.status === "cancelled";
   const isSpecificDate = slot.scheduleType === "specific_date";
 
-  // Derive vertical positioning and duration height directly from time scale (1min = 1px)
-  // minHeightPx = 30px matches exact 30-min boundary to prevent overlapping adjacent time slots
+  
+  
   const { topPx, heightPx } = calculateSlotLayout(
     startMinutes,
     endMinutes,
@@ -49,16 +41,16 @@ export function TimetableEventCard({
     30
   );
 
-  // Responsive Information Hierarchy tiers based on actual rendered card height
-  const isShortCard = heightPx < 50; // 30m to 45m sessions
-  const isMediumCard = heightPx >= 50 && heightPx < 70; // 50m to 60m sessions
-  const isTallCard = heightPx >= 70; // 75m+ sessions
+  
+  const isShortCard = heightPx < 50; 
+  const isMediumCard = heightPx >= 50 && heightPx < 70; 
+  const isTallCard = heightPx >= 70; 
 
-  // Horizontal side-by-side positioning for simultaneous classes
+  
   const colWidthPercent = 100 / totalCols;
   const leftPercent = colIndex * colWidthPercent;
 
-  // Normalized display fields with robust fallbacks
+  
   const displaySubject = slot.subject?.trim() || "Scheduled Class";
   const displayTime = slot.time?.trim() || "Scheduled Time";
   const displayTeacher = slot.teacherName?.trim() || "Faculty";
@@ -105,9 +97,7 @@ export function TimetableEventCard({
       }}
       title={`${displaySubject} • ${displayBatch} • ${displayTime} • ${displayTeacher} (Click for details)`}
     >
-      {/* Upper Section: Subject Header + Time */}
       <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-        {/* Row 1: Subject Title & Status Badges */}
         <div
           style={{
             display: "flex",
@@ -165,7 +155,6 @@ export function TimetableEventCard({
           ) : null}
         </div>
 
-        {/* Row 2: Complete Scheduled Time Range — Never truncated */}
         <div
           style={{
             fontSize: isShortCard ? "9px" : "10px",
@@ -179,7 +168,6 @@ export function TimetableEventCard({
           {displayTime}
         </div>
 
-        {/* Row 3 (Medium & Tall cards only): Batch details */}
         {!isShortCard && (
           <div
             style={{
@@ -197,7 +185,6 @@ export function TimetableEventCard({
         )}
       </div>
 
-      {/* Lower Section (Tall cards only): Teacher & Class Grade Footer */}
       {isTallCard && (
         <div
           style={{
@@ -214,7 +201,7 @@ export function TimetableEventCard({
           }}
         >
           <span style={{ overflow: "hidden", textOverflow: "ellipsis", fontWeight: 500 }}>
-            👤 {displayTeacher}
+            <User size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "2px" }} />{displayTeacher}
           </span>
           <span style={{ fontSize: "8.5px", color: "var(--color-neutral-dark)", flexShrink: 0 }}>
             {displayGrade}

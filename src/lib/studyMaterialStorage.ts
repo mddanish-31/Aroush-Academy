@@ -1,12 +1,4 @@
-/**
- * AROUSH ACADEMY — Study Material Storage Service & Client Demo Adapter
- *
- * ARCHITECTURAL BOUNDARY:
- * Provides a clean storage interface for study material uploads and downloads.
- * In this frontend-only phase, an honest local demo adapter simulates file persistence
- * using browser Object URLs and in-memory caches, strictly distinguishing simulated
- * local session storage from production cloud object storage (e.g. AWS S3, Cloudflare R2, GCS).
- */
+
 
 import type {
   UserRole,
@@ -30,7 +22,7 @@ export const DEFAULT_STUDY_MATERIAL_TYPES: string[] = [
   "Handout",
 ];
 
-// Supported Extensions and MIME types for Coaching Academy workflow
+
 export const SUPPORTED_FILE_EXTENSIONS = [
   ".pdf",
   ".docx",
@@ -49,17 +41,15 @@ export const SUPPORTED_MIME_TYPES: Record<string, string[]> = {
   "image/png": [".png"],
 };
 
-// Configurable maximum file size (15 MB default for high-yield PDFs, worksheets & presentations)
-export const MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024; // 15 MB
+
+export const MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024; 
 
 export interface FileValidationResult {
   isValid: boolean;
   error?: string;
 }
 
-/**
- * Validates a file against allowed extensions, MIME types, and file size ceiling.
- */
+
 export function validateStudyMaterialFile(
   file: File,
   maxSizeBytes = MAX_FILE_SIZE_BYTES
@@ -68,7 +58,7 @@ export function validateStudyMaterialFile(
     return { isValid: false, error: "No file was selected." };
   }
 
-  // Size validation
+  
   if (file.size > maxSizeBytes) {
     const maxMB = (maxSizeBytes / (1024 * 1024)).toFixed(0);
     const actualMB = (file.size / (1024 * 1024)).toFixed(2);
@@ -78,7 +68,7 @@ export function validateStudyMaterialFile(
     };
   }
 
-  // Extension validation
+  
   const lowerName = file.name.toLowerCase();
   const hasValidExtension = SUPPORTED_FILE_EXTENSIONS.some((ext) =>
     lowerName.endsWith(ext)
@@ -91,9 +81,9 @@ export function validateStudyMaterialFile(
     };
   }
 
-  // MIME type validation (if provided by browser)
+  
   if (file.type && !SUPPORTED_MIME_TYPES[file.type]) {
-    // Some Windows machines report application/x-zip-compressed for docx/pptx or empty
+    
     const isSpecialOfficeType =
       (lowerName.endsWith(".docx") || lowerName.endsWith(".pptx")) &&
       (file.type.includes("document") ||
@@ -112,9 +102,7 @@ export function validateStudyMaterialFile(
   return { isValid: true };
 }
 
-/**
- * Formats byte size into human-readable representation.
- */
+
 export function formatFileSize(bytes?: number): string {
   if (!bytes || bytes <= 0) return "0 KB";
   if (bytes < 1024) return `${bytes} B`;
@@ -145,13 +133,13 @@ export interface UploadStudyMaterialResult {
   storageNotice: string;
 }
 
-// IndexedDB configuration for client-side binary persistence
+
 const DB_NAME = "aroush_study_materials_db";
 const DB_VERSION = 1;
 const STORE_NAME = "files";
 
 interface StoredFileRecord {
-  id: string; // materialId
+  id: string; 
   fileName: string;
   fileType: string;
   blob: Blob;
@@ -239,9 +227,7 @@ export async function deleteBinaryFile(id: string): Promise<boolean> {
   });
 }
 
-/**
- * Normalizes a subject name by splitting compound terms (e.g., "Physics & Chemistry").
- */
+
 export function normalizeSubject(s: string): string[] {
   return s
     .toLowerCase()
@@ -250,10 +236,7 @@ export function normalizeSubject(s: string): string[] {
     .filter(Boolean);
 }
 
-/**
- * Checks whether a material's subject safely matches an enrolled/assigned candidate subject.
- * Eliminates accidental substring matches while safely honoring compound subjects.
- */
+
 export function subjectsMatch(matSubjRaw: string, candidateSubjRaw: string): boolean {
   const m1 = (matSubjRaw || "").trim().toLowerCase();
   const c1 = (candidateSubjRaw || "").trim().toLowerCase();
@@ -266,9 +249,7 @@ export function subjectsMatch(matSubjRaw: string, candidateSubjRaw: string): boo
   return matParts.some((mp) => candParts.includes(mp));
 }
 
-/**
- * Storage Service Interface
- */
+
 export interface StudyMaterialStorageService {
   getMaterials(): StudyMaterialItem[];
   saveMaterial(item: StudyMaterialItem): StudyMaterialItem[];
@@ -281,16 +262,10 @@ export interface StudyMaterialStorageService {
   getAvailableFileIds(): string[];
 }
 
-// In-memory runtime cache for client-side blob URLs during active browser session
+
 const clientFileBlobMap = new Map<string, { blob: Blob; url: string; fileName: string }>();
 
-/**
- * Local Demo Storage Adapter
- *
- * Strictly client-side: Uses shared canonical storage key for record persistence,
- * creates native browser Object URLs for direct in-tab viewing and downloading,
- * and maintains honest awareness of session binary boundaries with IndexedDB persistence.
- */
+
 export const demoStudyMaterialStorage: StudyMaterialStorageService = {
   getMaterials(): StudyMaterialItem[] {
     return getDemoStorage<StudyMaterialItem[]>(
@@ -329,7 +304,7 @@ export const demoStudyMaterialStorage: StudyMaterialStorageService = {
       try {
         URL.revokeObjectURL(existing.url);
       } catch {
-        // Safe fallback in non-browser or mocking environments
+        
       }
     }
     clientFileBlobMap.delete(id);
@@ -401,7 +376,7 @@ export const demoStudyMaterialStorage: StudyMaterialStorageService = {
           url: fileUrl,
           fileName: file.name,
         });
-        // Persist binary bytes in IndexedDB asynchronously
+        
         persistBinaryFile(materialId, file, file.name, file.type).catch(() => {});
       }
 
@@ -428,7 +403,7 @@ export const demoStudyMaterialStorage: StudyMaterialStorageService = {
         storageRef: `session-local://${materialId}/${encodeURIComponent(file.name)}`,
       };
 
-      // Persist directly to canonical shared storage collection
+      
       this.saveMaterial(item);
 
       return {
@@ -459,7 +434,7 @@ export const demoStudyMaterialStorage: StudyMaterialStorageService = {
 
     let downloadUrl = clientFileBlobMap.get(item.id)?.url;
 
-    // If not in runtime cache, attempt retrieval from IndexedDB
+    
     if (!downloadUrl) {
       const stored = await getBinaryFile(item.id);
       if (stored && stored.blob) {
@@ -505,11 +480,7 @@ export interface MaterialVisibilityContext {
   teacherAssignedSubjects?: string[];
 }
 
-/**
- * Single authoritative visibility selector for materials across all 4 portal roles.
- * Validates role-based boundaries, drafts hiding, class grade match, subject enrollment,
- * and batch-level scoping.
- */
+
 export function isMaterialVisibleToRole(
   material: StudyMaterialItem,
   role: UserRole,
@@ -520,7 +491,7 @@ export function isMaterialVisibleToRole(
   }
 
   if (role === "teacher") {
-    // Teacher sees materials if they are the author OR if subject matches assigned subjects
+    
     if (context.teacherId && material.teacherId === context.teacherId) {
       return true;
     }
@@ -533,20 +504,20 @@ export function isMaterialVisibleToRole(
   }
 
   if (role === "student" || role === "parent") {
-    // Drafts are strictly hidden from students and parents
+    
     if (material.status === "draft") {
       return false;
     }
     if (!context.student) {
       return false;
     }
-    // Class match check (case-insensitive & trimmed)
+    
     const matClass = (material.classGrade || "").trim().toLowerCase();
     const stdClass = (context.student.classGrade || "").trim().toLowerCase();
     if (matClass && stdClass && matClass !== stdClass) {
       return false;
     }
-    // Subject enrollment check (handles compound subjects safely, avoids accidental substring match)
+    
     if (context.enrolledSubjects && context.enrolledSubjects.length > 0) {
       const isEnrolled = context.enrolledSubjects.some((enrolledSubj) =>
         subjectsMatch(material.subject || "", enrolledSubj)
@@ -557,7 +528,7 @@ export function isMaterialVisibleToRole(
     } else {
       return false;
     }
-    // Batch scoping check: if material is restricted to a specific batch, student must be enrolled in that batch
+    
     const rawBatch = (material.batchName || "").trim();
     const isUnscopedBatch =
       !rawBatch ||
@@ -581,10 +552,7 @@ export function isMaterialVisibleToRole(
   return false;
 }
 
-/**
- * Single authoritative management permission check for editing, publishing, deleting materials.
- * Academy Admin can manage all. Teachers can manage materials within assigned subjects/classes or own uploads.
- */
+
 export function canManageMaterial(
   material: StudyMaterialItem,
   role: UserRole,

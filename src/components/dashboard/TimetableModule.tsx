@@ -1,4 +1,5 @@
 "use client";
+import { Calendar, List, AlertCircle } from "lucide-react";
 
 import React, { useState, useMemo, useEffect } from "react";
 import type { UserRole, DayOfWeek, TimetableSlot } from "@/types";
@@ -42,7 +43,7 @@ interface TimetableModuleProps {
   currentStudentId?: string;
 }
 
-// Grid hours: 08:00 AM to 08:00 PM (12 hour span, 60px per hour = 720px total)
+
 const GRID_START_HOUR = 8;
 const GRID_END_HOUR = 20;
 
@@ -51,34 +52,34 @@ export function TimetableModule({
   currentTeacherId = "tch-azhar",
   currentStudentId = "std-101",
 }: TimetableModuleProps) {
-  // Shared persistent timetable dataset across all roles
+  
   const [slots, setSlots] = useDemoStorage<TimetableSlot[]>(
     DEMO_STORAGE_KEYS.TIMETABLE,
     SAMPLE_TIMETABLE
   );
 
-  // Dynamic catalogs from demo storage
+  
   const [faculty] = useDemoStorage(DEMO_STORAGE_KEYS.FACULTY, SAMPLE_TEACHERS);
   const [batches] = useDemoStorage(DEMO_STORAGE_KEYS.BATCHES, SAMPLE_BATCHES);
   const [subjects] = useDemoStorage(DEMO_STORAGE_KEYS.ACADEMIC_SUBJECTS, DEFAULT_SUBJECTS);
   const [enrollments] = useDemoStorage(DEMO_STORAGE_KEYS.ENROLLMENTS, SAMPLE_ENROLLMENTS);
 
-  // Calendar Week Navigation State (Canonical Monday-first indexing)
+  
   const [currentWeekMonday, setCurrentWeekMonday] = useState<Date>(() =>
     getMondayOfWeek(new Date())
   );
 
-  // View Controls
+  
   const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
   const [selectedDayFilter, setSelectedDayFilter] = useState<DayOfWeek | "all">("all");
 
-  // Admin / General Filters (Room filter completely removed)
+  
   const [filterTeacher, setFilterTeacher] = useState<string>("all");
   const [filterSubject, setFilterSubject] = useState<string>("all");
   const [filterBatch, setFilterBatch] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
-  // Action Notification Banner
+  
   const [notification, setNotification] = useState<{
     type: "success" | "error" | "info";
     message: string;
@@ -89,13 +90,13 @@ export function TimetableModule({
     setTimeout(() => setNotification(null), 5000);
   };
 
-  // Modals
+  
   const [detailsSlot, setDetailsSlot] = useState<TimetableSlot | null>(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [editingSlotId, setEditingSlotId] = useState<string | null>(null);
   const [deletingSlot, setDeletingSlot] = useState<TimetableSlot | null>(null);
 
-  // Routine Form State
+  
   const [formScheduleType, setFormScheduleType] = useState<"recurring" | "specific_date">("recurring");
   const [formDay, setFormDay] = useState<DayOfWeek>("Monday");
   const [formSpecificDate, setFormSpecificDate] = useState<string>(() => formatDateToISO(new Date()));
@@ -109,7 +110,7 @@ export function TimetableModule({
   const [formStatus, setFormStatus] = useState<"active" | "cancelled">("active");
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Keyboard shortcut for closing modals
+  
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -122,7 +123,7 @@ export function TimetableModule({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Compute 7 days for the active week
+  
   const weekDays = useMemo(() => {
     return getWeekDays(currentWeekMonday);
   }, [currentWeekMonday]);
@@ -131,7 +132,7 @@ export function TimetableModule({
     return formatWeekRange(currentWeekMonday);
   }, [currentWeekMonday]);
 
-  // Week Navigation Handlers
+  
   const handlePrevWeek = () => {
     setCurrentWeekMonday((prev) => {
       const next = new Date(prev.getFullYear(), prev.getMonth(), prev.getDate() - 7);
@@ -151,12 +152,12 @@ export function TimetableModule({
     setCurrentWeekMonday(todayMonday);
   };
 
-  // Current active teacher object
+  
   const activeTeacher = useMemo(() => {
     return faculty.find((t) => t.id === currentTeacherId) || faculty[0];
   }, [faculty, currentTeacherId]);
 
-  // Teacher-eligible subjects and batches (Enforce strict teacher assignment restrictions)
+  
   const teacherEligibleSubjects = useMemo(() => {
     if (role !== "teacher" || !activeTeacher) return subjects.map((s) => s.name);
     return activeTeacher.assignedSubjects.length > 0
@@ -174,7 +175,7 @@ export function TimetableModule({
     );
   }, [role, activeTeacher, batches]);
 
-  // Open Form Modal (Add Routine)
+  
   const openCreateModal = () => {
     setEditingSlotId(null);
     setFormScheduleType("recurring");
@@ -190,7 +191,7 @@ export function TimetableModule({
     setIsFormModalOpen(true);
   };
 
-  // Open Form Modal (Edit Routine)
+  
   const openEditModal = (slot: TimetableSlot) => {
     setEditingSlotId(slot.id);
     setFormScheduleType(slot.scheduleType || "recurring");
@@ -208,7 +209,7 @@ export function TimetableModule({
     setIsFormModalOpen(true);
   };
 
-  // Save Schedule Handler (Create or Edit)
+  
   const handleSaveSchedule = (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
@@ -221,7 +222,7 @@ export function TimetableModule({
     const subjectObj = subjects.find((s) => s.name === formSubject);
     const subjectId = subjectObj?.id || formSubject.toLowerCase().replace(/[^a-z0-9]/g, "-");
 
-    // Resolve weekday for date-specific sessions
+    
     let resolvedDay = formDay;
     if (formScheduleType === "specific_date") {
       if (!formSpecificDate) {
@@ -233,7 +234,7 @@ export function TimetableModule({
       resolvedDay = getDayOfWeekFromDate(parsedDate);
     }
 
-    // Comprehensive Conflict Validation (Teacher & Batch; NO room check)
+    
     const conflictResult = checkTimetableConflict(
       {
         dayOfWeek: resolvedDay,
@@ -263,7 +264,7 @@ export function TimetableModule({
     const timeRangeStr = `${formatMinutesTo12Hour(startMins)} - ${formatMinutesTo12Hour(endMins)}`;
 
     if (editingSlotId) {
-      // Update existing record in place
+      
       setSlots((prev) =>
         prev.map((slot) =>
           slot.id === editingSlotId
@@ -309,7 +310,7 @@ export function TimetableModule({
         sourcePortal: role,
       });
     } else {
-      // Create new schedule record normalized to standard schema
+      
       const newSlot: TimetableSlot = {
         id: `time-custom-${Date.now()}`,
         dayOfWeek: resolvedDay,
@@ -348,7 +349,7 @@ export function TimetableModule({
     setIsFormModalOpen(false);
   };
 
-  // Toggle Slot Cancellation
+  
   const handleToggleCancelSlot = (slot: TimetableSlot) => {
     const newStatus = slot.status === "cancelled" ? "active" : "cancelled";
     setSlots((prev) =>
@@ -380,7 +381,7 @@ export function TimetableModule({
     });
   };
 
-  // Permanently Delete Schedule Routine or Date-Specific Occurrence
+  
   const handleConfirmDelete = () => {
     if (!deletingSlot) return;
     const targetId = deletingSlot.id;
@@ -388,10 +389,10 @@ export function TimetableModule({
       deletingSlot.scheduleType === "specific_date" || Boolean(deletingSlot.specificDate);
     const label = `${deletingSlot.subject} (${deletingSlot.dayOfWeek}, ${deletingSlot.time})`;
 
-    // Remove the target record from demo state (syncs to demo storage)
+    
     setSlots((prev) => prev.filter((s) => s.id !== targetId));
 
-    // Record Central Audit Entry
+    
     recordDelete({
       action: isDateSpecific ? "Delete Special Session" : "Delete Recurring Routine",
       type: "enrollment",
@@ -406,7 +407,7 @@ export function TimetableModule({
       sourcePortal: role,
     });
 
-    // Reset modals
+    
     setDeletingSlot(null);
     setDetailsSlot(null);
     if (editingSlotId === targetId) {
@@ -421,7 +422,7 @@ export function TimetableModule({
     );
   };
 
-  // Role-Isolated Base Schedule Set (Derived from actual enrollments & assignments)
+  
   const roleBaseSlots = useMemo(() => {
     if (role === "teacher") {
       return slots.filter((slot) => slot.teacherId === currentTeacherId);
@@ -429,11 +430,11 @@ export function TimetableModule({
     if (role === "student" || role === "parent") {
       return getStudentTimetableSlots(currentStudentId, enrollments, slots);
     }
-    // Academy Admin sees complete academy master timetable
+    
     return slots;
   }, [role, slots, currentTeacherId, currentStudentId, enrollments]);
 
-  // Filtered Visible Schedule Set
+  
   const visibleSlots = useMemo(() => {
     return roleBaseSlots.filter((slot) => {
       if (selectedDayFilter !== "all" && slot.dayOfWeek !== selectedDayFilter) return false;
@@ -452,14 +453,14 @@ export function TimetableModule({
     filterStatus,
   ]);
 
-  // Schedules occurring during the currently selected week
+  
   const currentWeekVisibleSlots = useMemo(() => {
     return visibleSlots.filter((slot) =>
       weekDays.some((dayInfo) => isSlotOnDate(slot, dayInfo.dateString, dayInfo.dayOfWeek))
     );
   }, [visibleSlots, weekDays]);
 
-  // Dynamic grid hours: Defaults to 08:00 AM - 08:00 PM (12h), expands dynamically if classes exist outside
+  
   const { gridStartHour, gridEndHour } = useMemo(() => {
     let minH = GRID_START_HOUR;
     let maxH = GRID_END_HOUR;
@@ -476,7 +477,7 @@ export function TimetableModule({
   const totalGridHours = gridEndHour - gridStartHour;
   const totalGridHeightPx = totalGridHours * 60;
 
-  // Summary Metrics based on actual schedule records for the selected week
+  
   const totalClasses = currentWeekVisibleSlots.length;
   const activeClasses = currentWeekVisibleSlots.filter((s) => (s.status || "active") === "active").length;
   const cancelledClasses = currentWeekVisibleSlots.filter((s) => s.status === "cancelled").length;
@@ -484,7 +485,6 @@ export function TimetableModule({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
-      {/* Action Notification Banner */}
       {notification && (
         <div
           style={{
@@ -520,12 +520,11 @@ export function TimetableModule({
               padding: "0 4px",
             }}
           >
-            ✕
+            
           </button>
         </div>
       )}
 
-      {/* Main Header Card with Week Navigation */}
       <Card padding="md">
         <div
           style={{
@@ -571,18 +570,16 @@ export function TimetableModule({
               }}
             >
               {role === "parent"
-                ? "Personalized 7-day class schedule derived from enrolled subjects for ward (Mon–Sun)."
+                ? "Personalized 7-day class schedule derived from enrolled subjects for ward (Mon-Sun)."
                 : role === "student"
-                ? "Your weekly class routine across all currently enrolled subjects and batches (Mon–Sun)."
+                ? "Your weekly class routine across all currently enrolled subjects and batches (Mon-Sun)."
                 : role === "teacher"
                 ? "Create and manage your weekly lectures, inspect timing conflicts, and schedule batch routines."
                 : "Central institutional schedule management, cross-faculty timetable overview, and conflict tracking."}
             </p>
           </div>
 
-          {/* Action & View Controls */}
           <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)", flexWrap: "wrap" }}>
-            {/* View Mode Toggle */}
             <div
               style={{
                 display: "flex",
@@ -607,7 +604,7 @@ export function TimetableModule({
                   boxShadow: viewMode === "calendar" ? "var(--shadow-sm)" : "none",
                 }}
               >
-                📅 Weekly Calendar
+                <Calendar size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> Weekly Calendar
               </button>
               <button
                 type="button"
@@ -624,11 +621,10 @@ export function TimetableModule({
                   boxShadow: viewMode === "list" ? "var(--shadow-sm)" : "none",
                 }}
               >
-                📋 List View
+                <List size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> List View
               </button>
             </div>
 
-            {/* Routine Creator for Teacher & Admin */}
             {(role === "teacher" || role === "academy-admin") && (
               <Button variant="primary" size="sm" onClick={openCreateModal}>
                 + Add Routine Class
@@ -637,7 +633,6 @@ export function TimetableModule({
           </div>
         </div>
 
-        {/* Calendar Navigation Bar: Previous, Today, Next, Date Range */}
         <div
           style={{
             display: "flex",
@@ -673,7 +668,7 @@ export function TimetableModule({
                 letterSpacing: "-0.2px",
               }}
             >
-              📅 {weekRangeLabel}
+              <Calendar size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> {weekRangeLabel}
             </span>
             <span
               style={{
@@ -686,12 +681,11 @@ export function TimetableModule({
                 fontWeight: 600,
               }}
             >
-              7-Day Mon–Sun
+              7-Day Mon-Sun
             </span>
           </div>
         </div>
 
-        {/* Timetable KPI Summary Metrics */}
         <div
           style={{
             display: "grid",
@@ -769,7 +763,6 @@ export function TimetableModule({
           </div>
         </div>
 
-        {/* Filter Strip (Focus on teacher, subject, batch, status - Room completely removed) */}
         <div
           style={{
             display: "flex",
@@ -781,7 +774,6 @@ export function TimetableModule({
             borderTop: "1px solid var(--color-border)",
           }}
         >
-          {/* Admin Faculty Filter */}
           {role === "academy-admin" && (
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
@@ -808,7 +800,6 @@ export function TimetableModule({
             </div>
           )}
 
-          {/* Subject Filter */}
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <span style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
               Subject:
@@ -833,7 +824,6 @@ export function TimetableModule({
             </select>
           </div>
 
-          {/* Batch Filter (for Admin / Teacher) */}
           {(role === "academy-admin" || role === "teacher") && (
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
@@ -860,7 +850,6 @@ export function TimetableModule({
             </div>
           )}
 
-          {/* Status Filter */}
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <span style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
               Status:
@@ -882,7 +871,6 @@ export function TimetableModule({
             </select>
           </div>
 
-          {/* Weekday Filter for List View */}
           {viewMode === "list" && (
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
@@ -911,12 +899,8 @@ export function TimetableModule({
         </div>
       </Card>
 
-      {/* ========================================================================= */}
-      {/* 1. WEEKLY CALENDAR GRID VIEW (MONDAY THROUGH SUNDAY)                     */}
-      {/* ========================================================================= */}
       {viewMode === "calendar" && (
         <div>
-          {/* Desktop & Tablet 7-Day Calendar Grid */}
           <div
             style={{
               backgroundColor: "var(--color-surface)",
@@ -926,8 +910,7 @@ export function TimetableModule({
               overflow: "hidden",
             }}
           >
-            {/* Scrollable grid wrapper */}
-            <div style={{ overflowX: "auto" }}>
+            <div tabIndex={0} role="region" aria-label="Timetable schedule table" style={{ overflowX: "auto" }}>
               <div
                 style={{
                   minWidth: "1020px",
@@ -935,7 +918,6 @@ export function TimetableModule({
                   gridTemplateColumns: "75px repeat(7, 1fr)",
                 }}
               >
-                {/* 1. Header Corner: Time */}
                 <div
                   style={{
                     padding: "12px 8px",
@@ -951,7 +933,6 @@ export function TimetableModule({
                   Time
                 </div>
 
-                {/* 2. Seven Day Column Headers: Monday through Sunday */}
                 {weekDays.map((dayInfo) => {
                   const daySlots = visibleSlots.filter((s) =>
                     isSlotOnDate(s, dayInfo.dateString, dayInfo.dayOfWeek)
@@ -1017,8 +998,6 @@ export function TimetableModule({
                   );
                 })}
 
-                {/* 3. Grid Body: Time Labels Column + 7 Day Columns */}
-                {/* Time Axis Column */}
                 <div
                   style={{
                     borderRight: "1px solid var(--color-border)",
@@ -1052,7 +1031,6 @@ export function TimetableModule({
                   })}
                 </div>
 
-                {/* 7 Day Event Columns */}
                 {weekDays.map((dayInfo) => {
                   const daySlots = visibleSlots.filter((s) =>
                     isSlotOnDate(s, dayInfo.dateString, dayInfo.dayOfWeek)
@@ -1073,7 +1051,6 @@ export function TimetableModule({
                           : "var(--color-surface)",
                       }}
                     >
-                      {/* Background hourly guidelines */}
                       {Array.from({ length: totalGridHours }).map((_, i) => {
                         const hour = gridStartHour + i;
                         return (
@@ -1092,7 +1069,6 @@ export function TimetableModule({
                         );
                       })}
 
-                      {/* Empty Day State */}
                       {daySlots.length === 0 && (
                         <div
                           style={{
@@ -1102,7 +1078,7 @@ export function TimetableModule({
                             right: "8px",
                             textAlign: "center",
                             fontSize: "11px",
-                            color: "var(--color-neutral)",
+                            color: "var(--color-text-secondary)",
                             userSelect: "none",
                             pointerEvents: "none",
                           }}
@@ -1111,7 +1087,6 @@ export function TimetableModule({
                         </div>
                       )}
 
-                      {/* Positioned Class Blocks with Unified TimetableEventCard */}
                       {positionedSlots.map(({ slot, startMinutes, endMinutes, colIndex, totalCols }) => (
                         <TimetableEventCard
                           key={slot.id}
@@ -1134,9 +1109,6 @@ export function TimetableModule({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 2. CHRONOLOGICAL LIST VIEW (TABLE / CARDS)                                */}
-      {/* ========================================================================= */}
       {viewMode === "list" && (
         <div
           style={{
@@ -1282,7 +1254,6 @@ export function TimetableModule({
                       </span>
                     </div>
 
-                    {/* Controls for Teacher & Admin */}
                     {(role === "teacher" || role === "academy-admin") && (
                       <div
                         style={{
@@ -1330,9 +1301,6 @@ export function TimetableModule({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 3. CLASS DETAILS MODAL (POPUP ON BLOCK CLICK)                             */}
-      {/* ========================================================================= */}
       {detailsSlot && (
         <div
           onClick={(e) => {
@@ -1400,7 +1368,7 @@ export function TimetableModule({
                   padding: "0 4px",
                 }}
               >
-                ✕
+                
               </button>
             </div>
 
@@ -1449,7 +1417,6 @@ export function TimetableModule({
               </div>
             </div>
 
-            {/* Modal Actions */}
             <div
               style={{
                 display: "flex",
@@ -1503,9 +1470,6 @@ export function TimetableModule({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 4. CREATE / EDIT ROUTINE SCHEDULE MODAL                                   */}
-      {/* ========================================================================= */}
       {isFormModalOpen && (
         <div
           onClick={(e) => {
@@ -1562,12 +1526,11 @@ export function TimetableModule({
                   padding: "0 4px",
                 }}
               >
-                ✕
+                
               </button>
             </div>
 
             <form onSubmit={handleSaveSchedule}>
-              {/* Conflict / Validation Error Banner */}
               {formError && (
                 <div
                   style={{
@@ -1582,11 +1545,10 @@ export function TimetableModule({
                   }}
                   role="alert"
                 >
-                  ⚠️ {formError}
+                  <AlertCircle size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> {formError}
                 </div>
               )}
 
-              {/* Schedule Type Selection (Recurring Weekly vs Date-Specific) */}
               <div style={{ marginBottom: "var(--space-3)" }}>
                 <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>
                   Schedule Type:
@@ -1635,7 +1597,6 @@ export function TimetableModule({
                 </div>
               </div>
 
-              {/* Day / Date & Timing Grid */}
               <div
                 style={{
                   display: "grid",
@@ -1647,7 +1608,7 @@ export function TimetableModule({
                 {formScheduleType === "recurring" ? (
                   <div>
                     <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>
-                      Day (Mon–Sun):
+                      Day (Mon-Sun):
                     </label>
                     <select
                       value={formDay}
@@ -1743,7 +1704,6 @@ export function TimetableModule({
                 </div>
               </div>
 
-              {/* Faculty Selector (Only Admin can reassign faculty; locked for teacher) */}
               <div style={{ marginBottom: "var(--space-3)" }}>
                 <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>
                   Assigned Teacher:
@@ -1788,7 +1748,6 @@ export function TimetableModule({
                 )}
               </div>
 
-              {/* Subject & Batch Selectors (Restricted to teacher's permitted subjects/batches) */}
               <div
                 style={{
                   display: "grid",
@@ -1852,7 +1811,6 @@ export function TimetableModule({
                 </div>
               </div>
 
-              {/* Schedule State */}
               <div style={{ marginBottom: "var(--space-6)" }}>
                 <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>
                   Schedule State:
@@ -1874,7 +1832,6 @@ export function TimetableModule({
                 </select>
               </div>
 
-              {/* Action Buttons */}
               <div
                 style={{
                   display: "flex",
@@ -1918,9 +1875,6 @@ export function TimetableModule({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 5. DELETE TIMETABLE SESSION CONFIRMATION MODAL                            */}
-      {/* ========================================================================= */}
       {deletingSlot && (
         <div
           onClick={(e) => {
@@ -1955,7 +1909,6 @@ export function TimetableModule({
               border: "1px solid var(--color-border)",
             }}
           >
-            {/* Header */}
             <div
               style={{
                 display: "flex",
@@ -1998,11 +1951,10 @@ export function TimetableModule({
                   lineHeight: 1,
                 }}
               >
-                ✕
+                
               </button>
             </div>
 
-            {/* Session Detail Summary Box */}
             <div
               style={{
                 backgroundColor: "var(--color-surface-muted)",
@@ -2054,7 +2006,6 @@ export function TimetableModule({
               </div>
             </div>
 
-            {/* Explanatory Scope Notice */}
             <div
               style={{
                 padding: "10px 12px",
@@ -2079,7 +2030,6 @@ export function TimetableModule({
               )}
             </div>
 
-            {/* Modal Actions */}
             <div
               style={{
                 display: "flex",

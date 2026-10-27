@@ -1,4 +1,5 @@
 "use client";
+import { Search } from "lucide-react";
 
 import React, { useState, useMemo, useCallback } from "react";
 import {
@@ -61,63 +62,63 @@ export function IdCardManagementModule({
     [actorName],
   );
 
-  // Search & Filtering State
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedClass, setSelectedClass] = useState("all");
   const [selectedBoard, setSelectedBoard] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
 
-  // Dialog & Modal States
+  
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [editingCardRecord, setEditingCardRecord] =
     useState<StudentIdCardRecord | null>(null);
   const [formSelectedStudentId, setFormSelectedStudentId] = useState("");
 
-  // Preview Modal
+  
   const [previewData, setPreviewData] = useState<{
     student: StudentProfile;
     cardRecord?: StudentIdCardRecord;
   } | null>(null);
 
-  // Approve Confirmation Modal
+  
   const [approveConfirmTarget, setApproveConfirmTarget] = useState<{
     student: StudentProfile;
     cardRecord: StudentIdCardRecord;
   } | null>(null);
 
-  // Reject Modal
+  
   const [rejectTarget, setRejectTarget] = useState<{
     student: StudentProfile;
     cardRecord: StudentIdCardRecord;
   } | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
 
-  // Deactivate Modal
+  
   const [deactivateTarget, setDeactivateTarget] = useState<{
     student: StudentProfile;
     cardRecord: StudentIdCardRecord;
   } | null>(null);
   const [deactivationReason, setDeactivationReason] = useState("");
 
-  // Renew Modal
+  
   const [renewTarget, setRenewTarget] = useState<{
     student: StudentProfile;
     cardRecord: StudentIdCardRecord;
   } | null>(null);
   const [renewDate, setRenewDate] = useState("2028-03-31");
 
-  // History Modal
+  
   const [historyTarget, setHistoryTarget] =
     useState<StudentIdCardRecord | null>(null);
 
-  // Form Fields State
+  
   const [formData, setFormData] = useState({
     studentName: "",
     formattedId: "",
     photoUrl: "",
     classGrade: "",
     board: "",
-    session: "2026–2027",
+    session: "2026-2027",
     joiningDate: "",
     enrolledSubjects: [] as string[],
     batches: [] as string[],
@@ -133,7 +134,7 @@ export function IdCardManagementModule({
   });
   const [formErrors, setFormErrors] = useState<string[]>([]);
 
-  // Compute Metrics Summary
+  
   const metrics = useMemo(() => {
     const total = students.length;
     let approved = 0;
@@ -168,7 +169,7 @@ export function IdCardManagementModule({
     };
   }, [students, idCardRecords]);
 
-  // Combined Directory Listing
+  
   const directoryRows = useMemo(() => {
     return students.map((student) => {
       const cardRecord = idCardRecords.find((c) => c.studentId === student.id);
@@ -194,10 +195,10 @@ export function IdCardManagementModule({
     });
   }, [students, idCardRecords, enrollments]);
 
-  // Filtered Rows
+  
   const filteredRows = useMemo(() => {
     return directoryRows.filter((row) => {
-      // Search filter
+      
       const q = searchQuery.toLowerCase().trim();
       if (q) {
         const matchName = row.student.name.toLowerCase().includes(q);
@@ -208,17 +209,17 @@ export function IdCardManagementModule({
         if (!matchName && !matchId && !matchGuardian) return false;
       }
 
-      // Class filter
+      
       if (selectedClass !== "all" && row.student.classGrade !== selectedClass) {
         return false;
       }
 
-      // Board filter
+      
       if (selectedBoard !== "all" && row.student.board !== selectedBoard) {
         return false;
       }
 
-      // Status filter
+      
       if (selectedStatus !== "all" && row.cardStatus !== selectedStatus) {
         return false;
       }
@@ -233,7 +234,7 @@ export function IdCardManagementModule({
     selectedStatus,
   ]);
 
-  // Open Create Modal
+  
   const openCreateModal = (targetStudent?: StudentProfile) => {
     const student = targetStudent || students[0];
     if (!student) return;
@@ -262,7 +263,7 @@ export function IdCardManagementModule({
       photoUrl: existingCard?.photoUrl || "",
       classGrade: existingCard?.classGrade || student.classGrade,
       board: existingCard?.board || student.board,
-      session: existingCard?.session || "2026–2027",
+      session: existingCard?.session || "2026-2027",
       joiningDate: existingCard?.joiningDate || student.joiningDate,
       enrolledSubjects:
         initialSubjects.length > 0 ? initialSubjects : ["General Curriculum"],
@@ -285,7 +286,7 @@ export function IdCardManagementModule({
     setIsFormModalOpen(true);
   };
 
-  // Change Student Selection in Form
+  
   const handleStudentSelectChange = (studentId: string) => {
     const student = students.find((s) => s.id === studentId);
     if (!student) return;
@@ -318,7 +319,7 @@ export function IdCardManagementModule({
     }));
   };
 
-  // Handle Photo File Upload
+  
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -337,9 +338,9 @@ export function IdCardManagementModule({
     reader.readAsDataURL(file);
   };
 
-  // Save Card (Draft, Pending, or Approved)
+  
   const handleSaveCard = (targetStatus: StudentIdCardStatus) => {
-    // Basic Form Validation
+    
     const errors: string[] = [];
     if (!formData.studentName.trim()) {
       errors.push("Student full name is required.");
@@ -436,7 +437,7 @@ export function IdCardManagementModule({
     setEditingCardRecord(null);
   };
 
-  // Approve & Issue Action
+  
   const handleApproveConfirm = () => {
     if (!approveConfirmTarget) return;
     const { student, cardRecord } = approveConfirmTarget;
@@ -474,7 +475,7 @@ export function IdCardManagementModule({
     setApproveConfirmTarget(null);
   };
 
-  // Reject Action
+  
   const handleRejectConfirm = () => {
     if (!rejectTarget) return;
     if (!rejectionReason.trim()) {
@@ -516,7 +517,7 @@ export function IdCardManagementModule({
     setRejectionReason("");
   };
 
-  // Deactivate Action
+  
   const handleDeactivateConfirm = () => {
     if (!deactivateTarget) return;
     if (!deactivationReason.trim()) {
@@ -558,7 +559,7 @@ export function IdCardManagementModule({
     setDeactivationReason("");
   };
 
-  // Renew Action
+  
   const handleRenewConfirm = () => {
     if (!renewTarget) return;
     const { student, cardRecord } = renewTarget;
@@ -594,50 +595,50 @@ export function IdCardManagementModule({
     setRenewTarget(null);
   };
 
-  // Helper Badge Renderer
+  
   const renderStatusBadge = (status: StudentIdCardStatus | "not-created") => {
     switch (status) {
       case "approved":
         return (
           <Badge variant="success" size="sm">
-            🟢 Active / Issued
+            Active / Issued
           </Badge>
         );
       case "pending-approval":
         return (
           <Badge variant="warning" size="sm">
-            🟡 Pending Approval
+            Pending Approval
           </Badge>
         );
       case "draft":
         return (
           <Badge variant="accent" size="sm">
-            🔵 Draft
+            Draft
           </Badge>
         );
       case "rejected":
         return (
           <Badge variant="danger" size="sm">
-            🔴 Rejected
+            Rejected
           </Badge>
         );
       case "inactive":
         return (
           <Badge variant="neutral" size="sm">
-            ⚫ Inactive
+            Inactive
           </Badge>
         );
       case "expired":
         return (
           <Badge variant="warning" size="sm">
-            🟠 Expired
+            Expired
           </Badge>
         );
       case "not-created":
       default:
         return (
           <Badge variant="neutral" size="sm">
-            ⚪ Not Created
+            Not Created
           </Badge>
         );
     }
@@ -645,7 +646,6 @@ export function IdCardManagementModule({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
-      {/* ---------------- 1. DASHBOARD HEADER & QUICK ACTION ---------------- */}
       <div
         style={{
           display: "flex",
@@ -691,7 +691,6 @@ export function IdCardManagementModule({
         </div>
       </div>
 
-      {/* ---------------- 2. SUMMARY METRICS CARDS ---------------- */}
       <div
         style={{
           display: "grid",
@@ -772,7 +771,6 @@ export function IdCardManagementModule({
         </Card>
       </div>
 
-      {/* ---------------- 3. SEARCH & FILTERING BAR ---------------- */}
       <Card padding="md">
         <div
           style={{
@@ -782,7 +780,6 @@ export function IdCardManagementModule({
             alignItems: "center",
           }}
         >
-          {/* Search Input */}
           <div>
             <label
               htmlFor="idc-search"
@@ -814,7 +811,6 @@ export function IdCardManagementModule({
             />
           </div>
 
-          {/* Class Filter */}
           <div>
             <label
               htmlFor="idc-filter-class"
@@ -849,7 +845,6 @@ export function IdCardManagementModule({
             </select>
           </div>
 
-          {/* Board Filter */}
           <div>
             <label
               htmlFor="idc-filter-board"
@@ -883,7 +878,6 @@ export function IdCardManagementModule({
             </select>
           </div>
 
-          {/* Card Status Filter */}
           <div>
             <label
               htmlFor="idc-filter-status"
@@ -922,7 +916,6 @@ export function IdCardManagementModule({
         </div>
       </Card>
 
-      {/* ---------------- 4. STUDENT DIRECTORY & ID LIFECYCLE TABLE ---------------- */}
       <Card padding="none">
         <div
           style={{
@@ -945,7 +938,7 @@ export function IdCardManagementModule({
 
         {filteredRows.length === 0 ? (
           <div style={{ padding: "40px 20px", textAlign: "center" }}>
-            <span style={{ fontSize: "28px" }}>🔍</span>
+            <Search size={28} />
             <h4 style={{ fontSize: "var(--text-sm)", fontWeight: 600, margin: "8px 0 4px" }}>
               No students match the selected filters
             </h4>
@@ -954,7 +947,7 @@ export function IdCardManagementModule({
             </p>
           </div>
         ) : (
-          <div style={{ overflowX: "auto" }}>
+          <div tabIndex={0} role="region" aria-label="Student ID cards table" style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "var(--text-xs)" }}>
               <thead>
                 <tr style={{ backgroundColor: "var(--color-surface-muted)", borderBottom: "1px solid var(--color-border)" }}>
@@ -982,7 +975,6 @@ export function IdCardManagementModule({
                         transition: "background-color 0.1s ease",
                       }}
                     >
-                      {/* Student Info */}
                       <td style={{ padding: "12px 16px", verticalAlign: "middle" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                           <div
@@ -1003,7 +995,7 @@ export function IdCardManagementModule({
                             }}
                           >
                             {card?.photoUrl ? (
-                              /* eslint-disable-next-line @next/next/no-img-element */
+                              
                               <img src={card.photoUrl} alt={student.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                             ) : (
                               student.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
@@ -1013,14 +1005,13 @@ export function IdCardManagementModule({
                             <div style={{ fontWeight: 700, color: "var(--color-primary)" }}>
                               {student.name}
                             </div>
-                            <div style={{ fontSize: "10.5px", color: "var(--color-accent)", fontFamily: "monospace", fontWeight: 600 }}>
+                            <div style={{ fontSize: "10.5px", color: "var(--color-primary)", fontFamily: "monospace", fontWeight: 600 }}>
                               {row.formattedId}
                             </div>
                           </div>
                         </div>
                       </td>
 
-                      {/* Class & Board */}
                       <td style={{ padding: "12px 16px", verticalAlign: "middle" }}>
                         <div style={{ fontWeight: 600, color: "var(--color-primary)" }}>
                           {student.classGrade}
@@ -1030,7 +1021,6 @@ export function IdCardManagementModule({
                         </div>
                       </td>
 
-                      {/* Guardian Details */}
                       <td style={{ padding: "12px 16px", verticalAlign: "middle" }}>
                         <div style={{ color: "var(--color-primary)", fontWeight: 500 }}>
                           {student.guardianName}
@@ -1040,12 +1030,10 @@ export function IdCardManagementModule({
                         </div>
                       </td>
 
-                      {/* Card Status */}
                       <td style={{ padding: "12px 16px", verticalAlign: "middle" }}>
                         {renderStatusBadge(row.cardStatus)}
                       </td>
 
-                      {/* Validity / Updates */}
                       <td style={{ padding: "12px 16px", verticalAlign: "middle" }}>
                         <div style={{ color: "var(--color-primary)" }}>
                           {card?.status === "approved" ? `Thru: ${validThru}` : row.cardStatus === "not-created" ? "Not Issued" : "In Progress"}
@@ -1057,10 +1045,8 @@ export function IdCardManagementModule({
                         </div>
                       </td>
 
-                      {/* Action Buttons */}
                       <td style={{ padding: "12px 16px", verticalAlign: "middle", textAlign: "right" }}>
                         <div style={{ display: "inline-flex", gap: "6px", alignItems: "center" }}>
-                          {/* NOT CREATED */}
                           {row.cardStatus === "not-created" && (
                             <Button
                               variant="accent"
@@ -1072,7 +1058,6 @@ export function IdCardManagementModule({
                             </Button>
                           )}
 
-                          {/* DRAFT */}
                           {row.cardStatus === "draft" && (
                             <>
                               <Button
@@ -1104,7 +1089,6 @@ export function IdCardManagementModule({
                             </>
                           )}
 
-                          {/* PENDING APPROVAL */}
                           {row.cardStatus === "pending-approval" && (
                             <>
                               <Button
@@ -1141,7 +1125,6 @@ export function IdCardManagementModule({
                             </>
                           )}
 
-                          {/* APPROVED / ISSUED */}
                           {row.cardStatus === "approved" && (
                             <>
                               <Button
@@ -1204,7 +1187,6 @@ export function IdCardManagementModule({
                             </>
                           )}
 
-                          {/* REJECTED */}
                           {row.cardStatus === "rejected" && (
                             <>
                               <Button
@@ -1238,7 +1220,6 @@ export function IdCardManagementModule({
                             </>
                           )}
 
-                          {/* INACTIVE */}
                           {row.cardStatus === "inactive" && (
                             <>
                               <Button
@@ -1274,7 +1255,6 @@ export function IdCardManagementModule({
         )}
       </Card>
 
-      {/* ---------------- 5. CREATE / EDIT ID CARD MODAL ---------------- */}
       {isFormModalOpen && (
         <div
           role="dialog"
@@ -1305,7 +1285,6 @@ export function IdCardManagementModule({
               padding: "var(--space-6)",
             }}
           >
-            {/* Header */}
             <div
               style={{
                 display: "flex",
@@ -1339,7 +1318,6 @@ export function IdCardManagementModule({
               </button>
             </div>
 
-            {/* Validation Errors Notice */}
             {formErrors.length > 0 && (
               <div
                 style={{
@@ -1361,9 +1339,7 @@ export function IdCardManagementModule({
               </div>
             )}
 
-            {/* Form Grid */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-4)" }}>
-              {/* Student Selection */}
               <div style={{ gridColumn: "span 2" }}>
                 <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "var(--color-neutral-dark)", marginBottom: "4px" }}>
                   Selected Student Record
@@ -1389,7 +1365,6 @@ export function IdCardManagementModule({
                 </select>
               </div>
 
-              {/* Student Name */}
               <div>
                 <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "var(--color-neutral-dark)", marginBottom: "4px" }}>
                   Student Full Name *
@@ -1408,7 +1383,6 @@ export function IdCardManagementModule({
                 />
               </div>
 
-              {/* Formatted Admission ID */}
               <div>
                 <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "var(--color-neutral-dark)", marginBottom: "4px" }}>
                   Unique Admission ID *
@@ -1428,7 +1402,6 @@ export function IdCardManagementModule({
                 />
               </div>
 
-              {/* Class Grade */}
               <div>
                 <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "var(--color-neutral-dark)", marginBottom: "4px" }}>
                   Class Grade
@@ -1447,7 +1420,6 @@ export function IdCardManagementModule({
                 />
               </div>
 
-              {/* Education Board */}
               <div>
                 <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "var(--color-neutral-dark)", marginBottom: "4px" }}>
                   Education Board
@@ -1466,7 +1438,6 @@ export function IdCardManagementModule({
                 />
               </div>
 
-              {/* Academic Session */}
               <div>
                 <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "var(--color-neutral-dark)", marginBottom: "4px" }}>
                   Academic Session
@@ -1485,7 +1456,6 @@ export function IdCardManagementModule({
                 />
               </div>
 
-              {/* Date of Admission */}
               <div>
                 <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "var(--color-neutral-dark)", marginBottom: "4px" }}>
                   Admission Date
@@ -1504,7 +1474,6 @@ export function IdCardManagementModule({
                 />
               </div>
 
-              {/* Guardian Name */}
               <div>
                 <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "var(--color-neutral-dark)", marginBottom: "4px" }}>
                   Guardian Name
@@ -1523,7 +1492,6 @@ export function IdCardManagementModule({
                 />
               </div>
 
-              {/* Guardian Contact */}
               <div>
                 <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "var(--color-neutral-dark)", marginBottom: "4px" }}>
                   Guardian Phone / Helpline
@@ -1542,7 +1510,6 @@ export function IdCardManagementModule({
                 />
               </div>
 
-              {/* Validity Start Date */}
               <div>
                 <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "var(--color-neutral-dark)", marginBottom: "4px" }}>
                   Valid From *
@@ -1561,7 +1528,6 @@ export function IdCardManagementModule({
                 />
               </div>
 
-              {/* Validity Expiry Date */}
               <div>
                 <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "var(--color-neutral-dark)", marginBottom: "4px" }}>
                   Valid Thru (Expiry) *
@@ -1580,13 +1546,11 @@ export function IdCardManagementModule({
                 />
               </div>
 
-              {/* Photograph Upload with Preview */}
               <div style={{ gridColumn: "span 2", padding: "12px", backgroundColor: "var(--color-surface-muted)", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)" }}>
                 <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "var(--color-primary)", marginBottom: "6px" }}>
                   Student Photograph (File Selection &amp; Preview)
                 </label>
                 <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  {/* Photo Preview Thumbnail */}
                   <div
                     style={{
                       width: "56px",
@@ -1602,7 +1566,7 @@ export function IdCardManagementModule({
                     }}
                   >
                     {formData.photoUrl ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
+                      
                       <img src={formData.photoUrl} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : (
                       <span style={{ fontSize: "10px", color: "var(--color-neutral-dark)", fontWeight: 600 }}>No Photo</span>
@@ -1642,7 +1606,6 @@ export function IdCardManagementModule({
               </div>
             </div>
 
-            {/* Modal Actions */}
             <div
               style={{
                 display: "flex",
@@ -1690,7 +1653,6 @@ export function IdCardManagementModule({
         </div>
       )}
 
-      {/* ---------------- 6. PREVIEW MODAL ---------------- */}
       {previewData && (
         <DigitalIdCard
           student={previewData.student}
@@ -1701,7 +1663,6 @@ export function IdCardManagementModule({
         />
       )}
 
-      {/* ---------------- 7. APPROVE CONFIRMATION MODAL ---------------- */}
       {approveConfirmTarget && (
         <div
           role="dialog"
@@ -1747,7 +1708,6 @@ export function IdCardManagementModule({
         </div>
       )}
 
-      {/* ---------------- 8. REJECT MODAL ---------------- */}
       {rejectTarget && (
         <div
           role="dialog"
@@ -1805,7 +1765,6 @@ export function IdCardManagementModule({
         </div>
       )}
 
-      {/* ---------------- 9. DEACTIVATE MODAL ---------------- */}
       {deactivateTarget && (
         <div
           role="dialog"
@@ -1863,7 +1822,6 @@ export function IdCardManagementModule({
         </div>
       )}
 
-      {/* ---------------- 10. RENEW MODAL ---------------- */}
       {renewTarget && (
         <div
           role="dialog"
@@ -1923,7 +1881,6 @@ export function IdCardManagementModule({
         </div>
       )}
 
-      {/* ---------------- 11. HISTORY & AUDIT TRAIL MODAL ---------------- */}
       {historyTarget && (
         <div
           role="dialog"
@@ -1982,7 +1939,7 @@ export function IdCardManagementModule({
                     }}
                   >
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                      <span style={{ fontWeight: 700, fontSize: "11px", color: "var(--color-accent)", textTransform: "uppercase" }}>
+                      <span style={{ fontWeight: 700, fontSize: "11px", color: "var(--color-primary)", textTransform: "uppercase" }}>
                         {h.action}
                       </span>
                       <span style={{ fontSize: "10px", color: "var(--color-neutral-dark)" }}>

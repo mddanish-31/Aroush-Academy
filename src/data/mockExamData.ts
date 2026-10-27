@@ -1,9 +1,6 @@
 import { MockExam, ExamAttemptResult } from "@/types";
 
-/**
- * Standard Mock Examination Definitions for ArousH Academy
- * Deterministic scoring keys and ICSE/CBSE curriculum aligned questions
- */
+
 export const SAMPLE_MOCK_EXAMS: MockExam[] = [
   {
     id: "mock-math-101",
@@ -15,7 +12,7 @@ export const SAMPLE_MOCK_EXAMS: MockExam[] = [
     teacherName: "Azhar Sir",
     durationMinutes: 20,
     totalMarks: 20,
-    passingMarks: 8, // 40% passing threshold
+    passingMarks: 8, 
     status: "published",
     instructions: [
       "This examination consists of 5 multiple choice questions carrying 4 marks each.",
@@ -94,7 +91,7 @@ export const SAMPLE_MOCK_EXAMS: MockExam[] = [
     teacherName: "Dr. Tariq Alvi",
     durationMinutes: 15,
     totalMarks: 16,
-    passingMarks: 6, // ~37.5% passing threshold
+    passingMarks: 6, 
     status: "published",
     instructions: [
       "This test covers geometric optics, refractive index, and DC circuits.",
@@ -162,7 +159,7 @@ export const SAMPLE_MOCK_EXAMS: MockExam[] = [
     teacherName: "Azhar Sir",
     durationMinutes: 25,
     totalMarks: 20,
-    passingMarks: undefined, // Intentionally undefined to demonstrate that pass/fail is NOT invented when unconfigured!
+    passingMarks: undefined, 
     status: "published",
     instructions: [
       "Diagnostic test on differentiation, limits, and continuity for Class XII.",
@@ -216,9 +213,7 @@ export const SAMPLE_MOCK_EXAMS: MockExam[] = [
   },
 ];
 
-/**
- * Sample Pre-Recorded Mock Exam Attempts (For Taha Rahman std-101)
- */
+
 export const SAMPLE_EXAM_RESULTS: ExamAttemptResult[] = [
   {
     examId: "mock-phys-102",
@@ -233,14 +228,14 @@ export const SAMPLE_EXAM_RESULTS: ExamAttemptResult[] = [
     unansweredCount: 0,
     passingMarks: 6,
     isPassed: true,
-    timeTakenSeconds: 524, // 8m 44s
+    timeTakenSeconds: 524, 
     submittedAt: "2026-10-08 04:45 PM",
     submissionType: "manual",
     answers: {
-      "q-phys-1": 0, // Correct
-      "q-phys-2": 1, // Correct
-      "q-phys-3": 1, // Selected 1 (+0.5 D) instead of 0 (+2.0 D)
-      "q-phys-4": 2, // Correct
+      "q-phys-1": 0, 
+      "q-phys-2": 1, 
+      "q-phys-3": 1, 
+      "q-phys-4": 2, 
     },
     reviewFlags: {
       "q-phys-3": true,

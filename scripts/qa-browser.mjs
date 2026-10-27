@@ -1290,6 +1290,332 @@ async function run() {
 
       await authPage.close();
     }
+
+    console.log("\n--- Section 16: Landing Page Anchors Resolution (390 & 1440) ---");
+    for (const vp of [{ width: 390, height: 844 }, { width: 1440, height: 900 }]) {
+      const page = await browser.newPage({ viewport: vp });
+      await page.goto(QA_URL, { waitUntil: "domcontentloaded" });
+      await page.waitForTimeout(300);
+
+      const anchorChecks = await page.evaluate(() => {
+        const links = Array.from(document.querySelectorAll("header a, footer a, section:has(h1) a, .hero a"));
+        const hashHrefs = [];
+        for (const a of links) {
+          const href = a.getAttribute("href");
+          if (href && (href.startsWith("#") || href.startsWith("/#"))) {
+            hashHrefs.push(href);
+          }
+        }
+        const uniqueHrefs = Array.from(new Set(hashHrefs));
+        return uniqueHrefs.map((href) => {
+          const targetId = href.replace(/^\/?#/, "");
+          const el = document.getElementById(targetId);
+          return { href, targetId, exists: el !== null };
+        });
+      });
+
+      assert(anchorChecks.length > 0, `Found ${anchorChecks.length} header/footer/hero hash anchors at ${vp.width}px`);
+      for (const check of anchorChecks) {
+        assert(
+          check.exists,
+          `Anchor "${check.href}" resolves to element id="${check.targetId}" at ${vp.width}px`
+        );
+      }
+      await page.close();
+    }
+
+    console.log("\n--- Section 17: Auth Tampering & Runtime Guard Checks ---");
+    const tamperingCases = [
+      { name: "Fabricated role (super-admin)", value: JSON.stringify({ id: "usr-tampered", name: "Tampered Admin", role: "super-admin" }) },
+      { name: "Malformed JSON string", value: "{\"id\":\"broken-json-user\",role:none" },
+      { name: "Missing fields (missing role and name)", value: JSON.stringify({ id: "usr-only" }) },
+    ];
+    for (const testCase of tamperingCases) {
+      const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+      await context.addInitScript((val) => {
+        window.localStorage.setItem("aroush_demo_auth_user", val);
+        window.localStorage.setItem("aroush_auth_user_v1", val);
+      }, testCase.value);
+      const page = await context.newPage();
+      let hadClientError = false;
+      page.on("pageerror", () => {
+        hadClientError = true;
+      });
+      await page.goto(`${QA_URL}/dashboard`, { waitUntil: "domcontentloaded" });
+      await page.waitForTimeout(500);
+
+      const pageContent = await page.content();
+      const hasErrorBoundary =
+        pageContent.includes("Application error: a client-side exception has occurred") ||
+        pageContent.includes("Unhandled Runtime Error");
+      assert(!hasErrorBoundary, `Auth tampering [${testCase.name}]: No error boundary rendered`);
+      assert(!hadClientError, `Auth tampering [${testCase.name}]: No uncaught runtime exceptions`);
+
+      const currentUrl = page.url();
+      const isLoggedOut = currentUrl.includes("/login") || currentUrl.replace(/\/$/, "") === QA_URL.replace(/\/$/, "") || (await page.locator("a[href*='/login'], button:has-text('Sign In'), h1:has-text('Sign In')").count()) > 0;
+      assert(isLoggedOut, `Auth tampering [${testCase.name}]: Behaves as logged out (URL: ${currentUrl})`);
+      await page.close();
+      await context.close();
+    }
+
+    async function selectDashboardTab(page, tabName, width = 1440) {
+      if (width <= 768) {
+        const sel = page.locator("#mobile-module-select");
+        if (await sel.isVisible().catch(() => false)) {
+          await sel.selectOption(tabName);
+        } else {
+          await page.locator(`.mobile-dashboard-nav button:has-text("${tabName}")`).first().click();
+        }
+      } else {
+        const sidebarBtn = page.locator(`.dashboard-sidebar button:has-text("${tabName}")`).first();
+        if (await sidebarBtn.isVisible().catch(() => false)) {
+          await sidebarBtn.click();
+        } else {
+          const sel = page.locator("#mobile-module-select");
+          if (await sel.isVisible().catch(() => false)) {
+            await sel.selectOption(tabName);
+          }
+        }
+      }
+      await page.waitForTimeout(400);
+    }
+
+    console.log("\n--- Section 18: Unlinked Parent Fees Module & Document Modals ---");
+    {
+      const unlinkedContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+      await unlinkedContext.addInitScript(() => {
+        const u = JSON.stringify({
+          id: "usr-unlinked-parent",
+          name: "Unlinked Parent Guardian",
+          identifier: "unlinked.parent@example.com",
+          role: "parent",
+          linkStatus: "unlinked",
+          activationStatus: "activated",
+          createdAt: "2026-04-10",
+        });
+        window.localStorage.setItem("aroush_demo_auth_user", u);
+        window.localStorage.setItem("aroush_auth_user_v1", u);
+      });
+      const unlinkedPage = await unlinkedContext.newPage();
+      await unlinkedPage.goto(`${QA_URL}/dashboard?role=parent`, { waitUntil: "domcontentloaded" });
+      await unlinkedPage.waitForTimeout(500);
+
+      await selectDashboardTab(unlinkedPage, "Fee Receipts & Ledger", 1440);
+
+      const unlinkedNotice = unlinkedPage.locator("text=Your account is not linked to a student yet");
+      const isNoticeVisible = await unlinkedNotice.isVisible();
+      assert(isNoticeVisible, "Unlinked parent sees plain 'Your account is not linked to a student yet' message on Fees module");
+
+      const contactOfficeLink = unlinkedPage.locator("a[href='/#enquiry'], a[href*='#enquiry']");
+      const hasContactLink = (await contactOfficeLink.count()) > 0;
+      assert(hasContactLink, "Unlinked parent Fees view contains academy contact link to /#enquiry");
+
+      const shotUnlinked = path.join(outputDir, `screenshot-unlinked-parent-fees-${tag}.png`);
+      await unlinkedPage.screenshot({ path: shotUnlinked });
+      assert(fs.existsSync(shotUnlinked), `Unlinked parent fees screenshot saved: ${shotUnlinked}`);
+      await unlinkedPage.close();
+      await unlinkedContext.close();
+    }
+
+    {
+      const modalContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+      await modalContext.addInitScript(() => {
+        const u = JSON.stringify({
+          id: "demo-usr-admin",
+          name: "Academy Administrator",
+          identifier: "admin@aroushacademy.in",
+          role: "academy-admin",
+          profileId: "adm-central",
+          linkStatus: "linked",
+          activationStatus: "activated",
+          createdAt: "2026-01-01",
+        });
+        window.localStorage.setItem("aroush_demo_auth_user", u);
+        window.localStorage.setItem("aroush_auth_user_v1", u);
+      });
+      const modalPage = await modalContext.newPage();
+      await modalPage.goto(`${QA_URL}/dashboard?role=academy-admin`, { waitUntil: "domcontentloaded" });
+      await modalPage.waitForTimeout(500);
+
+      await selectDashboardTab(modalPage, "Overview & Fee Ledger", 1440);
+      const receiptsTabBtn = modalPage.locator("button:has-text('Receipts & Reports')").first();
+      if (await receiptsTabBtn.isVisible().catch(() => false)) {
+        await receiptsTabBtn.click();
+        await modalPage.waitForTimeout(400);
+      }
+
+      const voucherBtn = modalPage.locator("button:has-text('View / Print Voucher'), button:has-text('View Receipt')").first();
+      await voucherBtn.click();
+      await modalPage.waitForTimeout(400);
+
+      const receiptNotice = modalPage.locator("text=Demo copy, not a legal record");
+      assert((await receiptNotice.count()) > 0, "FeeReceiptModal displays 'Demo copy, not a legal record'");
+
+      const shotReceipt = path.join(outputDir, `screenshot-fee-receipt-modal-${tag}.png`);
+      await modalPage.screenshot({ path: shotReceipt });
+      assert(fs.existsSync(shotReceipt), `Fee receipt modal screenshot saved: ${shotReceipt}`);
+
+      const closeReceiptBtn = modalPage.locator("button:has-text('Close Voucher'), button:has-text('Close')").first();
+      if (await closeReceiptBtn.isVisible().catch(() => false)) {
+        await closeReceiptBtn.click();
+      } else {
+        await modalPage.keyboard.press("Escape");
+      }
+      await modalPage.waitForTimeout(400);
+
+      await selectDashboardTab(modalPage, "Examinations", 1440);
+      const certsTabBtn = modalPage.locator("button:has-text('Certificate Management'), button:has-text('Certificates')").first();
+      if (await certsTabBtn.isVisible().catch(() => false)) {
+        await certsTabBtn.click();
+        await modalPage.waitForTimeout(500);
+      }
+
+      const certBtn = modalPage.locator("button:has-text('Preview / PDF')").first();
+      await certBtn.click();
+      await modalPage.waitForTimeout(400);
+
+      const certNotice = modalPage.locator("text=Demo copy, not a legal record");
+      assert((await certNotice.count()) > 0, "ExamCertificateModal displays 'Demo copy, not a legal record'");
+
+      const shotCert = path.join(outputDir, `screenshot-exam-certificate-modal-${tag}.png`);
+      await modalPage.screenshot({ path: shotCert });
+      assert(fs.existsSync(shotCert), `Exam certificate modal screenshot saved: ${shotCert}`);
+
+      const closeCertBtn = modalPage.locator("button:has-text('Close Preview'), button:has-text('Close')").first();
+      if (await closeCertBtn.isVisible().catch(() => false)) {
+        await closeCertBtn.click();
+      } else {
+        await modalPage.keyboard.press("Escape");
+      }
+      await modalPage.waitForTimeout(400);
+
+      await modalPage.close();
+      await modalContext.close();
+    }
+
+    console.log("\n--- Section 19: Real Login Form & All-Module Axe Accessibility ---");
+    {
+      const demoCreds = {
+        "academy-admin": { identifier: "admin@aroushacademy.in", password: "admin2026" },
+        teacher: { identifier: "azhar.maths@aroush.academy", password: "teacher2026" },
+        student: { identifier: "taha.rahman@student.aroush.in", password: "student2026" },
+        parent: { identifier: "amina.rahman@parent.aroush.in", password: "parent2026" },
+      };
+
+      const roleModules = {
+        "academy-admin": [
+          "Overview & Fee Ledger",
+          "Registration Approvals",
+          "Students & Faculty Directory",
+          "Academic Setup & Batches",
+          "Attendance Tracking",
+          "Timetable & Rooms",
+          "Online Classrooms",
+          "Examinations",
+          "Study Materials",
+          "Notices & Circulars",
+          "Digital Student IDs",
+          "Audit Logs",
+        ],
+        teacher: [
+          "Overview",
+          "Online Classroom",
+          "My Students",
+          "Subject Fee Tracking",
+          "Attendance",
+          "Timetable & Batches",
+          "Test Series & Marks",
+          "Study Materials",
+          "Notices",
+        ],
+        student: [
+          "Overview",
+          "Online Classroom",
+          "Enrolled Subjects",
+          "Timetable & Schedule",
+          "Attendance Record",
+          "Tests & Marks",
+          "Study Materials",
+          "Notices & Circulars",
+          "Fee Receipts & History",
+          "Digital Student ID",
+        ],
+        parent: [
+          "Overview",
+          "Online Classroom",
+          "Child's Subjects",
+          "Timetable & Schedule",
+          "Attendance Record",
+          "Tests & Marks",
+          "Study Materials",
+          "Notices & Circulars",
+          "Fee Receipts & Ledger",
+          "Digital Student ID",
+        ],
+      };
+
+      for (const role of ["academy-admin", "teacher", "student", "parent"]) {
+        for (const vp of [{ width: 390, height: 844 }, { width: 1440, height: 900 }]) {
+          const roleContext = await browser.newContext({ viewport: vp });
+          await roleContext.addInitScript(() => {
+            window.localStorage.setItem(
+              "aroushh_cookie_preferences_v1",
+              JSON.stringify({
+                necessary: true,
+                functional: false,
+                analytics: false,
+                marketing: false,
+                consented: true,
+              })
+            );
+          });
+          const rolePage = await roleContext.newPage();
+          await rolePage.goto(`${QA_URL}/login?role=${role}`, { waitUntil: "domcontentloaded" });
+          await rolePage.waitForSelector("#signin-identifier");
+
+          await rolePage.fill("#signin-identifier", demoCreds[role].identifier);
+          await rolePage.fill("#signin-password", demoCreds[role].password);
+          await rolePage.click("button[type='submit']");
+          await rolePage.waitForURL("**/dashboard**");
+          await rolePage.waitForTimeout(400);
+
+          if (vp.width === 390) {
+            const shotRole390 = path.join(outputDir, `screenshot-dashboard-390-${role}-${tag}.png`);
+            await rolePage.screenshot({ path: shotRole390 });
+            assert(fs.existsSync(shotRole390), `Dashboard shell 390 screenshot saved: ${shotRole390}`);
+          }
+
+          const modules = roleModules[role];
+          for (const mod of modules) {
+            await selectDashboardTab(rolePage, mod, vp.width);
+
+            const axeResults = await new AxeBuilder({ page: rolePage }).analyze();
+            const seriousOrCritical = axeResults.violations.filter(
+              (v) => v.impact === "serious" || v.impact === "critical"
+            );
+            const incompleteContrast = axeResults.incomplete.filter(
+              (i) => i.id === "color-contrast"
+            );
+
+            console.log(
+              `  [Axe: ${role} | "${mod}" | ${vp.width}px] Violations: ${axeResults.violations.length} (serious/critical: ${seriousOrCritical.length}), Incomplete color-contrast: ${incompleteContrast.length}`
+            );
+
+            assert(
+              seriousOrCritical.length === 0,
+              `${role} - "${mod}" @ ${vp.width}px: 0 serious or critical accessibility violations (found: ${seriousOrCritical.length})`
+            );
+            assert(
+              incompleteContrast.length === 0,
+              `${role} - "${mod}" @ ${vp.width}px: 0 incomplete color-contrast items (found: ${incompleteContrast.length})`
+            );
+          }
+
+          await rolePage.close();
+          await roleContext.close();
+        }
+      }
+    }
   } finally {
     await browser.close();
   }

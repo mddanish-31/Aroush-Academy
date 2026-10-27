@@ -82,20 +82,18 @@ export function getSubjectTheme(subjectName: string): SubjectTheme {
   );
 }
 
-/**
- * Parses time string (e.g. "04:30 PM", "16:30", "16:30:00", "04:30 PM - 06:00 PM") into minutes from midnight.
- */
+
 export function parseTimeToMinutes(tStr: string): number {
   if (!tStr) return 0;
   const clean = tStr.trim();
 
-  // If time range like "04:30 PM - 06:00 PM", take start
+  
   if (clean.includes("-")) {
     const parts = clean.split("-");
     return parseTimeToMinutes(parts[0]);
   }
 
-  // 12-hour format e.g. "04:30 PM", "4:30:00 PM", "4:30pm"
+  
   const match12 = clean.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)$/i);
   if (match12) {
     let hours = parseInt(match12[1], 10);
@@ -106,7 +104,7 @@ export function parseTimeToMinutes(tStr: string): number {
     return hours * 60 + minutes;
   }
 
-  // 24-hour format e.g. "16:30", "16:30:00", "9:00"
+  
   const match24 = clean.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
   if (match24) {
     const hours = parseInt(match24[1], 10);
@@ -117,9 +115,7 @@ export function parseTimeToMinutes(tStr: string): number {
   return 0;
 }
 
-/**
- * Formats minutes from midnight to readable 12-hour string (e.g. 990 -> "04:30 PM").
- */
+
 export function formatMinutesTo12Hour(mins: number): string {
   const h = Math.floor(mins / 60) % 24;
   const m = mins % 60;
@@ -130,19 +126,14 @@ export function formatMinutesTo12Hour(mins: number): string {
   return `${padH}:${padM} ${meridiem}`;
 }
 
-/**
- * Formats minutes from midnight to standard 24-hour time "HH:mm".
- */
+
 export function formatMinutesTo24Hour(mins: number): string {
   const h = Math.floor(mins / 60) % 24;
   const m = mins % 60;
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-/**
- * Resolves start and end minutes from a TimetableSlot.
- * Ensures end > start to prevent collapsed or zero-height card distortions.
- */
+
 export function getSlotTimeMinutes(slot: TimetableSlot): { start: number; end: number } {
   if (slot.startTime && slot.endTime) {
     const start = parseTimeToMinutes(slot.startTime);
@@ -161,24 +152,20 @@ export function getSlotTimeMinutes(slot: TimetableSlot): { start: number; end: n
     }
   }
 
-  return { start: 960, end: 1050 }; // Default 04:00 PM - 05:30 PM (90-min) fallback
+  return { start: 960, end: 1050 }; 
 }
 
-/**
- * Formats a slot's time range cleanly (e.g. "04:30 PM - 06:00 PM").
- */
+
 export function formatSlotTime(slot: TimetableSlot): string {
   const { start, end } = getSlotTimeMinutes(slot);
   return `${formatMinutesTo12Hour(start)} - ${formatMinutesTo12Hour(end)}`;
 }
 
-// =========================================================================
-// WEEKDAY & DATE SYNCHRONIZATION HELPERS
-// =========================================================================
 
-/**
- * Formats a Date object to "YYYY-MM-DD".
- */
+
+
+
+
 export function formatDateToISO(d: Date): string {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -186,11 +173,9 @@ export function formatDateToISO(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-/**
- * Converts a JavaScript Date to its canonical DayOfWeek name.
- */
+
 export function getDayOfWeekFromDate(d: Date): DayOfWeek {
-  const day = d.getDay(); // 0 is Sunday, 1 is Monday ... 6 is Saturday
+  const day = d.getDay(); 
   const map: Record<number, DayOfWeek> = {
     0: "Sunday",
     1: "Monday",
@@ -203,13 +188,10 @@ export function getDayOfWeekFromDate(d: Date): DayOfWeek {
   return map[day];
 }
 
-/**
- * Returns the Monday (start of week) for any given Date.
- * Accurately treats Monday as Day 0 and Sunday as Day 6 of the active week.
- */
+
 export function getMondayOfWeek(d: Date): Date {
   const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const day = date.getDay(); // 0 is Sunday, 1 is Monday ... 6 is Saturday
+  const day = date.getDay(); 
   const diffDays = day === 0 ? 6 : day - 1;
   date.setDate(date.getDate() - diffDays);
   date.setHours(0, 0, 0, 0);
@@ -219,15 +201,13 @@ export function getMondayOfWeek(d: Date): Date {
 export interface WeekDayInfo {
   dayOfWeek: DayOfWeek;
   date: Date;
-  dateString: string; // "YYYY-MM-DD"
-  shortDateLabel: string; // e.g. "Oct 12"
-  dayNumber: number; // e.g. 12
+  dateString: string; 
+  shortDateLabel: string; 
+  dayNumber: number; 
   isToday: boolean;
 }
 
-/**
- * Generates the 7 days (Monday through Sunday) for the week starting on `monday`.
- */
+
 export function getWeekDays(monday: Date, todayDate: Date = new Date()): WeekDayInfo[] {
   const todayStr = formatDateToISO(todayDate);
   return DAYS_OF_WEEK.map((dayOfWeek, idx) => {
@@ -247,51 +227,36 @@ export function getWeekDays(monday: Date, todayDate: Date = new Date()): WeekDay
   });
 }
 
-/**
- * Formats a week range header label (e.g. "Oct 12 – Oct 18, 2026").
- */
+
 export function formatWeekRange(monday: Date): string {
   const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6);
   const startStr = monday.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   const endStr = sunday.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  return `${startStr} – ${endStr}`;
+  return `${startStr} - ${endStr}`;
 }
 
-/**
- * Checks whether a timetable slot applies to a specific date and weekday.
- * Correctly distinguishes between:
- * 1. Date-specific sessions: match ONLY on their specific date.
- * 2. Recurring routines: match on their weekday, respecting effective date bounds if set.
- */
+
 export function isSlotOnDate(
   slot: TimetableSlot,
   dateString: string,
   dayOfWeek: DayOfWeek
 ): boolean {
-  // If date-specific, matches only on exact date
+  
   if (slot.scheduleType === "specific_date" || slot.specificDate) {
     return slot.specificDate === dateString;
   }
 
-  // Otherwise, it is a recurring weekly routine matching on dayOfWeek
+  
   if (slot.dayOfWeek !== dayOfWeek) return false;
 
-  // Check effective-date boundaries if present
+  
   if (slot.effectiveFrom && dateString < slot.effectiveFrom) return false;
   if (slot.effectiveUntil && dateString > slot.effectiveUntil) return false;
 
   return true;
 }
 
-/**
- * Validates a candidate timetable schedule against the complete existing schedule dataset.
- * Rooms are removed from timetable requirements; conflict check focuses purely on:
- * 1. Positive duration (start < end, >= 15 mins)
- * 2. Teacher timing conflict
- * 3. Batch timing conflict
- * Adjacent non-overlapping classes (endA === startB) are valid and allowed.
- * Cancelled classes are ignored.
- */
+
 export function checkTimetableConflict(
   candidate: {
     dayOfWeek: DayOfWeek;
@@ -326,32 +291,32 @@ export function checkTimetableConflict(
   }
 
   for (const slot of existingSlots) {
-    // Ignore self when editing
+    
     if (editingId && slot.id === editingId) continue;
 
-    // Cancelled schedules do not reserve resources
+    
     if (slot.status === "cancelled") continue;
 
-    // Check date or day alignment
+    
     const isCandidateDateSpecific = candidate.scheduleType === "specific_date" && Boolean(candidate.specificDate);
     const isSlotDateSpecific = slot.scheduleType === "specific_date" && Boolean(slot.specificDate);
 
     if (isCandidateDateSpecific && isSlotDateSpecific) {
       if (slot.specificDate !== candidate.specificDate) continue;
     } else {
-      // At least one is recurring; compare dayOfWeek
+      
       if (slot.dayOfWeek !== candidate.dayOfWeek) continue;
     }
 
     const { start: slotStart, end: slotEnd } = getSlotTimeMinutes(slot);
 
-    // Overlap condition: startA < endB && startB < endA
+    
     const isOverlap = slotStart < candEnd && candStart < slotEnd;
     if (!isOverlap) continue;
 
     const slotTimeLabel = formatSlotTime(slot);
 
-    // 1. Same teacher conflict
+    
     if (slot.teacherId && candidate.teacherId && slot.teacherId === candidate.teacherId) {
       return {
         hasConflict: true,
@@ -359,7 +324,7 @@ export function checkTimetableConflict(
       };
     }
 
-    // 2. Same batch conflict
+    
     const isSameBatch =
       (slot.batchId && candidate.batchId && slot.batchId === candidate.batchId) ||
       slot.batch.trim().toLowerCase() === candidate.batch.trim().toLowerCase();
@@ -375,10 +340,7 @@ export function checkTimetableConflict(
   return { hasConflict: false };
 }
 
-/**
- * Filters timetable slots for a specific student according to their active enrollments.
- * Only returns active schedules that match the student's enrolled subject and batch.
- */
+
 export function getStudentTimetableSlots(
   studentId: string,
   enrollments: SubjectEnrollment[],
@@ -393,10 +355,10 @@ export function getStudentTimetableSlots(
   if (activeStudentEnrollments.length === 0) return [];
 
   return allSlots.filter((slot) => {
-    // Only show active classes to students and parents
+    
     if (slot.status === "cancelled") return false;
 
-    // Check if slot matches any active enrollment for this student
+    
     return activeStudentEnrollments.some((enr) => {
       const subjectMatch = enr.subjectName.toLowerCase() === slot.subject.toLowerCase();
       const batchMatch =
@@ -422,11 +384,7 @@ export interface SlotVerticalLayout {
   isOutOfBounds: boolean;
 }
 
-/**
- * Calculates vertical pixel positioning and height for a timetable slot.
- * Consistent scale: 1 minute = 1 pixel (matching the 60px/hour grid cell).
- * Handles half-hour boundaries, minimum height for legibility, and boundary clamping.
- */
+
 export function calculateSlotLayout(
   startMinutes: number,
   endMinutes: number,
@@ -445,10 +403,7 @@ export function calculateSlotLayout(
   return { topPx, heightPx, isOutOfBounds };
 }
 
-/**
- * Calculates horizontal column layout for simultaneous classes occurring on the same day.
- * Ensures overlapping classes are placed side-by-side in distinct lanes without collision.
- */
+
 export function computeDaySlotPositions(slots: TimetableSlot[]): PositionedSlot[] {
   if (slots.length === 0) return [];
 
@@ -461,10 +416,10 @@ export function computeDaySlotPositions(slots: TimetableSlot[]): PositionedSlot[
     };
   });
 
-  // Sort by start time ascending, then by end time descending
+  
   parsed.sort((a, b) => a.startMinutes - b.startMinutes || b.endMinutes - a.endMinutes);
 
-  // Group into overlapping clusters
+  
   const clusters: typeof parsed[] = [];
   let currentCluster: typeof parsed = [];
   let clusterEnd = -1;
@@ -474,11 +429,11 @@ export function computeDaySlotPositions(slots: TimetableSlot[]): PositionedSlot[
       currentCluster.push(item);
       clusterEnd = item.endMinutes;
     } else if (item.startMinutes < clusterEnd) {
-      // Overlaps with current cluster
+      
       currentCluster.push(item);
       clusterEnd = Math.max(clusterEnd, item.endMinutes);
     } else {
-      // New non-overlapping cluster
+      
       clusters.push(currentCluster);
       currentCluster = [item];
       clusterEnd = item.endMinutes;
@@ -491,7 +446,7 @@ export function computeDaySlotPositions(slots: TimetableSlot[]): PositionedSlot[
   const result: PositionedSlot[] = [];
 
   for (const cluster of clusters) {
-    // Greedy interval coloring for column allocation
+    
     const columnEnds: number[] = [];
     const clusterPositions: { item: (typeof parsed)[0]; colIndex: number }[] = [];
 

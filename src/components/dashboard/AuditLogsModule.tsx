@@ -1,4 +1,5 @@
 "use client";
+import { Lock, Download, Search, Info } from "lucide-react";
 
 import React, { useState, useMemo } from "react";
 import {
@@ -24,7 +25,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
     SAMPLE_AUDIT_LOGS
   );
 
-  // Filters State
   const [filterType, setFilterType] = useState<string>("all");
   const [filterActionType, setFilterActionType] = useState<string>("all");
   const [filterRole, setFilterRole] = useState<string>("all");
@@ -32,17 +32,13 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
   const [filterOutcome, setFilterOutcome] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 25;
 
-  // Selected Log for Modal Details & Diff Inspection
   const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null);
 
-  // Reset Confirmation State
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
-  // Filtered Logs
   const filteredLogs = useMemo(() => {
     const todayStr = new Date().toISOString().slice(0, 10);
     const now = new Date();
@@ -50,13 +46,10 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
     return logs.filter((log) => {
-      // Category Filter
       if (filterType !== "all" && log.type !== filterType) return false;
 
-      // Action Type Filter
       if (filterActionType !== "all" && log.actionType !== filterActionType) return false;
 
-      // Actor Role Filter
       if (filterRole !== "all") {
         if (filterRole === "system") {
           if (log.actorRole !== "system" && !log.performedBy.toLowerCase().includes("system")) return false;
@@ -65,17 +58,14 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
         }
       }
 
-      // Outcome Filter
       if (filterOutcome !== "all") {
         const logOutcome = log.outcome || "SUCCESS";
         if (logOutcome !== filterOutcome) return false;
       }
 
-      // Date Range Filter
       if (filterDateRange !== "all") {
         const logDate = new Date(log.timestamp);
         if (isNaN(logDate.getTime())) {
-          // If unparseable date, allow it through
         } else if (filterDateRange === "today") {
           if (!log.timestamp.startsWith(todayStr)) return false;
         } else if (filterDateRange === "week") {
@@ -85,7 +75,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
         }
       }
 
-      // Search Query Filter
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const match =
@@ -103,14 +92,12 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
     });
   }, [logs, filterType, filterActionType, filterRole, filterDateRange, filterOutcome, searchQuery]);
 
-  // Total Pages & Paginated Slice
   const totalPages = Math.max(1, Math.ceil(filteredLogs.length / PAGE_SIZE));
   const paginatedLogs = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
     return filteredLogs.slice(start, start + PAGE_SIZE);
   }, [filteredLogs, currentPage]);
 
-  // Overall Statistics Metrics
   const metrics = useMemo(() => {
     const todayStr = new Date().toISOString().slice(0, 10);
     const total = logs.length;
@@ -126,11 +113,10 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
     return { total, todayEvents, successes, failures, financial, enrollment, system, security };
   }, [logs]);
 
-  // UNAUTHORIZED ROLE GUARD (rendered after all hooks)
   if (role !== "academy-admin") {
     return (
       <Card padding="lg" style={{ textAlign: "center", margin: "var(--space-6) 0" }}>
-        <div style={{ fontSize: "40px", marginBottom: "var(--space-2)" }}>🔒</div>
+        <div style={{ marginBottom: "var(--space-2)" }}><Lock size={40} /></div>
         <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 700, margin: "0 0 var(--space-2)" }}>
           Access Restricted: Institutional Audit Logs
         </h3>
@@ -168,7 +154,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
     setCurrentPage(1);
   };
 
-  // Export Filtered Audit Log to JSON file
   const handleExportLogs = () => {
     recordAuditEvent({
       action: "Export Audit Logs",
@@ -214,7 +199,7 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
         );
       case "UPDATE":
         return (
-          <span style={{ fontSize: "10px", padding: "2px 6px", borderRadius: "var(--radius-sm)", backgroundColor: "rgba(0, 122, 255, 0.12)", color: "var(--color-accent, #007AFF)", fontWeight: 700 }}>
+          <span style={{ fontSize: "10px", padding: "2px 6px", borderRadius: "var(--radius-sm)", backgroundColor: "rgba(0, 122, 255, 0.12)", color: "var(--color-primary)", fontWeight: 700 }}>
             UPDATE
           </span>
         );
@@ -250,7 +235,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
-      {/* Demo Environment Notice Banner */}
       <div
         style={{
           padding: "10px 16px",
@@ -267,7 +251,8 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
         }}
       >
         <span>
-          ℹ️ <strong>Client-Side Demo Storage Notice:</strong> Audit entries are persisted in browser demo session storage. While fully reactive across dashboard modules and browser reloads, this frontend demo is not an immutable, server-authoritative audit database.
+          <Info size={13} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} aria-hidden="true" />
+          <strong>Client-Side Demo Storage Notice:</strong> Audit entries are persisted in browser demo session storage. While fully reactive across dashboard modules and browser reloads, this frontend demo is not an immutable, server-authoritative audit database.
         </span>
         <Button
           variant="ghost"
@@ -279,7 +264,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
         </Button>
       </div>
 
-      {/* Main Header & KPI Metric Summary Cards */}
       <Card padding="md">
         <div
           style={{
@@ -307,12 +291,11 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
 
           <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
             <Button variant="secondary" size="sm" onClick={handleExportLogs}>
-              📥 Export Audit Log
+              <Download size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> Export Audit Log
             </Button>
           </div>
         </div>
 
-        {/* Top Metric Cards Grid */}
         <div
           style={{
             display: "grid",
@@ -408,7 +391,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
         </div>
       </Card>
 
-      {/* Filter and Search Bar */}
       <Card padding="sm">
         <div
           style={{
@@ -417,7 +399,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
             gap: "var(--space-3)",
           }}
         >
-          {/* Row 1: Search Box */}
           <div style={{ display: "flex", gap: "var(--space-2)", alignItems: "center" }}>
             <div style={{ position: "relative", flex: 1 }}>
               <input
@@ -456,7 +437,7 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
                     padding: "2px",
                   }}
                 >
-                  ✕
+                  
                 </button>
               )}
             </div>
@@ -473,7 +454,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
             )}
           </div>
 
-          {/* Row 2: Granular Filter Dropdowns */}
           <div
             style={{
               display: "grid",
@@ -481,7 +461,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
               gap: "var(--space-2)",
             }}
           >
-            {/* Category */}
             <div>
               <label style={{ display: "block", fontSize: "10px", color: "var(--color-neutral-dark)", marginBottom: "2px" }}>
                 Category:
@@ -510,7 +489,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
               </select>
             </div>
 
-            {/* Action Type */}
             <div>
               <label style={{ display: "block", fontSize: "10px", color: "var(--color-neutral-dark)", marginBottom: "2px" }}>
                 Action Type:
@@ -542,7 +520,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
               </select>
             </div>
 
-            {/* Role */}
             <div>
               <label style={{ display: "block", fontSize: "10px", color: "var(--color-neutral-dark)", marginBottom: "2px" }}>
                 Actor Role:
@@ -572,7 +549,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
               </select>
             </div>
 
-            {/* Date Range */}
             <div>
               <label style={{ display: "block", fontSize: "10px", color: "var(--color-neutral-dark)", marginBottom: "2px" }}>
                 Date Range:
@@ -600,7 +576,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
               </select>
             </div>
 
-            {/* Outcome */}
             <div>
               <label style={{ display: "block", fontSize: "10px", color: "var(--color-neutral-dark)", marginBottom: "2px" }}>
                 Outcome:
@@ -630,7 +605,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
         </div>
       </Card>
 
-      {/* Activity Table Card */}
       <div
         style={{
           backgroundColor: "var(--color-surface)",
@@ -640,7 +614,7 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
           overflow: "hidden",
         }}
       >
-        <div style={{ overflowX: "auto" }}>
+        <div tabIndex={0} role="region" aria-label="Audit log entries table" style={{ overflowX: "auto" }}>
           <table
             style={{
               width: "100%",
@@ -671,7 +645,7 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
                 <tr>
                   <td colSpan={6} style={{ padding: "var(--space-10) var(--space-4)", textAlign: "center" }}>
                     <div style={{ color: "var(--color-neutral-dark)" }}>
-                      <div style={{ fontSize: "24px", marginBottom: "var(--space-2)" }}>🔍</div>
+                      <div style={{ marginBottom: "var(--space-2)" }}><Search size={24} /></div>
                       <h4 style={{ fontSize: "var(--text-sm)", fontWeight: 600, margin: "0 0 4px", color: "var(--color-primary)" }}>
                         No audit records found
                       </h4>
@@ -705,7 +679,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
                       e.currentTarget.style.backgroundColor = "transparent";
                     }}
                   >
-                    {/* Timestamp */}
                     <td
                       style={{
                         padding: "10px 14px",
@@ -720,7 +693,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
                         : log.timestamp}
                     </td>
 
-                    {/* Actor & Role */}
                     <td style={{ padding: "10px 14px" }}>
                       <div style={{ fontWeight: 600, color: "var(--color-primary)" }}>
                         {log.performedBy}
@@ -738,7 +710,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
                       )}
                     </td>
 
-                    {/* Action */}
                     <td style={{ padding: "10px 14px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
                         {renderActionTypeBadge(log.actionType)}
@@ -748,12 +719,11 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
                       </div>
                       {log.outcome === "FAILURE" && (
                         <span style={{ fontSize: "10px", color: "var(--color-danger, #FF3B30)", fontWeight: 700 }}>
-                          ✕ Failed
+                          Failed
                         </span>
                       )}
                     </td>
 
-                    {/* Target Entity */}
                     <td style={{ padding: "10px 14px", fontSize: "11px" }}>
                       <code
                         style={{
@@ -770,7 +740,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
                       </code>
                     </td>
 
-                    {/* Details */}
                     <td
                       style={{
                         padding: "10px 14px",
@@ -794,7 +763,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
                       )}
                     </td>
 
-                    {/* Category */}
                     <td
                       style={{
                         padding: "10px 14px",
@@ -811,7 +779,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
           </table>
         </div>
 
-        {/* Pagination Footer */}
         <div
           style={{
             display: "flex",
@@ -827,7 +794,7 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
           }}
         >
           <div>
-            Showing <strong>{filteredLogs.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1}</strong>–
+            Showing <strong>{filteredLogs.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1}</strong>-
             <strong>{Math.min(currentPage * PAGE_SIZE, filteredLogs.length)}</strong> of <strong>{filteredLogs.length}</strong> events
             {isFiltered && ` (filtered from ${logs.length} total)`}
           </div>
@@ -858,7 +825,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
         </div>
       </div>
 
-      {/* EVENT DETAILS & DIFF MODAL */}
       {selectedLog && (
         <div
           onClick={(e) => {
@@ -895,7 +861,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
               border: "1px solid var(--color-border)",
             }}
           >
-            {/* Header */}
             <div
               style={{
                 display: "flex",
@@ -929,11 +894,10 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
                   padding: "4px",
                 }}
               >
-                ✕
+                
               </button>
             </div>
 
-            {/* Metadata Summary Grid */}
             <div
               style={{
                 display: "grid",
@@ -988,7 +952,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
               )}
             </div>
 
-            {/* Narrative Details */}
             <div style={{ marginBottom: "var(--space-4)" }}>
               <h4 style={{ fontSize: "var(--text-xs)", fontWeight: 700, margin: "0 0 4px", color: "var(--color-primary)" }}>
                 Event Description
@@ -1008,13 +971,12 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
               </p>
             </div>
 
-            {/* Before-and-After Diff Table (if diff is present) */}
             {selectedLog.diff && selectedLog.diff.length > 0 && (
               <div style={{ marginBottom: "var(--space-4)" }}>
                 <h4 style={{ fontSize: "var(--text-xs)", fontWeight: 700, margin: "0 0 6px", color: "var(--color-primary)" }}>
                   Field Changes &amp; Before/After Diff
                 </h4>
-                <div style={{ border: "1px solid var(--color-border)", borderRadius: "var(--radius-sm)", overflow: "hidden" }}>
+                <div tabIndex={0} role="region" aria-label="Field diff table" style={{ border: "1px solid var(--color-border)", borderRadius: "var(--radius-sm)", overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
                     <thead>
                       <tr style={{ backgroundColor: "var(--color-surface-muted)", borderBottom: "1px solid var(--color-border)" }}>
@@ -1028,10 +990,10 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
                         <tr key={idx} style={{ borderBottom: "1px solid var(--color-border-subtle)" }}>
                           <td style={{ padding: "6px 10px", fontWeight: 600 }}>{change.fieldName}</td>
                           <td style={{ padding: "6px 10px", color: "var(--color-neutral-dark)", fontFamily: "var(--font-mono)" }}>
-                            {change.before !== undefined ? String(change.before) : "—"}
+                            {change.before !== undefined ? String(change.before) : "-"}
                           </td>
-                          <td style={{ padding: "6px 10px", color: "var(--color-accent)", fontWeight: 600, fontFamily: "var(--font-mono)" }}>
-                            {change.after !== undefined ? String(change.after) : "—"}
+                          <td style={{ padding: "6px 10px", color: "var(--color-primary)", fontWeight: 600, fontFamily: "var(--font-mono)" }}>
+                            {change.after !== undefined ? String(change.after) : "-"}
                           </td>
                         </tr>
                       ))}
@@ -1041,7 +1003,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
               </div>
             )}
 
-            {/* Modal Footer */}
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "var(--space-4)" }}>
               <Button variant="secondary" size="sm" onClick={() => setSelectedLog(null)}>
                 Close
@@ -1051,7 +1012,6 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
         </div>
       )}
 
-      {/* RESET CONFIRMATION MODAL */}
       {isResetConfirmOpen && (
         <div
           onClick={(e) => {

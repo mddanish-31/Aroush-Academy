@@ -22,29 +22,29 @@ export function Badge({
       borderColor: "var(--color-border)",
     },
     accent: {
-      backgroundColor: "var(--color-accent-subtle)",
-      color: "var(--color-accent)",
-      borderColor: "rgba(0, 122, 255, 0.2)",
+      backgroundColor: "var(--color-surface-muted)",
+      color: "var(--color-primary)",
+      borderColor: "var(--color-border)",
     },
     neutral: {
       backgroundColor: "var(--color-surface)",
-      color: "var(--color-neutral-dark)",
+      color: "var(--color-primary)",
       borderColor: "var(--color-neutral-light)",
     },
     success: {
-      backgroundColor: "rgba(52, 199, 89, 0.1)",
-      color: "var(--color-success)",
-      borderColor: "rgba(52, 199, 89, 0.2)",
+      backgroundColor: "rgba(22, 101, 52, 0.08)",
+      color: "#166534",
+      borderColor: "rgba(22, 101, 52, 0.2)",
     },
     warning: {
-      backgroundColor: "rgba(255, 149, 0, 0.1)",
-      color: "var(--color-warning)",
-      borderColor: "rgba(255, 149, 0, 0.2)",
+      backgroundColor: "rgba(133, 77, 14, 0.08)",
+      color: "#78350F",
+      borderColor: "rgba(133, 77, 14, 0.2)",
     },
     danger: {
-      backgroundColor: "rgba(255, 59, 48, 0.1)",
-      color: "#FF3B30",
-      borderColor: "rgba(255, 59, 48, 0.25)",
+      backgroundColor: "rgba(185, 28, 28, 0.08)",
+      color: "#991B1B",
+      borderColor: "rgba(185, 28, 28, 0.2)",
     },
   };
 

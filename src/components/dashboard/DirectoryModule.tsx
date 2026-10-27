@@ -1,4 +1,5 @@
 "use client";
+import { Search, Phone, Edit, Calendar, BarChart3 } from "lucide-react";
 
 import React, { useState, useMemo, useEffect } from "react";
 import {
@@ -60,12 +61,12 @@ export function DirectoryModule({
 }: DirectoryModuleProps) {
   const { invitations, createInvitation, activateInvitation } = useAuth();
 
-  // Navigation tabs within directory
+  
   const [activeSubTab, setActiveSubTab] = useState<"students" | "teachers">(
     "students",
   );
 
-  // Master records
+  
   const [academicClasses] = useDemoStorage<AcademicClass[]>(
     DEMO_STORAGE_KEYS.ACADEMIC_CLASSES,
     DEFAULT_CLASSES,
@@ -87,13 +88,13 @@ export function DirectoryModule({
     SAMPLE_BATCHES,
   );
 
-  // Simulated account invitation modal state (Flow A)
+  
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [inviteIdentifier, setInviteIdentifier] = useState("");
   const [inviteRole, setInviteRole] = useState<"student" | "parent">("student");
   const [isInviting, setIsInviting] = useState(false);
 
-  // Reactive demo data sources (persisted in session storage across reloads)
+  
   const [students, setStudents] = useDemoStorage<StudentProfile[]>(
     DEMO_STORAGE_KEYS.STUDENTS,
     SAMPLE_STUDENTS,
@@ -123,7 +124,7 @@ export function DirectoryModule({
     SAMPLE_EXAM_RESULTS,
   );
 
-  // Search & Filter State
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [filterClass, setFilterClass] = useState("all");
   const [filterBoard, setFilterBoard] = useState("all");
@@ -131,7 +132,7 @@ export function DirectoryModule({
   const [filterTeacher, setFilterTeacher] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
 
-  // Notification Toast / Banner State
+  
   const [actionAlert, setActionAlert] = useState<{
     type: "success" | "info" | "warning";
     message: string;
@@ -143,7 +144,7 @@ export function DirectoryModule({
     return () => clearTimeout(timer);
   }, [actionAlert]);
 
-  // Selected Profile Modal State
+  
   const [selectedStudent, setSelectedStudent] = useState<StudentProfile | null>(
     null,
   );
@@ -154,7 +155,7 @@ export function DirectoryModule({
     "overview" | "subjects" | "attendance" | "academics" | "fees"
   >("overview");
 
-  // Add Student Modal State
+  
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addFormName, setAddFormName] = useState("");
   const [addFormClass, setAddFormClass] = useState("Class X");
@@ -184,7 +185,7 @@ export function DirectoryModule({
   ]);
   const [addFormError, setAddFormError] = useState("");
 
-  // Edit Student Modal State
+  
   const [editingStudent, setEditingStudent] = useState<StudentProfile | null>(
     null,
   );
@@ -210,7 +211,7 @@ export function DirectoryModule({
   >([]);
   const [editFormError, setEditFormError] = useState("");
 
-  // Dynamic Subjects based on selected grade
+  
   const activeSubjectsForAdd = useMemo(() => {
     const currentClassObj = academicClasses.find(
       (c) => c.name === addFormClass,
@@ -239,13 +240,13 @@ export function DirectoryModule({
     );
   }, [academicSubjects, academicClasses, editFormClass]);
 
-  // Status Change Confirmation Dialog State
+  
   const [statusConfirmStudent, setStatusConfirmStudent] = useState<{
     student: StudentProfile;
     targetStatus: "active" | "inactive";
   } | null>(null);
 
-  // In-Profile Fee Audit Ledger Modal State
+  
   const [auditLedgerModal, setAuditLedgerModal] = useState<{
     isOpen: boolean;
     studentName: string;
@@ -260,7 +261,7 @@ export function DirectoryModule({
     enrollment: SubjectEnrollment;
   } | null>(null);
 
-  // Printable Document Modals State
+  
   const [activeCertificate, setActiveCertificate] =
     useState<AcademicCertificateData | null>(null);
   const [activeReceipt, setActiveReceipt] = useState<{
@@ -272,7 +273,7 @@ export function DirectoryModule({
     remainingBalanceAfterPayment: number;
   } | null>(null);
 
-  // Escape key listener for modals
+  
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -323,12 +324,12 @@ export function DirectoryModule({
     selectedTeacher,
   ]);
 
-  // Reactive fee summaries calculation using shared buildEnrollmentSummaries
+  
   const allSummaries = useMemo(() => {
     return buildEnrollmentSummaries(enrollments, obligations, payments);
   }, [enrollments, obligations, payments]);
 
-  // Student Directory KPIs (Replacing duplicate financial KPI cards)
+  
   const studentMetrics = useMemo(() => {
     const totalStudents = students.length;
     const activeStudents = students.filter(
@@ -349,20 +350,20 @@ export function DirectoryModule({
     };
   }, [students, enrollments]);
 
-  // Filtered Students List
+  
   const filteredStudents = useMemo(() => {
     return students.filter((s) => {
-      // Class filter
+      
       if (filterClass !== "all" && s.classGrade !== filterClass) return false;
 
-      // Board filter
+      
       if (filterBoard !== "all" && s.board !== filterBoard) return false;
 
-      // Status filter
+      
       if (filterStatus !== "all" && s.studentStatus !== filterStatus)
         return false;
 
-      // Subject filter
+      
       if (filterSubject !== "all") {
         const studentEnrs = enrollments.filter((e) => e.studentId === s.id);
         const hasSubject = studentEnrs.some(
@@ -371,7 +372,7 @@ export function DirectoryModule({
         if (!hasSubject) return false;
       }
 
-      // Faculty filter
+      
       if (filterTeacher !== "all") {
         const studentEnrs = enrollments.filter((e) => e.studentId === s.id);
         const hasFaculty = studentEnrs.some(
@@ -380,7 +381,7 @@ export function DirectoryModule({
         if (!hasFaculty) return false;
       }
 
-      // Search query (Student Name, Student ID, or Guardian Name)
+      
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase().trim();
         const formattedId = `aa-2026-${s.id.replace("std-", "")}`.toLowerCase();
@@ -405,7 +406,7 @@ export function DirectoryModule({
     searchQuery,
   ]);
 
-  // Filtered Faculty List (synchronous with shared faculty storage)
+  
   const filteredTeachers = useMemo(() => {
     return faculty.filter((t) => {
       if (searchQuery.trim()) {
@@ -440,7 +441,7 @@ export function DirectoryModule({
     setFilterStatus("all");
   };
 
-  // Helper: Open Edit Modal for a student
+  
   const handleOpenEditModal = (student: StudentProfile) => {
     const studentEnrs = enrollments.filter((e) => e.studentId === student.id);
     setEditingStudent(student);
@@ -463,7 +464,7 @@ export function DirectoryModule({
     setEditFormError("");
   };
 
-  // Helper: Save Edited Student
+  
   const handleSaveEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingStudent) return;
@@ -496,12 +497,12 @@ export function DirectoryModule({
       studentStatus: editFormStatus,
     };
 
-    // Update Students List
+    
     setStudents((prev) =>
       prev.map((s) => (s.id === editingStudent.id ? updatedProfile : s)),
     );
 
-    // Update Subject Enrollments for this student
+    
     const otherEnrollments = enrollments.filter(
       (e) => e.studentId !== editingStudent.id,
     );
@@ -533,7 +534,7 @@ export function DirectoryModule({
 
     setEnrollments([...otherEnrollments, ...updatedEnrollments]);
 
-    // Synchronize obligations: update studentName, teacher assignments, and remove unpaid obligations for dropped subjects
+    
     const existingObligations = obligations.filter(
       (o) => o.studentId === editingStudent.id,
     );
@@ -596,7 +597,7 @@ export function DirectoryModule({
       return [...updatedExisting, ...newObligations];
     });
 
-    // Keep selectedStudent state in sync if inspected
+    
     if (selectedStudent && selectedStudent.id === editingStudent.id) {
       setSelectedStudent(updatedProfile);
     }
@@ -621,7 +622,7 @@ export function DirectoryModule({
     });
   };
 
-  // Helper: Toggle Faculty Active/Inactive Status
+  
   const handleToggleTeacherStatus = (teacherId: string) => {
     setFaculty((prev) =>
       prev.map((t) =>
@@ -665,7 +666,7 @@ export function DirectoryModule({
     });
   };
 
-  // Helper: Open Add Student Modal
+  
   const handleOpenAddModal = () => {
     const firstClass =
       academicClasses.find((c) => c.isActive)?.name || "Class X";
@@ -701,7 +702,7 @@ export function DirectoryModule({
     setIsAddModalOpen(true);
   };
 
-  // Helper: Provision Portal Account via Flow A
+  
   const handleInitiateInvitation = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStudent || !inviteIdentifier.trim()) return;
@@ -714,7 +715,7 @@ export function DirectoryModule({
         identifier: inviteIdentifier.trim(),
       });
 
-      // Update student record link status
+      
       setStudents((prev) =>
         prev.map((s) =>
           s.id === selectedStudent.id
@@ -763,7 +764,7 @@ export function DirectoryModule({
     }
   };
 
-  // Helper: Create New Student
+  
   const handleSaveAdd = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -795,7 +796,7 @@ export function DirectoryModule({
       }
     }
 
-    // Generate collision-safe student ID (e.g. std-106)
+    
     const existingNums = students
       .map((s) => parseInt(s.id.replace("std-", ""), 10))
       .filter((n) => !isNaN(n));
@@ -815,7 +816,7 @@ export function DirectoryModule({
       accountLinkStatus: "unlinked",
     };
 
-    // Generate enrollments for selected subjects
+    
     const newEnrollments: SubjectEnrollment[] = addFormSubjects.map(
       (sub, idx) => {
         const teacher =
@@ -842,7 +843,7 @@ export function DirectoryModule({
       },
     );
 
-    // Generate October 2026 fee obligations
+    
     const newObligations: MonthlyFeeObligation[] = newEnrollments.map(
       (enr) => ({
         id: `ob-${enr.id}-2026-10`,
@@ -858,7 +859,7 @@ export function DirectoryModule({
       }),
     );
 
-    // Update demo storage
+    
     setStudents((prev) => [newStudent, ...prev]);
     setEnrollments((prev) => [...prev, ...newEnrollments]);
     setObligations((prev) => [...prev, ...newObligations]);
@@ -887,7 +888,7 @@ export function DirectoryModule({
     });
   };
 
-  // Helper: Execute Confirmed Status Change
+  
   const handleConfirmStatusChange = () => {
     if (!statusConfirmStudent) return;
     const { student, targetStatus } = statusConfirmStudent;
@@ -899,7 +900,7 @@ export function DirectoryModule({
 
     setStudents((prev) => prev.map((s) => (s.id === student.id ? updated : s)));
 
-    // Synchronize enrollment statuses safely
+    
     setEnrollments((prev) =>
       prev.map((e) =>
         e.studentId === student.id
@@ -934,7 +935,7 @@ export function DirectoryModule({
     });
   };
 
-  // Helper: Open Verified Merit Certificate Modal
+  
   const handleOpenCertificate = (
     assessmentTitle: string,
     subject: string,
@@ -967,7 +968,7 @@ export function DirectoryModule({
     setActiveCertificate(certData);
   };
 
-  // Helper: Open Official Fee Receipt Modal
+  
   const handleOpenReceiptModal = (
     tx: PaymentTransaction,
     obligation: MonthlyFeeObligation,
@@ -990,7 +991,7 @@ export function DirectoryModule({
     });
   };
 
-  // Helper: Status badge generator
+  
   const getStudentStatusBadge = (
     status: "active" | "inactive" | "on-leave",
   ) => {
@@ -1055,7 +1056,6 @@ export function DirectoryModule({
         gap: "var(--space-6)",
       }}
     >
-      {/* Action Notification Alert Banner */}
       {actionAlert && (
         <div
           role="status"
@@ -1094,12 +1094,11 @@ export function DirectoryModule({
               fontSize: "14px",
             }}
           >
-            ✕
+            
           </button>
         </div>
       )}
 
-      {/* Top Header Card */}
       <Card padding="md">
         <div
           style={{
@@ -1138,7 +1137,6 @@ export function DirectoryModule({
             </p>
           </div>
 
-          {/* Sub-Tab Selector & Add Student Action */}
           <div
             style={{
               display: "flex",
@@ -1222,7 +1220,6 @@ export function DirectoryModule({
         </div>
       </Card>
 
-      {/* STUDENT SPECIFIC DIRECTORY KPI METRICS (Replacing duplicate financial KPI cards) */}
       {activeSubTab === "students" && (
         <div
           style={{
@@ -1276,7 +1273,6 @@ export function DirectoryModule({
         </div>
       )}
 
-      {/* Filter and Search Bar */}
       <Card padding="sm">
         <div
           style={{
@@ -1293,7 +1289,6 @@ export function DirectoryModule({
               alignItems: "center",
             }}
           >
-            {/* Search Input */}
             <div style={{ position: "relative", flex: "1 1 240px" }}>
               <input
                 type="text"
@@ -1332,12 +1327,11 @@ export function DirectoryModule({
                   }}
                   title="Clear search text"
                 >
-                  ✕
+                  
                 </button>
               )}
             </div>
 
-            {/* Students Directory Specific Dropdown Filters */}
             {activeSubTab === "students" && (
               <div
                 style={{
@@ -1347,7 +1341,6 @@ export function DirectoryModule({
                   alignItems: "center",
                 }}
               >
-                {/* Grade Filter */}
                 <select
                   value={filterClass}
                   onChange={(e) => setFilterClass(e.target.value)}
@@ -1371,7 +1364,6 @@ export function DirectoryModule({
                     ))}
                 </select>
 
-                {/* Board Filter */}
                 <select
                   value={filterBoard}
                   onChange={(e) => setFilterBoard(e.target.value)}
@@ -1395,7 +1387,6 @@ export function DirectoryModule({
                     ))}
                 </select>
 
-                {/* Subject Filter */}
                 <select
                   value={filterSubject}
                   onChange={(e) => setFilterSubject(e.target.value)}
@@ -1419,7 +1410,6 @@ export function DirectoryModule({
                     ))}
                 </select>
 
-                {/* Faculty Filter */}
                 <select
                   value={filterTeacher}
                   onChange={(e) => setFilterTeacher(e.target.value)}
@@ -1441,7 +1431,6 @@ export function DirectoryModule({
                   ))}
                 </select>
 
-                {/* Status Filter */}
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
@@ -1464,7 +1453,6 @@ export function DirectoryModule({
             )}
           </div>
 
-          {/* Results Count & Clear Filter Action */}
           {activeSubTab === "students" && (
             <div
               style={{
@@ -1495,7 +1483,7 @@ export function DirectoryModule({
                     padding: 0,
                   }}
                 >
-                  Reset / Clear Filters ✕
+                  Reset / Clear Filters
                 </button>
               )}
             </div>
@@ -1531,7 +1519,7 @@ export function DirectoryModule({
                     padding: 0,
                   }}
                 >
-                  Reset / Clear Search ✕
+                  Reset / Clear Search
                 </button>
               )}
             </div>
@@ -1539,7 +1527,6 @@ export function DirectoryModule({
         </div>
       </Card>
 
-      {/* STUDENTS DIRECTORY TABLE */}
       {activeSubTab === "students" && (
         <div
           style={{
@@ -1549,7 +1536,7 @@ export function DirectoryModule({
             overflow: "hidden",
           }}
         >
-          <div style={{ overflowX: "auto" }}>
+          <div tabIndex={0} role="region" aria-label="Directory records table" style={{ overflowX: "auto" }}>
             <table
               style={{
                 width: "100%",
@@ -1608,9 +1595,7 @@ export function DirectoryModule({
                         color: "var(--color-neutral-dark)",
                       }}
                     >
-                      <div style={{ fontSize: "28px", marginBottom: "8px" }}>
-                        🔍
-                      </div>
+                      <div style={{ marginBottom: "8px" }}><Search size={28} /></div>
                       <div
                         style={{
                           fontSize: "var(--text-sm)",
@@ -1654,7 +1639,6 @@ export function DirectoryModule({
                           transition: "background-color var(--transition-fast)",
                         }}
                       >
-                        {/* Student ID */}
                         <td
                           style={{
                             padding: "10px 14px",
@@ -1674,7 +1658,6 @@ export function DirectoryModule({
                           </span>
                         </td>
 
-                        {/* Name with initials badge */}
                         <td style={{ padding: "10px 14px" }}>
                           <div
                             style={{
@@ -1711,7 +1694,6 @@ export function DirectoryModule({
                           </div>
                         </td>
 
-                        {/* Grade and Board */}
                         <td style={{ padding: "10px 14px" }}>
                           <span style={{ fontWeight: 500 }}>
                             {s.classGrade}
@@ -1727,7 +1709,6 @@ export function DirectoryModule({
                           </span>
                         </td>
 
-                        {/* Enrolled Subjects with Count */}
                         <td style={{ padding: "10px 14px" }}>
                           <div
                             style={{
@@ -1756,7 +1737,6 @@ export function DirectoryModule({
                           </div>
                         </td>
 
-                        {/* Guardian */}
                         <td style={{ padding: "10px 14px" }}>
                           <div style={{ fontWeight: 500 }}>
                             {s.guardianName}
@@ -1767,11 +1747,10 @@ export function DirectoryModule({
                               color: "var(--color-neutral-dark)",
                             }}
                           >
-                            📞 {s.guardianPhone}
+                            <Phone size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "2px" }} /> {s.guardianPhone}
                           </div>
                         </td>
 
-                        {/* Joining Date */}
                         <td
                           style={{
                             padding: "10px 14px",
@@ -1782,12 +1761,10 @@ export function DirectoryModule({
                           {s.joiningDate}
                         </td>
 
-                        {/* Status */}
                         <td style={{ padding: "10px 14px" }}>
                           {getStudentStatusBadge(s.studentStatus)}
                         </td>
 
-                        {/* Management Actions */}
                         <td
                           style={{
                             padding: "10px 14px",
@@ -1844,7 +1821,7 @@ export function DirectoryModule({
                                 }}
                                 title="Open certified Digital ID Card"
                               >
-                                🪪 ID
+                                ID
                               </Button>
                             )}
 
@@ -1891,7 +1868,6 @@ export function DirectoryModule({
         </div>
       )}
 
-      {/* FACULTY DIRECTORY TABLE */}
       {activeSubTab === "teachers" && (
         <div
           style={{
@@ -1901,7 +1877,7 @@ export function DirectoryModule({
             overflow: "hidden",
           }}
         >
-          <div style={{ overflowX: "auto" }}>
+          <div tabIndex={0} role="region" aria-label="Directory records table" style={{ overflowX: "auto" }}>
             <table
               style={{
                 width: "100%",
@@ -2064,9 +2040,6 @@ export function DirectoryModule({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 1. COMPLETE STUDENT PROFILE INSPECTION MODAL                              */}
-      {/* ========================================================================= */}
       {selectedStudent && (
         <div
           onClick={(e) => {
@@ -2101,7 +2074,6 @@ export function DirectoryModule({
               overflow: "hidden",
             }}
           >
-            {/* Modal Header */}
             <div
               style={{
                 padding: "var(--space-4) var(--space-6)",
@@ -2174,7 +2146,6 @@ export function DirectoryModule({
                 </div>
               </div>
 
-              {/* Action Buttons in Modal Header */}
               <div
                 style={{
                   display: "flex",
@@ -2188,7 +2159,7 @@ export function DirectoryModule({
                   onClick={() => handleOpenEditModal(selectedStudent)}
                   style={{ fontSize: "11px" }}
                 >
-                  ✏️ Edit Profile
+                  <Edit size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> Edit Profile
                 </Button>
 
                 <Button
@@ -2221,7 +2192,7 @@ export function DirectoryModule({
                     }}
                     style={{ fontSize: "11px" }}
                   >
-                    🪪 Digital ID
+                    Digital ID
                   </Button>
                 )}
 
@@ -2239,12 +2210,11 @@ export function DirectoryModule({
                   }}
                   aria-label="Close profile modal"
                 >
-                  ✕
+                  
                 </button>
               </div>
             </div>
 
-            {/* Profile Sub-Tab Bar */}
             <div
               style={{
                 display: "flex",
@@ -2253,6 +2223,7 @@ export function DirectoryModule({
                 borderBottom: "1px solid var(--color-border)",
                 backgroundColor: "var(--color-surface)",
                 overflowX: "auto",
+                
               }}
             >
               {[
@@ -2319,11 +2290,9 @@ export function DirectoryModule({
               ))}
             </div>
 
-            {/* Scrollable Modal Body */}
             <div
               style={{ padding: "var(--space-6)", overflowY: "auto", flex: 1 }}
             >
-              {/* TAB 1: OVERVIEW & PERSONAL */}
               {profileActiveTab === "overview" && (
                 <div
                   style={{
@@ -2339,7 +2308,6 @@ export function DirectoryModule({
                       gap: "var(--space-4)",
                     }}
                   >
-                    {/* Personal Card */}
                     <div
                       style={{
                         padding: "var(--space-4)",
@@ -2394,7 +2362,6 @@ export function DirectoryModule({
                       </div>
                     </div>
 
-                    {/* Guardian Card */}
                     <div
                       style={{
                         padding: "var(--space-4)",
@@ -2441,7 +2408,7 @@ export function DirectoryModule({
                               fontWeight: 600,
                             }}
                           >
-                            📞 {selectedStudent.guardianPhone}
+                            <Phone size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "2px" }} /> {selectedStudent.guardianPhone}
                           </a>
                         </div>
                         <div
@@ -2458,7 +2425,6 @@ export function DirectoryModule({
                     </div>
                   </div>
 
-                  {/* Quick Summary Grid */}
                   {(() => {
                     const studentEnrs = enrollments.filter(
                       (e) => e.studentId === selectedStudent.id,
@@ -2653,7 +2619,6 @@ export function DirectoryModule({
                     );
                   })()}
 
-                  {/* Flow A: Portal Account Provisioning & Identity Link Status */}
                   {(() => {
                     const existingInv = invitations.find(
                       (i) => i.studentId === selectedStudent.id,
@@ -2732,7 +2697,7 @@ export function DirectoryModule({
                                   fontWeight: 600,
                                 }}
                               >
-                                ✓ Linked:{" "}
+                                Linked:{" "}
                                 {selectedStudent.linkedUserIdentifier ||
                                   existingInv?.recipientIdentifier ||
                                   `${selectedStudent.id}@student.aroush.in`}
@@ -2793,7 +2758,7 @@ export function DirectoryModule({
                                   padding: "3px 10px",
                                 }}
                               >
-                                ⚡ Simulate Student Account Activation
+                                Simulate Student Account Activation
                               </Button>
                             ) : (
                               <Button
@@ -2838,7 +2803,6 @@ export function DirectoryModule({
                 </div>
               )}
 
-              {/* TAB 2: SUBJECT ENROLLMENTS */}
               {profileActiveTab === "subjects" && (
                 <div
                   style={{
@@ -2975,7 +2939,6 @@ export function DirectoryModule({
                 </div>
               )}
 
-              {/* TAB 3: ATTENDANCE RECORD */}
               {profileActiveTab === "attendance" && (
                 <div
                   style={{
@@ -3011,11 +2974,7 @@ export function DirectoryModule({
                             color: "var(--color-neutral-dark)",
                           }}
                         >
-                          <div
-                            style={{ fontSize: "28px", marginBottom: "8px" }}
-                          >
-                            📅
-                          </div>
+                          <div style={{ marginBottom: "8px" }}><Calendar size={28} /></div>
                           <div
                             style={{
                               fontSize: "var(--text-sm)",
@@ -3036,7 +2995,6 @@ export function DirectoryModule({
 
                     return (
                       <>
-                        {/* Attendance Summary */}
                         <div
                           style={{
                             display: "grid",
@@ -3175,8 +3133,7 @@ export function DirectoryModule({
                           </div>
                         </div>
 
-                        {/* Attendance Log Table */}
-                        <div style={{ overflowX: "auto" }}>
+                        <div tabIndex={0} role="region" aria-label="Directory records table" style={{ overflowX: "auto" }}>
                           <table
                             style={{
                               width: "100%",
@@ -3253,7 +3210,7 @@ export function DirectoryModule({
                                       color: "var(--color-neutral-dark)",
                                     }}
                                   >
-                                    {att.remarks || "—"}
+                                    {att.remarks || "-"}
                                   </td>
                                 </tr>
                               ))}
@@ -3266,7 +3223,6 @@ export function DirectoryModule({
                 </div>
               )}
 
-              {/* TAB 4: ACADEMIC PERFORMANCE */}
               {profileActiveTab === "academics" && (
                 <div
                   style={{
@@ -3276,7 +3232,7 @@ export function DirectoryModule({
                   }}
                 >
                   {(() => {
-                    // Extract all tests where student has a score
+                    
                     const assessmentScores = assessments.flatMap((exam) =>
                       (exam.studentScores || [])
                         .filter((s) => s.studentId === selectedStudent.id)
@@ -3294,7 +3250,7 @@ export function DirectoryModule({
                         })),
                     );
 
-                    // Pre-recorded mock exam attempts
+                    
                     const mockAttempts = examResults
                       .filter((r) => r.studentId === selectedStudent.id)
                       .map((r) => ({
@@ -3320,11 +3276,7 @@ export function DirectoryModule({
                             color: "var(--color-neutral-dark)",
                           }}
                         >
-                          <div
-                            style={{ fontSize: "28px", marginBottom: "8px" }}
-                          >
-                            📊
-                          </div>
+                          <div style={{ marginBottom: "8px" }}><BarChart3 size={28} /></div>
                           <div
                             style={{
                               fontSize: "var(--text-sm)",
@@ -3400,7 +3352,7 @@ export function DirectoryModule({
                                 </div>
                                 {isMerit && (
                                   <Badge variant="success" size="sm">
-                                    ★ Merit Certificate Qualified (≥ 75%)
+                                    Merit Certificate Qualified (≥ 75%)
                                   </Badge>
                                 )}
                               </div>
@@ -3453,7 +3405,7 @@ export function DirectoryModule({
                                     }
                                     style={{ fontSize: "11px" }}
                                   >
-                                    🎓 View Certificate
+                                    View Certificate
                                   </Button>
                                 )}
                               </div>
@@ -3466,7 +3418,6 @@ export function DirectoryModule({
                 </div>
               )}
 
-              {/* TAB 5: FEE SUMMARY & LEDGER */}
               {profileActiveTab === "fees" && (
                 <div
                   style={{
@@ -3498,7 +3449,6 @@ export function DirectoryModule({
 
                     return (
                       <>
-                        {/* Financial Overview Cards */}
                         <div
                           style={{
                             display: "grid",
@@ -3598,7 +3548,6 @@ export function DirectoryModule({
                           </div>
                         </div>
 
-                        {/* Subject-Wise Obligations Table */}
                         <div>
                           <span
                             style={{
@@ -3610,7 +3559,7 @@ export function DirectoryModule({
                           >
                             October 2026 Subject Ledger Standing:
                           </span>
-                          <div style={{ overflowX: "auto" }}>
+                          <div tabIndex={0} role="region" aria-label="Directory records table" style={{ overflowX: "auto" }}>
                             <table
                               style={{
                                 width: "100%",
@@ -3769,7 +3718,6 @@ export function DirectoryModule({
                           </div>
                         </div>
 
-                        {/* Recent Payment Receipts */}
                         {studentTxs.length > 0 && (
                           <div style={{ marginTop: "var(--space-2)" }}>
                             <span
@@ -3904,7 +3852,6 @@ export function DirectoryModule({
               )}
             </div>
 
-            {/* Modal Footer */}
             <div
               style={{
                 padding: "var(--space-3) var(--space-6)",
@@ -3927,9 +3874,6 @@ export function DirectoryModule({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 2. ADD STUDENT MODAL                                                      */}
-      {/* ========================================================================= */}
       {isAddModalOpen && (
         <div
           onClick={(e) => {
@@ -4005,7 +3949,7 @@ export function DirectoryModule({
                   cursor: "pointer",
                 }}
               >
-                ✕
+                
               </button>
             </div>
 
@@ -4035,7 +3979,6 @@ export function DirectoryModule({
                 </div>
               )}
 
-              {/* Personal Details */}
               <div
                 style={{
                   display: "grid",
@@ -4215,7 +4158,6 @@ export function DirectoryModule({
                 </div>
               </div>
 
-              {/* Guardian Info */}
               <div
                 style={{
                   display: "grid",
@@ -4306,7 +4248,6 @@ export function DirectoryModule({
                 </div>
               </div>
 
-              {/* Subject Enrollments */}
               <div
                 style={{
                   borderTop: "1px solid var(--color-border)",
@@ -4544,7 +4485,7 @@ export function DirectoryModule({
                                             subOpt.defaultMonthlyFee;
                                         return (
                                           <option key={b.id} value={b.name}>
-                                            {b.name} — ₹{bFee}/mo
+                                            {b.name} - ₹{bFee}/mo
                                             {hasOverride
                                               ? " (Batch Override)"
                                               : ""}
@@ -4612,12 +4553,12 @@ export function DirectoryModule({
                               >
                                 {teachersList.length === 0 && (
                                   <span style={{ fontSize: "10px", color: "#D32F2F" }}>
-                                    ⚠️ No active faculty allocated to {subOpt.name}. Please allocate an instructor in Academic Setup.
+                                    Notice: No active faculty allocated to {subOpt.name}. Please allocate an instructor in Academic Setup.
                                   </span>
                                 )}
                                 {matchingBatches.length === 0 && (
                                   <span style={{ fontSize: "10px", color: "#D32F2F" }}>
-                                    ⚠️ No active batch configured for {addFormClass} {subOpt.name}.
+                                    Notice: No active batch configured for {addFormClass} {subOpt.name}.
                                   </span>
                                 )}
                               </div>
@@ -4662,9 +4603,6 @@ export function DirectoryModule({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 3. EDIT STUDENT MODAL                                                     */}
-      {/* ========================================================================= */}
       {editingStudent && (
         <div
           onClick={(e) => {
@@ -4740,7 +4678,7 @@ export function DirectoryModule({
                   cursor: "pointer",
                 }}
               >
-                ✕
+                
               </button>
             </div>
 
@@ -4962,7 +4900,6 @@ export function DirectoryModule({
                 </div>
               </div>
 
-              {/* Subject Enrollments Management */}
               <div
                 style={{
                   borderTop: "1px solid var(--color-border)",
@@ -4981,7 +4918,6 @@ export function DirectoryModule({
                     Subject Enrollments ({editFormSubjects.length}):
                   </span>
 
-                  {/* Add additional subject trigger */}
                   {editFormSubjects.length < activeSubjectsForEdit.length && (
                     <select
                       onChange={(e) => {
@@ -5153,7 +5089,7 @@ export function DirectoryModule({
                                 b.monthlyFee && b.monthlyFee !== defaultFee;
                               return (
                                 <option key={b.id} value={b.name}>
-                                  {b.name} — ₹{bFee}/mo
+                                  {b.name} - ₹{bFee}/mo
                                   {hasOverride ? " (Batch Override)" : ""}
                                 </option>
                               );
@@ -5226,7 +5162,7 @@ export function DirectoryModule({
                           }}
                           title="Remove subject enrollment"
                         >
-                          ✕
+                          
                         </button>
                       </div>
                     );
@@ -5266,9 +5202,6 @@ export function DirectoryModule({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 4. STATUS CHANGE CONFIRMATION DIALOG                                      */}
-      {/* ========================================================================= */}
       {statusConfirmStudent && (
         <div
           onClick={(e) => {
@@ -5370,9 +5303,6 @@ export function DirectoryModule({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 5. IN-PROFILE PAYMENT AUDIT LEDGER MODAL                                  */}
-      {/* ========================================================================= */}
       {auditLedgerModal && auditLedgerModal.isOpen && (
         <div
           role="dialog"
@@ -5442,7 +5372,7 @@ export function DirectoryModule({
                   border: "none",
                 }}
               >
-                ✕
+                
               </button>
             </div>
 
@@ -5627,9 +5557,6 @@ export function DirectoryModule({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 6. TEACHER PROFILE INSPECTION MODAL (Faculty Directory)                   */}
-      {/* ========================================================================= */}
       {selectedTeacher && (
         <div
           onClick={(e) => {
@@ -5722,7 +5649,7 @@ export function DirectoryModule({
                   border: "none",
                 }}
               >
-                ✕
+                
               </button>
             </div>
 
@@ -5826,9 +5753,6 @@ export function DirectoryModule({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 7. PRINTABLE ACADEMIC MERIT CERTIFICATE MODAL                             */}
-      {/* ========================================================================= */}
       {activeCertificate && (
         <ExamCertificateModal
           isOpen={Boolean(activeCertificate)}
@@ -5837,9 +5761,6 @@ export function DirectoryModule({
         />
       )}
 
-      {/* ========================================================================= */}
-      {/* 9. FLOW A: SIMULATED ACCOUNT INVITATION MODAL                              */}
-      {/* ========================================================================= */}
       {isInviteModalOpen && selectedStudent && (
         <div
           onClick={(e) => {
@@ -5910,7 +5831,7 @@ export function DirectoryModule({
                   border: "none",
                 }}
               >
-                ✕
+                
               </button>
             </div>
 
@@ -6035,9 +5956,6 @@ export function DirectoryModule({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 8. PRINTABLE OFFICIAL FEE RECEIPT MODAL                                   */}
-      {/* ========================================================================= */}
       {activeReceipt && (
         <FeeReceiptModal
           isOpen={activeReceipt.isOpen}

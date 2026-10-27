@@ -58,10 +58,10 @@ export function Button({
       boxShadow: "var(--shadow-sm)",
     },
     accent: {
-      backgroundColor: "var(--color-accent)",
+      backgroundColor: "var(--color-primary)",
       color: "#FFFFFF",
-      borderColor: "var(--color-accent)",
-      boxShadow: "0 2px 8px rgba(0, 122, 255, 0.25)",
+      borderColor: "var(--color-primary)",
+      boxShadow: "var(--shadow-sm)",
     },
     secondary: {
       backgroundColor: "var(--color-surface)",

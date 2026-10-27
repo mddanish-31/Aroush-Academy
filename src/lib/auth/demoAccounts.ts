@@ -1,12 +1,7 @@
 import { UserRole } from "@/types";
 import { AuthUser } from "./authTypes";
 
-/**
- * Predefined Demo Accounts for Frontend Preview
- * IMPORTANT: This module is strictly for client-side demo testing.
- * No production secrets, tokens, or hashes are stored here.
- * Real credentials will be managed by server-side identity providers.
- */
+
 
 export interface DemoAccountDefinition {
   user: AuthUser;
@@ -65,7 +60,7 @@ export const DEMO_ACCOUNTS: Record<UserRole, DemoAccountDefinition> = {
       name: "Mrs. Amina Rahman",
       identifier: "amina.rahman@parent.aroush.in",
       role: "parent",
-      profileId: "std-101", // Linked to Taha Rahman
+      profileId: "std-101", 
       linkedStudentId: "std-101",
       linkedStudentIds: ["std-101"],
       linkStatus: "linked",
@@ -77,7 +72,5 @@ export const DEMO_ACCOUNTS: Record<UserRole, DemoAccountDefinition> = {
   },
 };
 
-/**
- * List of all demo accounts for quick UI testing
- */
+
 export const DEMO_ACCOUNTS_LIST = Object.values(DEMO_ACCOUNTS);

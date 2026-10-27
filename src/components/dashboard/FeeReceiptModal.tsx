@@ -84,7 +84,6 @@ export function FeeReceiptModal({
           color: "var(--color-primary)",
         }}
       >
-        {/* Receipt Header Banner */}
         <div
           style={{
             backgroundColor: "#1D1D1F",
@@ -118,8 +117,8 @@ export function FeeReceiptModal({
                 ArousH Academy
               </h2>
             </div>
-            <p style={{ fontSize: "11px", color: "var(--color-neutral)", margin: "4px 0 0" }}>
-              Govt. Regd. Coaching Institute &bull; Park Circus / CIT Road, Kolkata
+            <p style={{ fontSize: "11px", color: "var(--color-text-secondary)", margin: "4px 0 0" }}>
+              Park Circus / CIT Road, Kolkata
             </p>
           </div>
 
@@ -139,13 +138,12 @@ export function FeeReceiptModal({
             >
               Fee Receipt Voucher
             </span>
-            <div style={{ fontSize: "11px", color: "var(--color-neutral)", marginTop: "4px" }}>
+            <div style={{ fontSize: "11px", color: "var(--color-text-secondary)", marginTop: "4px" }}>
               Receipt No: <strong style={{ color: "#FFFFFF" }}>{receipt?.receiptNumber || transaction.referenceId}</strong>
             </div>
           </div>
         </div>
 
-        {/* Receipt Meta Strip */}
         <div
           style={{
             backgroundColor: "var(--color-surface-muted)",
@@ -171,7 +169,6 @@ export function FeeReceiptModal({
           </div>
         </div>
 
-        {/* Student & Enrollment Info */}
         <div style={{ padding: "var(--space-5) var(--space-6)" }}>
           <div
             style={{
@@ -191,7 +188,7 @@ export function FeeReceiptModal({
                 {student.name}
               </div>
               <div style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)" }}>
-                Student ID: <strong>{studentFormattedId}</strong> &bull; {student.classGrade} ({student.board})
+                Student ID: <strong>{studentFormattedId}</strong> - {student.classGrade} ({student.board})
               </div>
               <div style={{ fontSize: "11px", color: "var(--color-neutral-dark)", marginTop: "2px" }}>
                 Guardian: {student.guardianName} ({student.guardianPhone})
@@ -214,7 +211,6 @@ export function FeeReceiptModal({
             </div>
           </div>
 
-          {/* Payment Breakdown Table */}
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-xs)", marginBottom: "var(--space-4)" }}>
             <thead>
               <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-neutral-dark)", fontSize: "10px", textTransform: "uppercase" }}>
@@ -226,9 +222,9 @@ export function FeeReceiptModal({
             <tbody>
               <tr style={{ borderBottom: "1px solid var(--color-border-subtle)" }}>
                 <td style={{ padding: "10px 0" }}>
-                  <strong>Monthly Tuition Fee — {obligation.monthLabel}</strong>
+                  <strong>Monthly Tuition Fee - {obligation.monthLabel}</strong>
                   <div style={{ fontSize: "10px", color: "var(--color-neutral-dark)" }}>
-                    Total Obligation: ₹{obligation.feeAmount.toLocaleString()} &bull; Due Date: {obligation.dueDate}
+                    Total Obligation: ₹{obligation.feeAmount.toLocaleString()} - Due Date: {obligation.dueDate}
                   </div>
                 </td>
                 <td style={{ textAlign: "center", padding: "10px 0" }}>
@@ -243,7 +239,6 @@ export function FeeReceiptModal({
             </tbody>
           </table>
 
-          {/* Balance & Collector Summary */}
           <div
             style={{
               backgroundColor: "var(--color-surface-muted)",
@@ -276,7 +271,6 @@ export function FeeReceiptModal({
             </div>
           </div>
 
-          {/* Verification & Legal Audit Disclaimers */}
           <div
             style={{
               borderLeft: "3px solid var(--color-accent)",
@@ -288,16 +282,18 @@ export function FeeReceiptModal({
               lineHeight: 1.4,
             }}
           >
-            <strong>Official Record Notice:</strong>
+            <strong>Notice:</strong>
             {transaction.paymentMethod === "cash"
               ? " Authorized cash payment received in classroom session and recorded in academy ledger."
-              : " Online transaction recorded from parent UPI/NEFT submission (Manual Entry • Not validated by an automated payment gateway)."}
+              : " Online transaction recorded from parent UPI/NEFT submission (Manual Entry - Not validated by an automated payment gateway)."}
             <br />
             This is an illustrative digital receipt generated from ArousH Academy session records. Computer-generated voucher; no physical signature required.
+            <div style={{ marginTop: "4px", fontWeight: 600, color: "var(--color-primary)" }}>
+              Demo copy, not a legal record
+            </div>
           </div>
         </div>
 
-        {/* Action Buttons (Hidden when printing) */}
         <div
           className="no-print"
           style={{

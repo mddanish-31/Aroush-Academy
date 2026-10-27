@@ -1,4 +1,5 @@
 "use client";
+import { Check, Calendar, X } from "lucide-react";
 
 import React, { useState } from "react";
 import { BatchDefinition, TeacherProfile } from "@/types";
@@ -20,7 +21,7 @@ export function BatchesModule() {
     SAMPLE_TEACHERS
   );
 
-  // Modal State
+  
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const [subjectInput, setSubjectInput] = useState("Mathematics");
@@ -83,7 +84,6 @@ export function BatchesModule() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
-      {/* Header Card */}
       <Card padding="md">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-3)" }}>
           <div>
@@ -110,7 +110,6 @@ export function BatchesModule() {
         </div>
       </Card>
 
-      {/* Success Notification */}
       {actionSuccessNotice && (
         <div
           style={{
@@ -123,11 +122,10 @@ export function BatchesModule() {
           }}
           role="status"
         >
-          ✓ {actionSuccessNotice} (Local demo state)
+          <Check size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> {actionSuccessNotice} (Local demo state)
         </div>
       )}
 
-      {/* Batches Grid */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "var(--space-4)" }}>
         {batches.map((b) => {
           const occupancyRate = Math.round((b.enrolledCount / b.capacity) * 100);
@@ -165,12 +163,11 @@ export function BatchesModule() {
                 </div>
 
                 <div style={{ marginTop: "var(--space-3)", padding: "var(--space-2) var(--space-3)", backgroundColor: "var(--color-surface-muted)", borderRadius: "var(--radius-md)", fontSize: "11px", color: "var(--color-primary)" }}>
-                  🗓️ {b.schedule}
+                  <Calendar size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> {b.schedule}
                 </div>
               </div>
 
               <div>
-                {/* Seating Occupancy Bar */}
                 <div style={{ marginBottom: "var(--space-2)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", marginBottom: "4px" }}>
                     <span style={{ color: "var(--color-neutral-dark)" }}>Batch Occupancy:</span>
@@ -200,7 +197,6 @@ export function BatchesModule() {
         })}
       </div>
 
-      {/* CREATE BATCH MODAL */}
       {isCreateModalOpen && (
         <div
           onClick={(e) => {
@@ -226,7 +222,7 @@ export function BatchesModule() {
           <div style={{ backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-lg)", maxWidth: "480px", width: "100%", padding: "var(--space-6)", boxShadow: "var(--shadow-lg)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-4)" }}>
               <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700 }}>Provision New Academic Batch</h3>
-              <button onClick={() => setIsCreateModalOpen(false)} style={{ fontSize: "18px", color: "var(--color-neutral-dark)", cursor: "pointer" }}>✕</button>
+              <button onClick={() => setIsCreateModalOpen(false)} style={{ fontSize: "18px", color: "var(--color-neutral-dark)", cursor: "pointer" }}><X size={14} /></button>
             </div>
 
             <form onSubmit={handleCreateBatch}>

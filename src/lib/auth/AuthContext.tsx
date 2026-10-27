@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const reqs = demoAuthAdapter.getRegistrationRequests();
       setRegistrationRequests(reqs);
     } catch {
-      // Storage unavailable
+      
     }
   };
 
@@ -75,11 +75,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const invs = demoAuthAdapter.getAccountInvitations();
       setInvitations(invs);
     } catch {
-      // Storage unavailable
+      
     }
   };
 
-  // Hydrate user and registrations from client storage on mount and handle bfcache restores
+  
   useEffect(() => {
     const hydrate = () => {
       try {
@@ -142,8 +142,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       const result = await demoAuthAdapter.register(data);
-      // Explicit policy: Public registrations do NOT automatically authenticate.
-      // Must await Academy Admin review and approval.
+      
+      
       if (result.success) {
         refreshRegistrations();
       }
