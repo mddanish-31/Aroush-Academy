@@ -551,6 +551,7 @@ export function AttendanceModule({
             Subject:
           </span>
           <select
+            aria-label="Filter by subject"
             value={filterSubject}
             onChange={(e) => setFilterSubject(e.target.value)}
             style={{
@@ -586,6 +587,7 @@ export function AttendanceModule({
             Status:
           </span>
           <select
+            aria-label="Filter by status"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             style={{
@@ -857,6 +859,7 @@ export function AttendanceModule({
                   Select Student:
                 </label>
                 <select
+                  aria-label="Select Student"
                   value={markStudentId}
                   onChange={(e) => setMarkStudentId(e.target.value)}
                   style={{
@@ -891,6 +894,7 @@ export function AttendanceModule({
                   Subject:
                 </label>
                 <select
+                  aria-label="Subject"
                   value={markSubject}
                   onChange={(e) => setMarkSubject(e.target.value)}
                   style={{

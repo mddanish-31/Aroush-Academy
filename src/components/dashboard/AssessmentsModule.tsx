@@ -1863,6 +1863,7 @@ export function AssessmentsModule({
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", fontWeight: 600 }}>Subject:</span>
               <select
+                aria-label="Subject"
                 value={filterSubject}
                 onChange={(e) => setFilterSubject(e.target.value)}
                 style={{ fontSize: "11px", padding: "4px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
@@ -1878,6 +1879,7 @@ export function AssessmentsModule({
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", fontWeight: 600 }}>Batch:</span>
               <select
+                aria-label="Filter by batch"
                 value={filterBatch}
                 onChange={(e) => setFilterBatch(e.target.value)}
                 style={{ fontSize: "11px", padding: "4px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
@@ -1892,6 +1894,7 @@ export function AssessmentsModule({
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", fontWeight: 600 }}>Type:</span>
               <select
+                aria-label="Filter by type"
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
                 style={{ fontSize: "11px", padding: "4px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
@@ -1907,6 +1910,7 @@ export function AssessmentsModule({
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", fontWeight: 600 }}>Status:</span>
               <select
+                aria-label="Filter by status"
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
                 style={{ fontSize: "11px", padding: "4px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
@@ -1942,6 +1946,7 @@ export function AssessmentsModule({
                 Candidate View:
               </span>
               <select
+                aria-label="Select candidate view"
                 value={inspectedStudentId}
                 onChange={(e) => setInspectedStudentId(e.target.value)}
                 style={{
@@ -1982,7 +1987,7 @@ export function AssessmentsModule({
               <div style={{ fontSize: "10px", color: "var(--color-neutral-dark)", textTransform: "uppercase", fontWeight: 700 }}>
                 Upcoming Tests
               </div>
-              <div style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: "#007AFF", marginTop: "4px" }}>
+              <div style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: "var(--color-primary)", marginTop: "4px" }}>
                 {overviewMetrics.upcomingCount}
               </div>
               <div style={{ fontSize: "11px", color: "var(--color-neutral-dark)", marginTop: "2px" }}>
@@ -1994,7 +1999,7 @@ export function AssessmentsModule({
               <div style={{ fontSize: "10px", color: "var(--color-neutral-dark)", textTransform: "uppercase", fontWeight: 700 }}>
                 Pending Publication
               </div>
-              <div style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: "#FF9500", marginTop: "4px" }}>
+              <div style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: "var(--color-primary)", marginTop: "4px" }}>
                 {overviewMetrics.pendingPublicationCount}
               </div>
               <div style={{ fontSize: "11px", color: "var(--color-neutral-dark)", marginTop: "2px" }}>
@@ -2590,6 +2595,7 @@ export function AssessmentsModule({
                   Select Assessment Policy:
                 </span>
                 <select
+                  aria-label="Select Assessment Policy"
                   value={selectedCertAssessmentId}
                   onChange={(e) => setSelectedCertAssessmentId(e.target.value)}
                   style={{
@@ -2818,7 +2824,7 @@ export function AssessmentsModule({
                       })
                       .map((cert) => (
                       <tr key={cert.id} style={{ borderBottom: "1px solid var(--color-border)" }}>
-                        <td style={{ padding: "10px 12px", fontWeight: 700, color: "#007AFF" }}>
+                        <td style={{ padding: "10px 12px", fontWeight: 700, color: "var(--color-primary)" }}>
                           {cert.certificateNumber}
                         </td>
                         <td style={{ padding: "10px 12px", fontWeight: 600 }}>
@@ -2924,6 +2930,7 @@ export function AssessmentsModule({
                 <div>
                   <label style={{ display: "block", fontSize: "11px", fontWeight: 600, marginBottom: "4px" }}>Category / Type</label>
                   <select
+                    aria-label="Category / Type"
                     value={formType}
                     onChange={(e) => setFormType(e.target.value as AssessmentType)}
                     style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
@@ -2938,6 +2945,7 @@ export function AssessmentsModule({
                 <div>
                   <label style={{ display: "block", fontSize: "11px", fontWeight: 600, marginBottom: "4px" }}>Subject</label>
                   <select
+                    aria-label="Subject"
                     value={formSubject}
                     onChange={(e) => setFormSubject(e.target.value)}
                     style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
@@ -2954,6 +2962,7 @@ export function AssessmentsModule({
                 <div>
                   <label style={{ display: "block", fontSize: "11px", fontWeight: 600, marginBottom: "4px" }}>Batch / Class</label>
                   <select
+                    aria-label="Batch / Class"
                     value={formBatch}
                     onChange={(e) => {
                       setFormBatch(e.target.value);
@@ -2997,6 +3006,7 @@ export function AssessmentsModule({
                 <div>
                   <label style={{ display: "block", fontSize: "11px", fontWeight: 600, marginBottom: "4px" }}>Assigned Teacher</label>
                   <select
+                    aria-label="Assigned Teacher"
                     value={formTeacherId}
                     onChange={(e) => setFormTeacherId(e.target.value)}
                     disabled={role === "teacher"} 
@@ -3011,6 +3021,7 @@ export function AssessmentsModule({
                 <div>
                   <label style={{ display: "block", fontSize: "11px", fontWeight: 600, marginBottom: "4px" }}>Result Status</label>
                   <select
+                    aria-label="Result Status"
                     value={formStatus}
                     onChange={(e) => setFormStatus(e.target.value as AssessmentStatus)}
                     style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
@@ -3137,6 +3148,7 @@ export function AssessmentsModule({
               <div style={{ marginBottom: "var(--space-3)" }}>
                 <label style={{ display: "block", fontSize: "11px", fontWeight: 600, marginBottom: "4px" }}>Target Assessment:</label>
                 <select
+                  aria-label="Target Assessment"
                   value={recordExamId}
                   onChange={(e) => setRecordExamId(e.target.value)}
                   style={{ width: "100%", padding: "6px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
@@ -3152,6 +3164,7 @@ export function AssessmentsModule({
               <div style={{ marginBottom: "var(--space-3)" }}>
                 <label style={{ display: "block", fontSize: "11px", fontWeight: 600, marginBottom: "4px" }}>Student:</label>
                 <select
+                  aria-label="Student"
                   value={recordStudentId}
                   onChange={(e) => setRecordStudentId(e.target.value)}
                   style={{ width: "100%", padding: "6px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
@@ -3181,6 +3194,7 @@ export function AssessmentsModule({
                 <div>
                   <label style={{ display: "block", fontSize: "11px", fontWeight: 600, marginBottom: "4px" }}>Evaluation State</label>
                   <select
+                    aria-label="Evaluation State"
                     value={recordStatusInput}
                     onChange={(e) => setRecordStatusInput(e.target.value as "evaluated" | "absent" | "pending")}
                     style={{ width: "100%", padding: "6px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
@@ -3235,7 +3249,7 @@ export function AssessmentsModule({
           }}
         >
           <Card padding="lg" style={{ maxWidth: "480px", width: "100%" }}>
-            <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, marginBottom: "var(--space-2)", color: "#007AFF" }}>
+            <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, marginBottom: "var(--space-2)", color: "var(--color-primary)" }}>
               Confirm Certificate Issuance
             </h3>
             <p style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", lineHeight: 1.5, marginBottom: "var(--space-3)" }}>
@@ -3373,6 +3387,7 @@ export function AssessmentsModule({
                 <div>
                   <label style={{ display: "block", fontSize: "11px", fontWeight: 600, marginBottom: "4px" }}>Subject</label>
                   <select
+                    aria-label="Subject"
                     value={authorSubject}
                     onChange={(e) => setAuthorSubject(e.target.value)}
                     style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
@@ -3389,6 +3404,7 @@ export function AssessmentsModule({
                 <div>
                   <label style={{ display: "block", fontSize: "11px", fontWeight: 600, marginBottom: "4px" }}>Class Grade</label>
                   <select
+                    aria-label="Class Grade"
                     value={authorClassGrade}
                     onChange={(e) => setAuthorClassGrade(e.target.value)}
                     style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}

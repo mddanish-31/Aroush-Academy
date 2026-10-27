@@ -756,7 +756,7 @@ export function TimetableModule({
             <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>
               Curriculum
             </span>
-            <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--color-accent)", marginTop: "2px" }}>
+            <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--color-primary)", marginTop: "2px" }}>
               {uniqueSubjectsCount} Subjects
             </div>
             <span style={{ fontSize: "10px", color: "var(--color-neutral-dark)" }}>Active this week</span>
@@ -780,6 +780,7 @@ export function TimetableModule({
                 Faculty:
               </span>
               <select
+                aria-label="Filter by faculty"
                 value={filterTeacher}
                 onChange={(e) => setFilterTeacher(e.target.value)}
                 style={{
@@ -805,6 +806,7 @@ export function TimetableModule({
               Subject:
             </span>
             <select
+              aria-label="Filter by subject"
               value={filterSubject}
               onChange={(e) => setFilterSubject(e.target.value)}
               style={{
@@ -830,6 +832,7 @@ export function TimetableModule({
                 Batch:
               </span>
               <select
+                aria-label="Filter by batch"
                 value={filterBatch}
                 onChange={(e) => setFilterBatch(e.target.value)}
                 style={{
@@ -855,6 +858,7 @@ export function TimetableModule({
               Status:
             </span>
             <select
+              aria-label="Filter by status"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
               style={{
@@ -877,6 +881,7 @@ export function TimetableModule({
                 Weekday:
               </span>
               <select
+                aria-label="Filter by weekday"
                 value={selectedDayFilter}
                 onChange={(e) => setSelectedDayFilter(e.target.value as DayOfWeek | "all")}
                 style={{
@@ -952,7 +957,7 @@ export function TimetableModule({
                         style={{
                           fontSize: "var(--text-xs)",
                           fontWeight: 700,
-                          color: dayInfo.isToday ? "var(--color-accent)" : "var(--color-primary)",
+                          color: "var(--color-primary)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -964,7 +969,7 @@ export function TimetableModule({
                           <span
                             style={{
                               fontSize: "9px",
-                              backgroundColor: "var(--color-accent)",
+                              backgroundColor: "var(--color-primary)",
                               color: "#FFFFFF",
                               padding: "1px 5px",
                               borderRadius: "4px",
@@ -1385,7 +1390,7 @@ export function TimetableModule({
             >
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ color: "var(--color-neutral-dark)" }}>Subject:</span>
-                <strong style={{ color: getSubjectTheme(detailsSlot.subject).primary }}>
+                <strong style={{ color: "var(--color-primary)" }}>
                   {detailsSlot.subject}
                 </strong>
               </div>
@@ -1611,6 +1616,7 @@ export function TimetableModule({
                       Day (Mon-Sun):
                     </label>
                     <select
+                      aria-label="Day of week"
                       value={formDay}
                       onChange={(e) => {
                         setFormDay(e.target.value as DayOfWeek);
@@ -1710,6 +1716,7 @@ export function TimetableModule({
                 </label>
                 {role === "academy-admin" ? (
                   <select
+                    aria-label="Assigned Teacher"
                     value={formTeacherId}
                     onChange={(e) => {
                       setFormTeacherId(e.target.value);
@@ -1761,6 +1768,7 @@ export function TimetableModule({
                     Subject:
                   </label>
                   <select
+                    aria-label="Subject"
                     value={formSubject}
                     onChange={(e) => {
                       setFormSubject(e.target.value);
@@ -1788,6 +1796,7 @@ export function TimetableModule({
                     Batch / Class:
                   </label>
                   <select
+                    aria-label="Batch / Class"
                     value={formBatch}
                     onChange={(e) => {
                       setFormBatch(e.target.value);
@@ -1816,6 +1825,7 @@ export function TimetableModule({
                   Schedule State:
                 </label>
                 <select
+                  aria-label="Schedule State"
                   value={formStatus}
                   onChange={(e) => setFormStatus(e.target.value as "active" | "cancelled")}
                   style={{
@@ -1970,7 +1980,7 @@ export function TimetableModule({
             >
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ color: "var(--color-neutral-dark)" }}>Subject:</span>
-                <strong style={{ color: getSubjectTheme(deletingSlot.subject).primary }}>
+                <strong style={{ color: "var(--color-primary)" }}>
                   {deletingSlot.subject}
                 </strong>
               </div>

@@ -736,6 +736,7 @@ export function ClassroomModule({
                 Faculty:
               </span>
               <select
+                aria-label="Filter by faculty"
                 value={filterTeacher}
                 onChange={(e) => setFilterTeacher(e.target.value)}
                 style={{
@@ -761,6 +762,7 @@ export function ClassroomModule({
               Subject:
             </span>
             <select
+              aria-label="Filter by subject"
               value={filterSubject}
               onChange={(e) => setFilterSubject(e.target.value)}
               style={{
@@ -786,6 +788,7 @@ export function ClassroomModule({
                 Batch:
               </span>
               <select
+                aria-label="Filter by batch"
                 value={filterBatch}
                 onChange={(e) => setFilterBatch(e.target.value)}
                 style={{
@@ -811,6 +814,7 @@ export function ClassroomModule({
               Provider:
             </span>
             <select
+              aria-label="Filter by provider"
               value={filterProvider}
               onChange={(e) => setFilterProvider(e.target.value)}
               style={{
@@ -918,8 +922,9 @@ export function ClassroomModule({
                           fontWeight: 700,
                           padding: "2px 8px",
                           borderRadius: "var(--radius-sm)",
-                          backgroundColor: theme.badgeBg,
-                          color: theme.badgeText,
+                          backgroundColor: "var(--color-surface-muted)",
+                          color: "var(--color-primary)",
+                          border: "1px solid var(--color-border)",
                         }}
                       >
                         {session.subject}
@@ -1161,8 +1166,9 @@ export function ClassroomModule({
                     fontWeight: 700,
                     padding: "2px 8px",
                     borderRadius: "var(--radius-sm)",
-                    backgroundColor: getSubjectTheme(detailsSession.subject).badgeBg,
-                    color: getSubjectTheme(detailsSession.subject).badgeText,
+                    backgroundColor: "var(--color-surface-muted)",
+                    color: "var(--color-primary)",
+                    border: "1px solid var(--color-border)",
                     display: "inline-block",
                     marginBottom: "4px",
                   }}
@@ -1402,6 +1408,7 @@ export function ClassroomModule({
                     Subject: *
                   </label>
                   <select
+                    aria-label="Subject"
                     value={formSubject}
                     onChange={(e) => {
                       setFormSubject(e.target.value);
@@ -1429,6 +1436,7 @@ export function ClassroomModule({
                     Batch / Class: *
                   </label>
                   <select
+                    aria-label="Batch / Class"
                     value={formBatch}
                     onChange={(e) => {
                       setFormBatch(e.target.value);
@@ -1459,6 +1467,7 @@ export function ClassroomModule({
                   </label>
                   {recentMeetingUrls.length > 0 && (
                     <select
+                      aria-label="Recent meeting URLs"
                       onChange={(e) => {
                         if (e.target.value) {
                           setFormUrl(e.target.value);
@@ -1683,6 +1692,7 @@ export function ClassroomModule({
                     Assigned Faculty: *
                   </label>
                   <select
+                    aria-label="Assigned Faculty"
                     value={formTeacherId}
                     onChange={(e) => setFormTeacherId(e.target.value)}
                     style={{
@@ -1730,6 +1740,7 @@ export function ClassroomModule({
                     Status Lifecycle:
                   </label>
                   <select
+                    aria-label="Status Lifecycle"
                     value={formStatus}
                     onChange={(e) => setFormStatus(e.target.value as ClassroomSessionStatus)}
                     style={{

@@ -466,6 +466,7 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
                 Category:
               </label>
               <select
+                aria-label="Filter by category"
                 value={filterType}
                 onChange={(e) => {
                   setFilterType(e.target.value);
@@ -494,6 +495,7 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
                 Action Type:
               </label>
               <select
+                aria-label="Filter by action type"
                 value={filterActionType}
                 onChange={(e) => {
                   setFilterActionType(e.target.value);
@@ -525,6 +527,7 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
                 Actor Role:
               </label>
               <select
+                aria-label="Filter by actor role"
                 value={filterRole}
                 onChange={(e) => {
                   setFilterRole(e.target.value);
@@ -554,6 +557,7 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
                 Date Range:
               </label>
               <select
+                aria-label="Filter by date range"
                 value={filterDateRange}
                 onChange={(e) => {
                   setFilterDateRange(e.target.value);
@@ -581,6 +585,7 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
                 Outcome:
               </label>
               <select
+                aria-label="Filter by outcome"
                 value={filterOutcome}
                 onChange={(e) => {
                   setFilterOutcome(e.target.value);

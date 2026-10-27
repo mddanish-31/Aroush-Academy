@@ -120,6 +120,8 @@ export function CookieConsent() {
 
   const isBannerVisible = !parsedPreferences.consented && !isModalOpen;
 
+  if (!isBannerVisible && !isModalOpen) return null;
+
   return (
     <>
       <aside
@@ -212,7 +214,7 @@ export function CookieConsent() {
           backgroundColor: "rgba(0, 0, 0, 0.45)",
           backdropFilter: "blur(6px)",
           WebkitBackdropFilter: "blur(6px)",
-          display: "flex",
+          display: isModalOpen ? "flex" : "none",
           alignItems: "center",
           justifyContent: "center",
           padding: "var(--space-4)",

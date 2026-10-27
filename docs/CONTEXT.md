@@ -28,7 +28,7 @@ Read this before changing code. Built from a read-only session on 2026-10-26.
 - src/lib/auth - AuthContext, authTypes, demoAccounts, demoAuthAdapter, authGuard.
 - src/data - seeded demo datasets (academicMasterData, classroomData, dashboardModulesData, enrollmentFeeData, mockExamData, studentIdCardsData).
 - src/content - the source of public copy: site, landing, legal, enquiry, media, types, index.
-- scripts - 16 files: verify-*.ts are the test scripts, qa-browser.mjs is browser QA, loader.mjs is the TS loader, compare-dashboard-regression.mjs, debug-axe.mjs (untracked).
+- scripts - 15 files: verify-*.ts are the test scripts, qa-browser.mjs is browser QA, loader.mjs is the TS loader, compare-dashboard-regression.mjs.
 
 ## Auth and storage facts (file and line)
 
@@ -49,18 +49,22 @@ Read this before changing code. Built from a read-only session on 2026-10-26.
 - test:content: verify-content.ts, public copy shape. test:contrast: verify-contrast.ts, colour contrast. test:media: verify-media-urls.ts, media links.
 - qa:browser: scripts/qa-browser.mjs, drives a real browser (not run in this session).
 
-## Git and health state (2026-10-26)
+## Git and health state (updated 2026-10-27)
 
-- Branch frontend-redesign. Working tree dirty: 51 modified files, 2107 insertions, 2046 deletions. Untracked: scripts/debug-axe.mjs, src/lib/auth/authGuard.ts.
-- Log: 5ce2e86 Frontend audit docs, c333a85 Subject flags touch QA dead CSS cleanup, 7581086 Auth cleanup header dropdowns What we teach, 8a56cb8 Frontend redesign checkpoint, 8dde8d8 Landing foundation gallery hero legal pages SEO browser QA.
-- typecheck exit 0, lint exit 0 (6 warnings, 0 errors), build exit 0 (static prerender of all routes).
-- All 12 test:* scripts pass (exit 0). qa:browser not run.
+- Branch frontend-redesign. typecheck exit 0, lint exit 0 (6 pre-existing img warnings, 0 errors), build exit 0 (static prerender of all routes), all 12 test:* scripts exit 0 (run 2026-10-26).
+- Untracked: docs/CONTEXT.md, src/lib/auth/authGuard.ts. qa-output/ holds QA logs and screenshots, not source.
 
-## Damage from earlier mass edits
+## Damage from earlier mass edits - cleaned 2026-10-27
 
-- The regex comment strip left 541 empty `{}` JSX expression containers across src/ (555 comments removed, seen in `git diff`).
-- One truncated sentence: src/components/dashboard/ClassroomModule.tsx ~line 1633, helper text became `Must start with <strong>{"https://"}</strong>` and lost the tail sentence about students and parents opening the link.
-- The `, X` replacement check found nothing, the IXI check found nothing.
+- The 541 empty `{}` JSX lines left by the comment strip were removed; the truncated ClassroomModule.tsx helper sentence was restored to the HEAD original; a follow-up scan found no suspicious empty braces left.
+- The `, X` replacement check and the IXI check found nothing.
+
+## Browser QA results (2026-10-27)
+
+- Playwright 1.64.1 with a working Chromium. qa:browser run against dev (localhost:3000) and prod build (localhost:3001). Logs: qa-output/qa-dev.txt, qa-output/qa-prod.txt.
+- Dev: 273 PASS, 96 FAIL. Prod: 271 PASS, 97 FAIL. Both runs exit 1.
+- All 96 dev FAILs and 96 prod FAILs are Section 19 axe violations (serious/critical or incomplete color-contrast) across dashboard modules for all 4 roles at 390 and 1440. The 1 extra prod FAIL is Section 5, dropdown opacity sampled at 0.000 after 40ms (transition timing, likely flaky).
+- Sections 1 to 18 otherwise pass, including anchor resolution, unlinked-parent Fees message, tampered-storage guard and real-login all-module axe runs.
 
 ## Known facts, verify before relying
 

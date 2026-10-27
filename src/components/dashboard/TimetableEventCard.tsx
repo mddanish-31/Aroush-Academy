@@ -57,6 +57,23 @@ export function TimetableEventCard({
   const displayBatch = slot.batch?.trim() || "General Batch";
   const displayGrade = slot.classGrade?.trim() || "";
 
+  const visibleBadge = isCancelled ? "Cancelled" : isSpecificDate ? "Session" : "";
+  const visibleLabelParts = [
+    displaySubject,
+    visibleBadge,
+    displayTime,
+    !isShortCard ? displayBatch : null,
+    isTallCard ? displayTeacher : null,
+    isTallCard && displayGrade ? displayGrade : null,
+  ].filter(Boolean);
+  const visibleText = visibleLabelParts.join(", ");
+  const extraDetail = [
+    isShortCard ? displayBatch : null,
+    `Faculty: ${displayTeacher}`,
+    isCancelled && !visibleLabelParts.includes("Cancelled") ? "Cancelled" : null,
+  ].filter(Boolean).join(", ");
+  const cardAriaLabel = extraDetail ? `${visibleText}, ${extraDetail}` : visibleText;
+
   return (
     <div
       data-testid={`timetable-event-${slot.id}`}
@@ -70,7 +87,7 @@ export function TimetableEventCard({
           onClick?.(slot);
         }
       }}
-      aria-label={`${displaySubject}, ${displayTime}, ${displayBatch}, Faculty: ${displayTeacher}${isCancelled ? ", Cancelled" : ""}`}
+      aria-label={cardAriaLabel}
       style={{
         position: "absolute",
         top: `${topPx}px`,
@@ -112,7 +129,7 @@ export function TimetableEventCard({
             style={{
               fontSize: isShortCard ? "10.5px" : "11px",
               fontWeight: 700,
-              color: isCancelled ? "var(--color-danger, #FF3B30)" : theme.primary,
+              color: isCancelled ? "var(--color-danger)" : "var(--color-primary)",
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -121,12 +138,13 @@ export function TimetableEventCard({
           >
             {displaySubject}
           </span>
+          {" "}
           {isCancelled ? (
             <span
               style={{
                 fontSize: "7.5px",
                 fontWeight: 700,
-                backgroundColor: "var(--color-danger, #FF3B30)",
+                backgroundColor: "var(--color-danger)",
                 color: "#FFFFFF",
                 padding: "1px 3px",
                 borderRadius: "2px",
@@ -142,8 +160,9 @@ export function TimetableEventCard({
               style={{
                 fontSize: "7.5px",
                 fontWeight: 600,
-                backgroundColor: theme.badgeBg,
-                color: theme.badgeText,
+                backgroundColor: "var(--color-surface)",
+                color: "var(--color-primary)",
+                border: "1px solid var(--color-border)",
                 padding: "1px 3px",
                 borderRadius: "2px",
                 flexShrink: 0,
@@ -154,7 +173,7 @@ export function TimetableEventCard({
             </span>
           ) : null}
         </div>
-
+        {" "}
         <div
           style={{
             fontSize: isShortCard ? "9px" : "10px",
@@ -167,7 +186,7 @@ export function TimetableEventCard({
         >
           {displayTime}
         </div>
-
+        {" "}
         {!isShortCard && (
           <div
             style={{
@@ -184,7 +203,7 @@ export function TimetableEventCard({
           </div>
         )}
       </div>
-
+      {" "}
       {isTallCard && (
         <div
           style={{
@@ -203,6 +222,7 @@ export function TimetableEventCard({
           <span style={{ overflow: "hidden", textOverflow: "ellipsis", fontWeight: 500 }}>
             <User size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "2px" }} />{displayTeacher}
           </span>
+          {" "}
           <span style={{ fontSize: "8.5px", color: "var(--color-neutral-dark)", flexShrink: 0 }}>
             {displayGrade}
           </span>

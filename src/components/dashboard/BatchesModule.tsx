@@ -242,6 +242,7 @@ export function BatchesModule() {
                 <div>
                   <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>Subject:</label>
                   <select
+                    aria-label="Subject"
                     value={subjectInput}
                     onChange={(e) => setSubjectInput(e.target.value)}
                     style={{ width: "100%", padding: "8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
@@ -256,6 +257,7 @@ export function BatchesModule() {
                 <div>
                   <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>Target Grade:</label>
                   <select
+                    aria-label="Target Grade"
                     value={gradeInput}
                     onChange={(e) => setGradeInput(e.target.value)}
                     style={{ width: "100%", padding: "8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
@@ -271,6 +273,7 @@ export function BatchesModule() {
               <div style={{ marginBottom: "var(--space-3)" }}>
                 <label style={{ display: "block", fontSize: "var(--text-xs)", fontWeight: 600, marginBottom: "4px" }}>Assigned Faculty:</label>
                 <select
+                  aria-label="Assigned Faculty"
                   value={teacherIdInput}
                   onChange={(e) => setTeacherIdInput(e.target.value)}
                   style={{ width: "100%", padding: "8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}

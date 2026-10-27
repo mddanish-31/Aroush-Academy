@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Check, X, Clock, AlertCircle, Camera, ExternalLink, RotateCcw } from "lucide-react";
+import { Check, X, Clock, AlertCircle, Camera, ExternalLink, RotateCcw, Info } from "lucide-react";
 
 import React, { useState, useMemo } from "react";
 import {
@@ -309,15 +309,7 @@ export function FeesModule({
       case "partially-paid":
         return <Badge variant="warning" size="sm">Partial</Badge>;
       case "overdue":
-        return (
-          <Badge
-            variant="neutral"
-            size="sm"
-            style={{ color: "#FF3B30", borderColor: "rgba(255, 59, 48, 0.3)", backgroundColor: "rgba(255, 59, 48, 0.08)" }}
-          >
-            Overdue
-          </Badge>
-        );
+        return <Badge variant="danger" size="sm">Overdue</Badge>;
       case "unpaid":
       default:
         return <Badge variant="neutral" size="sm">Unpaid</Badge>;
@@ -1445,7 +1437,7 @@ export function FeesModule({
                         return (
                           <tr key={f.id} style={{ borderBottom: "1px solid var(--color-border-subtle)" }}>
                             <td style={{ padding: "10px", fontWeight: 700 }}>{f.name}</td>
-                            <td style={{ padding: "10px", color: "var(--color-accent)" }}>{f.assignedSubjects.join(", ")}</td>
+                            <td style={{ padding: "10px", color: "var(--color-primary)" }}>{f.assignedSubjects.join(", ")}</td>
                             <td style={{ padding: "10px" }}>{facEnrollments.length}</td>
                             <td style={{ padding: "10px", fontWeight: 600 }}>₹{facTarget.toLocaleString("en-IN")}</td>
                             <td style={{ padding: "10px", color: "var(--color-success)", fontWeight: 600 }}>₹{facPaid.toLocaleString("en-IN")}</td>
@@ -1516,7 +1508,7 @@ export function FeesModule({
                               <td style={{ padding: "10px", fontWeight: 700 }}>{s.name}</td>
                               <td style={{ padding: "10px" }}>{s.classGrade} ({s.board})</td>
                               <td style={{ padding: "10px", color: "var(--color-neutral-dark)" }}>{s.guardianName}</td>
-                              <td style={{ padding: "10px", color: "var(--color-accent)", fontWeight: 500 }}>
+                              <td style={{ padding: "10px", color: "var(--color-primary)", fontWeight: 500 }}>
                                 {sEnr.map((e) => e.subjectName).join(", ")}
                               </td>
                               <td style={{ padding: "10px", fontWeight: 600 }}>₹{stTarget.toLocaleString("en-IN")}</td>
@@ -1563,6 +1555,7 @@ export function FeesModule({
 
                 <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap" }}>
                   <select
+                    aria-label="Filter by verification status"
                     value={reviewStatusFilter}
                     onChange={(e) => setReviewStatusFilter(e.target.value)}
                     style={{ padding: "4px 8px", fontSize: "11px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
@@ -1574,6 +1567,7 @@ export function FeesModule({
                   </select>
 
                   <select
+                    aria-label="Filter by subject"
                     value={reviewSubjectFilter}
                     onChange={(e) => setReviewSubjectFilter(e.target.value)}
                     style={{ padding: "4px 8px", fontSize: "11px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
@@ -1723,7 +1717,7 @@ export function FeesModule({
                     <Card key={enr.id} padding="md" style={{ border: "1px solid var(--color-border)" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-3)", flexWrap: "wrap" }}>
                         <div>
-                          <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--color-accent)" }}>
+                          <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--color-primary)" }}>
                             {enr.subjectName}
                           </span>
                           <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", marginLeft: "8px" }}>
@@ -1831,7 +1825,7 @@ export function FeesModule({
                       <tr key={cfg.id} style={{ borderBottom: "1px solid var(--color-border-subtle)" }}>
                         <td style={{ padding: "10px", fontFamily: "monospace" }}>{cfg.id}</td>
                         <td style={{ padding: "10px", fontWeight: 600 }}>{cfg.classGrade}</td>
-                        <td style={{ padding: "10px", color: "var(--color-accent)", fontWeight: 600 }}>{cfg.subjectName}</td>
+                        <td style={{ padding: "10px", color: "var(--color-primary)", fontWeight: 600 }}>{cfg.subjectName}</td>
                         <td style={{ padding: "10px", fontWeight: 700 }}>₹{cfg.monthlyFee.toLocaleString("en-IN")}/mo</td>
                         <td style={{ padding: "10px" }}>{cfg.billingDueDay}th of month</td>
                         <td style={{ padding: "10px" }}>{cfg.effectiveFrom}</td>
@@ -1986,7 +1980,7 @@ export function FeesModule({
                           <div style={{ fontWeight: 600 }}>{rec.studentName}</div>
                           <span style={{ fontSize: "10px", color: "var(--color-neutral-dark)" }}>{rec.classGrade}</span>
                         </td>
-                        <td style={{ padding: "10px", color: "var(--color-accent)" }}>{rec.subjectName}</td>
+                        <td style={{ padding: "10px", color: "var(--color-primary)" }}>{rec.subjectName}</td>
                         <td style={{ padding: "10px" }}>{rec.monthLabel}</td>
                         <td style={{ padding: "10px", fontWeight: 700, color: "var(--color-success)" }}>
                           ₹{rec.amountReceived.toLocaleString("en-IN")}
@@ -2052,7 +2046,7 @@ export function FeesModule({
                         <div>{enr.classGrade}</div>
                         <span style={{ fontSize: "10px", color: "var(--color-neutral-dark)" }}>{enr.batchName}</span>
                       </td>
-                      <td style={{ padding: "10px", color: "var(--color-accent)", fontWeight: 600 }}>{enr.subjectName}</td>
+                      <td style={{ padding: "10px", color: "var(--color-primary)", fontWeight: 600 }}>{enr.subjectName}</td>
                       <td style={{ padding: "10px", fontWeight: 600 }}>₹{enr.monthlyFeeAmount.toLocaleString("en-IN")}</td>
                       <td style={{ padding: "10px" }}>{renderStatusBadge(currentCalc.status)}</td>
                       <td style={{ padding: "10px" }}>
@@ -2119,7 +2113,7 @@ export function FeesModule({
                     <div>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "var(--space-2)" }}>
                         <div>
-                          <h4 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: 0, color: "var(--color-accent)" }}>
+                          <h4 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: 0, color: "var(--color-primary)" }}>
                             {enr.subjectName}
                           </h4>
                           <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)" }}>
@@ -2186,8 +2180,8 @@ export function FeesModule({
                               fontSize: "12px",
                               fontWeight: 600,
                               borderRadius: "var(--radius-sm)",
-                              backgroundColor: "var(--color-accent)",
-                              borderColor: "var(--color-accent)",
+                              backgroundColor: "var(--color-primary)",
+                              borderColor: "var(--color-primary)",
                               cursor: "pointer",
                             }}
                           >
@@ -2306,7 +2300,7 @@ export function FeesModule({
                     .map((rec) => (
                       <tr key={rec.id} style={{ borderBottom: "1px solid var(--color-border-subtle)" }}>
                         <td style={{ padding: "10px", fontWeight: 700, color: "var(--color-primary)" }}>{rec.receiptNumber}</td>
-                        <td style={{ padding: "10px", color: "var(--color-accent)", fontWeight: 600 }}>{rec.subjectName}</td>
+                        <td style={{ padding: "10px", color: "var(--color-primary)", fontWeight: 600 }}>{rec.subjectName}</td>
                         <td style={{ padding: "10px" }}>{rec.monthLabel}</td>
                         <td style={{ padding: "10px", fontWeight: 700, color: "var(--color-success)" }}>
                           ₹{rec.amountReceived.toLocaleString("en-IN")}
@@ -2349,7 +2343,7 @@ export function FeesModule({
 
             <div style={{ fontSize: "var(--text-xs)", display: "flex", flexDirection: "column", gap: "6px", margin: "var(--space-3) 0", padding: "var(--space-3)", backgroundColor: "var(--color-surface-muted)", borderRadius: "var(--radius-md)" }}>
               <div>Student: <strong>{submissionDetailModal.studentName}</strong> (ID: {submissionDetailModal.studentId})</div>
-              <div>Subject: <strong style={{ color: "var(--color-accent)" }}>{submissionDetailModal.subjectName}</strong> &bull; Faculty: {submissionDetailModal.teacherName}</div>
+              <div>Subject: <strong style={{ color: "var(--color-primary)" }}>{submissionDetailModal.subjectName}</strong> &bull; Faculty: {submissionDetailModal.teacherName}</div>
               <div>Period: <strong>{submissionDetailModal.monthLabel}</strong></div>
               <div>Declared Amount: <strong style={{ color: "var(--color-primary)", fontSize: "var(--text-sm)" }}>₹{submissionDetailModal.amount.toLocaleString("en-IN")}</strong></div>
               <div>
@@ -2505,7 +2499,7 @@ export function FeesModule({
                   Period: <strong>{payModal.obligation.monthLabel}</strong>
                 </span>
               </div>
-              <div style={{ fontSize: "22px", fontWeight: 700, color: "var(--color-accent)" }}>
+              <div style={{ fontSize: "22px", fontWeight: 700, color: "var(--color-primary)" }}>
                 ₹{payModal.balance.toLocaleString("en-IN")}
               </div>
             </div>
@@ -2663,7 +2657,7 @@ export function FeesModule({
 
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", padding: "6px 8px", backgroundColor: "#FFFFFF", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", margin: "6px 0" }}>
                         <div style={{ fontSize: "11px", overflow: "hidden", textOverflow: "ellipsis" }}>
-                          UPI ID: <strong style={{ color: "var(--color-accent)" }}>{dest.upiId}</strong>
+                          UPI ID: <strong style={{ color: "var(--color-primary)" }}>{dest.upiId}</strong>
                         </div>
                         <Button
                           variant="secondary"
@@ -2687,7 +2681,7 @@ export function FeesModule({
                           display: "block",
                           textAlign: "center",
                           padding: "7px 12px",
-                          backgroundColor: "var(--color-accent)",
+                          backgroundColor: "var(--color-primary)",
                           color: "#FFFFFF",
                           borderRadius: "var(--radius-sm)",
                           fontSize: "11px",
@@ -2766,7 +2760,7 @@ export function FeesModule({
 
                   <div style={{ margin: "var(--space-3) 0" }}>
                     <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-primary)", display: "block", marginBottom: "3px" }}>
-                      Upload Payment Screenshot (Required) <span style={{ color: "var(--color-accent)" }}>*</span>:
+                      Upload Payment Screenshot (Required) <span style={{ color: "var(--color-danger)" }}>*</span>:
                     </label>
                     <p style={{ fontSize: "10px", color: "var(--color-neutral-dark)", margin: "0 0 6px" }}>
                       Upload a clear screenshot of the completed transfer showing the transaction status (PNG, JPEG, WebP, max 2 MB).
@@ -2892,7 +2886,7 @@ export function FeesModule({
                   </div>
 
                   <div style={{ fontSize: "10px", color: "var(--color-neutral-dark)", backgroundColor: "var(--color-surface-muted)", padding: "6px 10px", borderRadius: "var(--radius-sm)", marginBottom: "var(--space-3)", lineHeight: 1.4 }}>
-                    ℹ️ <strong>Verification Notice:</strong> Submissions are manually verified by the Academy Admin against the institution&rsquo;s bank account. Outstanding balance is reduced only after Admin verification.
+                    <Info size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} aria-hidden="true" /> <strong>Verification Notice:</strong> Submissions are manually verified by the Academy Admin against the institution&rsquo;s bank account. Outstanding balance is reduced only after Admin verification.
                   </div>
 
                   {payFormError && (
@@ -2911,8 +2905,8 @@ export function FeesModule({
                       onClick={handleSubmitTransfer}
                       disabled={!dest || !payProofFile || !payAmountInput}
                       style={{
-                        backgroundColor: "var(--color-accent)",
-                        borderColor: "var(--color-accent)",
+                        backgroundColor: "var(--color-primary)",
+                        borderColor: "var(--color-primary)",
                         fontWeight: 600,
                         padding: "6px 14px",
                       }}
@@ -2956,6 +2950,7 @@ export function FeesModule({
                   Adjustment Type:
                 </label>
                 <select
+                  aria-label="Adjustment Type"
                   value={adjType}
                   onChange={(e) => setAdjType(e.target.value as FeeAdjustment["adjustmentType"])}
                   style={{ width: "100%", padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
@@ -3025,7 +3020,7 @@ export function FeesModule({
             <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 700, margin: "0 0 2px" }}>
               Configure Receiving Destination - {editingDestination.subjectName}
             </h3>
-            <span style={{ fontSize: "11px", color: "var(--color-accent)", display: "block", marginBottom: "var(--space-3)" }}>
+            <span style={{ fontSize: "11px", color: "var(--color-text-secondary)", display: "block", marginBottom: "var(--space-3)" }}>
               Assigned Faculty: {editingDestination.teacherName}
             </span>
 
@@ -3299,7 +3294,7 @@ export function FeesModule({
                 variant="primary"
                 size="sm"
                 onClick={handleConfirmResetFeeDemo}
-                style={{ backgroundColor: "var(--color-accent)", borderColor: "var(--color-accent)", fontWeight: 600 }}
+                style={{ backgroundColor: "var(--color-primary)", borderColor: "var(--color-primary)", fontWeight: 600 }}
               >
                 Confirm &amp; Reset Demo State
               </Button>

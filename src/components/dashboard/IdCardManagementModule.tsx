@@ -738,7 +738,7 @@ export function IdCardManagementModule({
           <div style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
             Draft Cards
           </div>
-          <div style={{ fontSize: "var(--text-3xl)", fontWeight: 700, color: "var(--color-accent)", marginTop: "4px" }}>
+          <div style={{ fontSize: "var(--text-3xl)", fontWeight: 700, color: "var(--color-primary)", marginTop: "4px" }}>
             {metrics.draft}
           </div>
           <div style={{ fontSize: "11px", color: "var(--color-neutral-dark)", marginTop: "4px" }}>
@@ -989,7 +989,7 @@ export function IdCardManagementModule({
                               justifyContent: "center",
                               fontWeight: 700,
                               fontSize: "12px",
-                              color: "var(--color-accent)",
+                              color: "var(--color-primary)",
                               overflow: "hidden",
                               flexShrink: 0,
                             }}
@@ -1345,6 +1345,7 @@ export function IdCardManagementModule({
                   Selected Student Record
                 </label>
                 <select
+                  aria-label="Selected Student Record"
                   value={formSelectedStudentId}
                   onChange={(e) => handleStudentSelectChange(e.target.value)}
                   disabled={!!editingCardRecord}

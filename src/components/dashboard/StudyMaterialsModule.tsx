@@ -1,5 +1,5 @@
 "use client";
-import { Lock, BookOpen, FileText, Paperclip } from "lucide-react";
+import { Lock, BookOpen, FileText, Paperclip, Info, ExternalLink, Download } from "lucide-react";
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import {
@@ -1120,6 +1120,7 @@ export function StudyMaterialsModule({
                 Subject:
               </span>
               <select
+                aria-label="Filter by subject"
                 value={filterSubject}
                 onChange={(e) => setFilterSubject(e.target.value)}
                 style={{
@@ -1144,6 +1145,7 @@ export function StudyMaterialsModule({
                 Type:
               </span>
               <select
+                aria-label="Filter by type"
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
                 style={{
@@ -1169,6 +1171,7 @@ export function StudyMaterialsModule({
                   Status:
                 </span>
                 <select
+                  aria-label="Filter by status"
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
                   style={{
@@ -1472,7 +1475,7 @@ export function StudyMaterialsModule({
                               borderRadius: "var(--radius-sm)",
                             }}
                           >
-                            Open ↗
+                            Open <ExternalLink size={11} style={{ display: "inline-block", verticalAlign: "middle", marginLeft: "2px" }} aria-hidden="true" />
                           </button>
                           <button
                             type="button"
@@ -1482,14 +1485,14 @@ export function StudyMaterialsModule({
                               fontSize: "11px",
                               fontWeight: 600,
                               color: "#FFFFFF",
-                              backgroundColor: "var(--color-accent)",
+                              backgroundColor: "var(--color-primary)",
                               border: "none",
                               cursor: "pointer",
                               padding: "4px 10px",
                               borderRadius: "var(--radius-sm)",
                             }}
                           >
-                            Download ↓
+                            Download <Download size={11} style={{ display: "inline-block", verticalAlign: "middle", marginLeft: "2px" }} aria-hidden="true" />
                           </button>
                         </>
                       ) : mat.hasPhysicalFile ? (
@@ -1526,7 +1529,7 @@ export function StudyMaterialsModule({
                             borderRadius: "var(--radius-sm)",
                           }}
                         >
-                          Overview ℹ
+                          Overview <Info size={11} style={{ display: "inline-block", verticalAlign: "middle", marginLeft: "2px" }} aria-hidden="true" />
                         </button>
                       )}
                     </div>
@@ -1686,7 +1689,7 @@ export function StudyMaterialsModule({
                   marginBottom: "var(--space-4)",
                 }}
               >
-                ℹ <strong>Session Binary Notice:</strong> The file record and metadata for &quot;{inspectItem.fileName}&quot; ({inspectItem.size}) are preserved in your demo storage session. However, client-side in-memory browser blobs are cleared upon page reload. Re-upload during this active tab session to test live in-browser downloads.
+                <Info size={13} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} aria-hidden="true" /> <strong>Session Binary Notice:</strong> The file record and metadata for &quot;{inspectItem.fileName}&quot; ({inspectItem.size}) are preserved in your demo storage session. However, client-side in-memory browser blobs are cleared upon page reload. Re-upload during this active tab session to test live in-browser downloads.
               </div>
             )}
 
@@ -1702,7 +1705,7 @@ export function StudyMaterialsModule({
                   marginBottom: "var(--space-4)",
                 }}
               >
-                ℹ <strong>Catalog Notice:</strong> This resource is an administrative index reference.
+                <Info size={13} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} aria-hidden="true" /> <strong>Catalog Notice:</strong> This resource is an administrative index reference.
                 Physical study booklets, printed exercise sheets, and lecture notes are distributed in classroom batches.
                 No downloadable digital file has been attached to this catalog entry.
               </div>
@@ -1715,7 +1718,7 @@ export function StudyMaterialsModule({
                   size="sm"
                   onClick={() => handleDownload(inspectItem)}
                 >
-                  Download {inspectItem.fileName} ↓
+                  Download {inspectItem.fileName} <Download size={12} style={{ display: "inline-block", verticalAlign: "middle", marginLeft: "4px" }} aria-hidden="true" />
                 </Button>
               )}
               <Button variant="secondary" size="sm" onClick={() => setInspectItem(null)}>
@@ -2168,7 +2171,7 @@ export function StudyMaterialsModule({
                   marginBottom: "var(--space-4)",
                 }}
               >
-                ℹ <strong>Coaching Academy Storage Note:</strong> Uploaded documents are stored in client demo session memory.
+                <Info size={13} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} aria-hidden="true" /> <strong>Coaching Academy Storage Note:</strong> Uploaded documents are stored in client demo session memory.
                 Students and parents can download and open this exact file during this session.
               </div>
 

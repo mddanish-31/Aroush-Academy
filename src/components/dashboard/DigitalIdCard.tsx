@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import QRCode from "qrcode-svg";
+import { Info } from "lucide-react";
 import { StudentProfile, SubjectEnrollment, StudentIdCardRecord } from "@/types";
 import { Button } from "../ui/Button";
 
@@ -154,8 +155,8 @@ export function DigitalIdCard({
         gap: "4px",
         padding: "2px 6px",
         borderRadius: "4px",
-        background: "linear-gradient(135deg, rgba(168,85,247,0.3) 0%, rgba(59,130,246,0.3) 50%, rgba(16,185,129,0.3) 100%)",
-        border: "1px solid rgba(255,255,255,0.22)",
+        background: "rgba(0, 122, 255, 0.12)",
+        border: "1px solid rgba(0, 122, 255, 0.3)",
         backdropFilter: "blur(4px)",
       }}
     >
@@ -216,7 +217,7 @@ export function DigitalIdCard({
         borderRadius: "18px",
         background: isPrintVersion
           ? "#FFFFFF"
-          : "linear-gradient(165deg, #1b1c20 0%, #121316 45%, #0a0b0d 100%)",
+          : "#1D1D1F",
         border: isPrintVersion ? "1.5px solid #111827" : "1px solid rgba(255, 255, 255, 0.14)",
         boxShadow: isPrintVersion
           ? "none"
@@ -241,7 +242,7 @@ export function DigitalIdCard({
             width: "220px",
             height: "220px",
             borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(0, 122, 255, 0.08) 0%, transparent 70%)",
+            backgroundColor: "transparent",
             pointerEvents: "none",
           }}
         />
@@ -279,7 +280,7 @@ export function DigitalIdCard({
               width: "32px",
               height: "32px",
               borderRadius: "8px",
-              background: "linear-gradient(135deg, #007AFF 0%, #0051B3 100%)",
+              background: "var(--color-primary)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -328,8 +329,8 @@ export function DigitalIdCard({
             style={{
               fontSize: "8.5px",
               fontWeight: 700,
-              color: "#007AFF",
-              border: "1px solid #007AFF",
+              color: "var(--color-primary)",
+              border: "1px solid var(--color-primary)",
               padding: "2px 6px",
               borderRadius: "4px",
             }}
@@ -347,7 +348,7 @@ export function DigitalIdCard({
             borderRadius: "10px",
             background: isPrintVersion
               ? "#F3F4F6"
-              : "linear-gradient(150deg, #22252e 0%, #13151a 100%)",
+              : "#22252E",
             border: isPrintVersion ? "1.5px solid #007AFF" : "1.5px solid rgba(0, 122, 255, 0.45)",
             boxShadow: isPrintVersion ? "none" : "0 4px 12px rgba(0, 0, 0, 0.4)",
             display: "flex",
@@ -377,15 +378,17 @@ export function DigitalIdCard({
                 height: "44px",
                 borderRadius: "50%",
                 background: isPrintVersion
-                  ? "rgba(0, 122, 255, 0.12)"
-                  : "radial-gradient(circle, rgba(0, 122, 255, 0.25) 0%, rgba(0, 122, 255, 0.05) 100%)",
-                border: "1px solid rgba(0, 122, 255, 0.4)",
+                  ? "var(--color-surface-muted)"
+                  : "#1D1D1F",
+                border: isPrintVersion
+                  ? "1px solid var(--color-border)"
+                  : "1px solid rgba(0, 122, 255, 0.4)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontWeight: 800,
                 fontSize: "17px",
-                color: isPrintVersion ? "#007AFF" : "#60A5FA",
+                color: isPrintVersion ? "var(--color-primary)" : "#60A5FA",
                 letterSpacing: "0.05em",
               }}
             >
@@ -437,8 +440,10 @@ export function DigitalIdCard({
                 fontSize: "8.5px",
                 fontWeight: 700,
                 color:
-                  cardStatus === "approved"
-                    ? isPrintVersion ? "#059669" : "#34D399"
+                  isPrintVersion
+                    ? "var(--color-primary)"
+                    : cardStatus === "approved"
+                    ? "#34D399"
                     : cardStatus === "pending-approval"
                     ? "#F59E0B"
                     : cardStatus === "draft"
@@ -479,7 +484,7 @@ export function DigitalIdCard({
               display: "inline-block",
               fontSize: "11px",
               fontWeight: 700,
-              color: "#007AFF",
+              color: isPrintVersion ? "var(--color-primary)" : "#60A5FA",
               letterSpacing: "0.04em",
               fontFamily: "monospace",
             }}
@@ -525,7 +530,7 @@ export function DigitalIdCard({
             fontSize: "8px",
             textTransform: "uppercase",
             letterSpacing: "0.08em",
-            color: isPrintVersion ? "#6B7280" : "#9CA3AF",
+            color: isPrintVersion ? "#4B5563" : "#9CA3AF",
             fontWeight: 700,
             marginBottom: "3px",
           }}
@@ -606,7 +611,7 @@ export function DigitalIdCard({
             style={{
               fontSize: "8.5px",
               fontWeight: 600,
-              color: "#007AFF",
+              color: isPrintVersion ? "var(--color-primary)" : "#60A5FA",
               marginTop: "4px",
               letterSpacing: "0.02em",
             }}
@@ -628,7 +633,7 @@ export function DigitalIdCard({
           style={{
             fontSize: "7.5px",
             letterSpacing: "0.08em",
-            color: isPrintVersion ? "#6B7280" : "#6B7280",
+            color: isPrintVersion ? "#4B5563" : "#6B7280",
             textTransform: "uppercase",
             fontWeight: 600,
           }}
@@ -652,7 +657,7 @@ export function DigitalIdCard({
         borderRadius: "18px",
         background: isPrintVersion
           ? "#FFFFFF"
-          : "linear-gradient(165deg, #1b1c20 0%, #121316 45%, #0a0b0d 100%)",
+          : "#1D1D1F",
         border: isPrintVersion ? "1.5px solid #111827" : "1px solid rgba(255, 255, 255, 0.14)",
         boxShadow: isPrintVersion
           ? "none"
@@ -714,7 +719,7 @@ export function DigitalIdCard({
             fontSize: "8.5px",
             fontWeight: 700,
             letterSpacing: "0.08em",
-            color: "#007AFF",
+            color: isPrintVersion ? "var(--color-primary)" : "#60A5FA",
             textTransform: "uppercase",
             marginBottom: "6px",
           }}
@@ -732,7 +737,7 @@ export function DigitalIdCard({
             Emergency: <strong style={{ color: isPrintVersion ? "#111827" : "#D1D5DB" }}>{cardRecord.emergencyContact}</strong>
           </div>
         )}
-        <div style={{ fontSize: "9px", color: isPrintVersion ? "#6B7280" : "#6B7280", marginTop: "4px" }}>
+        <div style={{ fontSize: "9px", color: isPrintVersion ? "#4B5563" : "#6B7280", marginTop: "4px" }}>
           Admitted: {student.joiningDate} · ID: {studentFormattedId}
         </div>
       </div>
@@ -856,7 +861,7 @@ export function DigitalIdCard({
           style={{
             width: "32px",
             height: "54px",
-            background: "linear-gradient(90deg, #131417 0%, #202227 30%, #292b32 50%, #202227 70%, #131417 100%)",
+            background: "#1D1D1F",
             borderLeft: "1px dashed rgba(255, 255, 255, 0.16)",
             borderRight: "1px dashed rgba(255, 255, 255, 0.16)",
             boxShadow: "0 4px 10px rgba(0, 0, 0, 0.6)",
@@ -865,30 +870,14 @@ export function DigitalIdCard({
             alignItems: "center",
             justifyContent: "center",
           }}
-        >
-          <span
-            style={{
-              writingMode: "vertical-rl",
-              textOrientation: "mixed",
-              transform: "rotate(180deg)",
-              fontSize: "6px",
-              fontWeight: 800,
-              letterSpacing: "0.2em",
-              color: "rgba(255, 255, 255, 0.35)",
-              textTransform: "uppercase",
-              userSelect: "none",
-            }}
-          >
-            ARROUSH
-          </span>
-        </div>
+        />
 
         <div
           style={{
             width: "36px",
             height: "10px",
             borderRadius: "2px",
-            background: "linear-gradient(180deg, #E4E4E7 0%, #A1A1AA 40%, #71717A 80%, #D4D4D8 100%)",
+            background: "#AAAAAA",
             boxShadow: "0 2px 4px rgba(0, 0, 0, 0.5)",
             border: "0.5px solid #52525B",
             position: "relative",
@@ -958,7 +947,7 @@ export function DigitalIdCard({
             boxShadow: "0 2px 4px rgba(0,0,0,0.06)",
           }}
         >
-          <span>ℹ️</span>
+          <Info size={14} aria-hidden="true" />
           <span>
             {cardStatus === "draft"
               ? "Draft Preview - Not Officially Issued"
@@ -972,7 +961,7 @@ export function DigitalIdCard({
       )}
 
       <div className="no-print" style={{ zIndex: 1, position: "relative" }}>
-        {activeSide === "front" ? renderFrontFace(false) : renderBackFace(false)}
+        {activeSide === "front" ? renderFrontFace(true) : renderBackFace(true)}
       </div>
 
       <div
@@ -1004,8 +993,8 @@ export function DigitalIdCard({
               borderRadius: "999px",
               fontSize: "12px",
               fontWeight: activeSide === "front" ? 700 : 500,
-              backgroundColor: activeSide === "front" ? "#007AFF" : "transparent",
-              color: activeSide === "front" ? "#FFFFFF" : "var(--color-neutral-dark, #4B5563)",
+              backgroundColor: activeSide === "front" ? "var(--color-primary)" : "transparent",
+              color: activeSide === "front" ? "#FFFFFF" : "var(--color-primary)",
               border: "none",
               cursor: "pointer",
               transition: "all 0.15s ease",
@@ -1021,8 +1010,8 @@ export function DigitalIdCard({
               borderRadius: "999px",
               fontSize: "12px",
               fontWeight: activeSide === "back" ? 700 : 500,
-              backgroundColor: activeSide === "back" ? "#007AFF" : "transparent",
-              color: activeSide === "back" ? "#FFFFFF" : "var(--color-neutral-dark, #4B5563)",
+              backgroundColor: activeSide === "back" ? "var(--color-primary)" : "transparent",
+              color: activeSide === "back" ? "#FFFFFF" : "var(--color-primary)",
               border: "none",
               cursor: "pointer",
               transition: "all 0.15s ease",

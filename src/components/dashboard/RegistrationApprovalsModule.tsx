@@ -716,6 +716,7 @@ export function RegistrationApprovalsModule() {
                 Select Matching Academic Student Record *
               </label>
               <select
+                aria-label="Select Matching Academic Student Record *"
                 value={matchedStudentId}
                 onChange={(e) => setMatchedStudentId(e.target.value)}
                 style={{

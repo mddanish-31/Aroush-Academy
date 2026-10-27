@@ -540,7 +540,7 @@ export function AcademicSetupModule() {
                       {b.name}
                     </td>
                     <td style={{ padding: "12px 14px" }}>
-                      <span style={{ fontWeight: 600, color: "var(--color-accent)" }}>{b.subject}</span>
+                      <span style={{ fontWeight: 600, color: "var(--color-primary)" }}>{b.subject}</span>
                       <div style={{ fontSize: "11px", color: "var(--color-neutral-dark)" }}>{b.classGrade}</div>
                     </td>
                     <td style={{ padding: "12px 14px", color: "var(--color-primary)" }}>
@@ -566,7 +566,7 @@ export function AcademicSetupModule() {
                             <div
                               style={{
                                 fontSize: "10px",
-                                color: "var(--color-accent)",
+                                color: "var(--color-neutral-dark)",
                                 marginTop: "2px",
                               }}
                             >
@@ -986,6 +986,7 @@ export function AcademicSetupModule() {
                 <div>
                   <label style={{ fontSize: "var(--text-xs)", fontWeight: 600, display: "block", marginBottom: "4px" }}>Target Grade *</label>
                   <select
+                    aria-label="Target Grade *"
                     value={batchClassInput}
                     onChange={(e) => setBatchClassInput(e.target.value)}
                     style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-sm)" }}
@@ -998,6 +999,7 @@ export function AcademicSetupModule() {
                 <div>
                   <label style={{ fontSize: "var(--text-xs)", fontWeight: 600, display: "block", marginBottom: "4px" }}>Subject *</label>
                   <select
+                    aria-label="Subject *"
                     value={batchSubjectInput}
                     onChange={(e) => {
                       const newSub = e.target.value;
@@ -1018,6 +1020,7 @@ export function AcademicSetupModule() {
               <div>
                 <label style={{ fontSize: "var(--text-xs)", fontWeight: 600, display: "block", marginBottom: "4px" }}>Assigned Instructor *</label>
                 <select
+                  aria-label="Assigned Instructor *"
                   value={batchTeacherIdInput}
                   onChange={(e) => setBatchTeacherIdInput(e.target.value)}
                   style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-sm)" }}

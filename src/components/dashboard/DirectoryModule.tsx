@@ -1,5 +1,5 @@
 "use client";
-import { Search, Phone, Edit, Calendar, BarChart3 } from "lucide-react";
+import { Search, Phone, Edit, Calendar, BarChart3, Info } from "lucide-react";
 
 import React, { useState, useMemo, useEffect } from "react";
 import {
@@ -1671,8 +1671,9 @@ export function DirectoryModule({
                                 width: "26px",
                                 height: "26px",
                                 borderRadius: "var(--radius-full)",
-                                backgroundColor: "var(--color-accent-subtle)",
-                                color: "var(--color-accent)",
+                                backgroundColor: "var(--color-surface-muted)",
+                                color: "var(--color-primary)",
+                                border: "1px solid var(--color-border)",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -2608,7 +2609,7 @@ export function DirectoryModule({
                             style={{
                               fontSize: "var(--text-xl)",
                               fontWeight: 700,
-                              color: "var(--color-accent)",
+                              color: "var(--color-primary)",
                               marginTop: "2px",
                             }}
                           >
@@ -4026,6 +4027,7 @@ export function DirectoryModule({
                     Class Grade *
                   </label>
                   <select
+                    aria-label="Class Grade *"
                     value={addFormClass}
                     onChange={(e) => {
                       const newClass = e.target.value;
@@ -4099,6 +4101,7 @@ export function DirectoryModule({
                     Board *
                   </label>
                   <select
+                    aria-label="Board *"
                     value={addFormBoard}
                     onChange={(e) =>
                       setAddFormBoard(
@@ -4136,6 +4139,7 @@ export function DirectoryModule({
                     Status
                   </label>
                   <select
+                    aria-label="Status"
                     value={addFormStatus}
                     onChange={(e) =>
                       setAddFormStatus(
@@ -4389,6 +4393,7 @@ export function DirectoryModule({
                                     Faculty
                                   </span>
                                   <select
+                                    aria-label="Faculty"
                                     value={currentEntry.teacherId}
                                     onChange={(e) => {
                                       const tId = e.target.value;
@@ -4433,6 +4438,7 @@ export function DirectoryModule({
                                     Batch
                                   </span>
                                   <select
+                                    aria-label="Batch"
                                     value={currentEntry.batchName}
                                     onChange={(e) => {
                                       const bVal = e.target.value;
@@ -4754,6 +4760,7 @@ export function DirectoryModule({
                     Class Grade
                   </label>
                   <select
+                    aria-label="Class Grade"
                     value={editFormClass}
                     onChange={(e) => setEditFormClass(e.target.value)}
                     style={{
@@ -4787,6 +4794,7 @@ export function DirectoryModule({
                     Board
                   </label>
                   <select
+                    aria-label="Board"
                     value={editFormBoard}
                     onChange={(e) =>
                       setEditFormBoard(
@@ -4824,6 +4832,7 @@ export function DirectoryModule({
                     Status
                   </label>
                   <select
+                    aria-label="Status"
                     value={editFormStatus}
                     onChange={(e) =>
                       setEditFormStatus(
@@ -4920,6 +4929,7 @@ export function DirectoryModule({
 
                   {editFormSubjects.length < activeSubjectsForEdit.length && (
                     <select
+                      aria-label="Subject Enrollments"
                       onChange={(e) => {
                         const subName = e.target.value;
                         if (!subName) return;
@@ -5014,6 +5024,7 @@ export function DirectoryModule({
                         </strong>
 
                         <select
+                          aria-label="Faculty"
                           value={sub.teacherId}
                           onChange={(e) => {
                             const tId = e.target.value;
@@ -5044,6 +5055,7 @@ export function DirectoryModule({
                         </select>
 
                         <select
+                          aria-label="Batch"
                           value={sub.batchName}
                           onChange={(e) => {
                             const bVal = e.target.value;
@@ -5854,7 +5866,8 @@ export function DirectoryModule({
                   lineHeight: 1.5,
                 }}
               >
-                ℹ️ <strong>Demo Simulation Note:</strong> In this frontend
+                <Info size={13} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} aria-hidden="true" />
+                <strong>Demo Simulation Note:</strong> In this frontend
                 environment, no external email service or real SMTP provider is
                 invoked. An honest demo invitation code will be registered in
                 local state, ready for 1-click activation simulation.
@@ -5872,6 +5885,7 @@ export function DirectoryModule({
                   Account Role *
                 </label>
                 <select
+                  aria-label="Account Role"
                   value={inviteRole}
                   onChange={(e) =>
                     setInviteRole(e.target.value as "student" | "parent")

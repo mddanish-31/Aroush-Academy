@@ -142,6 +142,11 @@ button {
   cursor: pointer;
 }
 
+table th,
+table td {
+  background-color: var(--color-surface);
+}
+
 /* Layout Utilities */
 .container {
   width: 100%;

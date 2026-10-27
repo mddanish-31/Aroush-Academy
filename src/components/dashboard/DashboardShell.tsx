@@ -766,11 +766,7 @@ export function DashboardShell({
         );
       case "overdue":
         return (
-          <Badge
-            variant="neutral"
-            size="sm"
-            style={{ color: "#FF3B30", borderColor: "rgba(255, 59, 48, 0.3)" }}
-          >
+          <Badge variant="danger" size="sm">
             Overdue
           </Badge>
         );
@@ -2200,7 +2196,7 @@ export function DashboardShell({
                                       <div
                                         style={{
                                           fontSize: "11px",
-                                          color: "#FF3B30",
+                                          color: "var(--color-danger)",
                                           fontWeight: 600,
                                         }}
                                       >

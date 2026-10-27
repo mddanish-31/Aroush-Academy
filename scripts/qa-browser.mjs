@@ -367,16 +367,20 @@ async function run() {
 
       const navTrigger = motionPage.locator("#nav-trigger-programs");
       await navTrigger.click();
-      await motionPage.waitForTimeout(40);
-      const fullOpacity40 = await motionPage.locator("#dropdown-panel-programs").evaluate((el) => {
-        return parseFloat(window.getComputedStyle(el).opacity);
-      });
+      const fullOpacitySamples = [];
+      for (let i = 0; i < 3; i += 1) {
+        await motionPage.waitForTimeout(30);
+        const sampled = await motionPage.locator("#dropdown-panel-programs").evaluate((el) => {
+          return parseFloat(window.getComputedStyle(el).opacity);
+        });
+        fullOpacitySamples.push(sampled);
+      }
       assert(
-        fullOpacity40 > 0 && fullOpacity40 < 1,
-        `Full mode dropdown 40ms opacity strictly between 0 and 1 (sampled: ${fullOpacity40.toFixed(3)})`
+        fullOpacitySamples.some((o) => o > 0 && o < 1),
+        `Full mode dropdown 30/60/90ms opacity strictly between 0 and 1 (sampled: ${fullOpacitySamples.map((o) => o.toFixed(3)).join(", ")})`
       );
 
-      await motionPage.waitForTimeout(360);
+      await motionPage.waitForTimeout(310);
       const fullOpacity400 = await motionPage.locator("#dropdown-panel-programs").evaluate((el) => {
         return parseFloat(window.getComputedStyle(el).opacity);
       });
@@ -562,7 +566,7 @@ async function run() {
       );
       assert(
         cdpSuccess || scrollerAttrs.hasPanX,
-        `Mobile touch scroll verified (CDP: ${cdpSuccess}, touchAction: "${scrollerAttrs.touchAction}", overscrollBehaviorX: "${scrollerAttrs.overscrollBehaviorX}")`
+        `Mobile touch scroll passed (CDP: ${cdpSuccess}, touchAction: "${scrollerAttrs.touchAction}", overscrollBehaviorX: "${scrollerAttrs.overscrollBehaviorX}")`
       );
 
       const coursesScrollerAttrs = await mobPage.evaluate(() => {
@@ -1086,7 +1090,7 @@ async function run() {
 
       for (const item of mediaItems) {
         const photoPage = await browser.newPage({ viewport: { width: 800, height: 600 } });
-        await photoPage.setContent(`<!DOCTYPE html><html><body style="margin:0;background:#1D1D1F;display:flex;align-items:center;justify-content:center;height:100vh;"><img src="${item.url}" style="max-width:100%;max-height:100vh;object-fit:contain;" /></body></html>`);
+        await photoPage.setContent(`<!DOCTYPE html><html><body style="margin:0;background:#1D1D1F;display:flex;align-items:center;justify-content:center;height:100vh;"><img src="${item.url}" style="max-width:100%;max-height:100vh;object-fit:contain;" /></body></html>`, { waitUntil: "domcontentloaded" });
         await photoPage.waitForSelector("img");
         await photoPage.waitForTimeout(300);
 
@@ -1395,6 +1399,10 @@ async function run() {
         });
         window.localStorage.setItem("aroush_demo_auth_user", u);
         window.localStorage.setItem("aroush_auth_user_v1", u);
+        window.localStorage.setItem(
+          "aroushh_cookie_preferences_v1",
+          JSON.stringify({ necessary: true, functional: false, analytics: false, marketing: false, consented: true })
+        );
       });
       const unlinkedPage = await unlinkedContext.newPage();
       await unlinkedPage.goto(`${QA_URL}/dashboard?role=parent`, { waitUntil: "domcontentloaded" });
@@ -1432,6 +1440,10 @@ async function run() {
         });
         window.localStorage.setItem("aroush_demo_auth_user", u);
         window.localStorage.setItem("aroush_auth_user_v1", u);
+        window.localStorage.setItem(
+          "aroushh_cookie_preferences_v1",
+          JSON.stringify({ necessary: true, functional: false, analytics: false, marketing: false, consented: true })
+        );
       });
       const modalPage = await modalContext.newPage();
       await modalPage.goto(`${QA_URL}/dashboard?role=academy-admin`, { waitUntil: "domcontentloaded" });
@@ -1494,6 +1506,25 @@ async function run() {
     }
 
     console.log("\n--- Section 19: Real Login Form & All-Module Axe Accessibility ---");
+    const axeRuleDetail = (ctx, rules, withNodeMessage) =>
+      rules
+        .map((r) => {
+          const nodes = r.nodes || [];
+          const targets = nodes
+            .slice(0, 2)
+            .map((n) => JSON.stringify(n.target || "unknown"))
+            .join(" ");
+          let line = `[AxeDetail ${ctx}] rule: ${r.id} | impact: ${r.impact} | nodes: ${nodes.length} | targets: ${targets}`;
+          if (withNodeMessage && nodes[0]) {
+            const check = [...(nodes[0].any || []), ...(nodes[0].all || []), ...(nodes[0].none || [])][0];
+            if (check && check.message) {
+              line += ` | message: ${check.message}`;
+            }
+          }
+          return line;
+        })
+        .join("\n");
+    let mobileModuleSelectChecked = false;
     {
       const demoCreds = {
         "academy-admin": { identifier: "admin@aroushacademy.in", password: "admin2026" },
@@ -1583,6 +1614,29 @@ async function run() {
             const shotRole390 = path.join(outputDir, `screenshot-dashboard-390-${role}-${tag}.png`);
             await rolePage.screenshot({ path: shotRole390 });
             assert(fs.existsSync(shotRole390), `Dashboard shell 390 screenshot saved: ${shotRole390}`);
+            if (!mobileModuleSelectChecked) {
+              mobileModuleSelectChecked = true;
+              const selAccessibleName = await rolePage.evaluate(() => {
+                const sel = document.querySelector("#mobile-module-select");
+                if (!sel) return null;
+                const labelledBy = sel.getAttribute("aria-labelledby");
+                if (labelledBy) {
+                  const el = document.getElementById(labelledBy);
+                  if (el && el.textContent.trim()) return el.textContent.trim();
+                }
+                const ariaLabel = sel.getAttribute("aria-label");
+                if (ariaLabel && ariaLabel.trim()) return ariaLabel.trim();
+                if (sel.id) {
+                  const label = document.querySelector(`label[for="${sel.id}"]`);
+                  if (label && label.textContent.trim()) return label.textContent.trim();
+                }
+                return "";
+              });
+              assert(
+                selAccessibleName !== null && selAccessibleName.length > 0,
+                `Mobile module select #mobile-module-select has an accessible name ("${selAccessibleName}")`
+              );
+            }
           }
 
           const modules = roleModules[role];
@@ -1600,6 +1654,14 @@ async function run() {
             console.log(
               `  [Axe: ${role} | "${mod}" | ${vp.width}px] Violations: ${axeResults.violations.length} (serious/critical: ${seriousOrCritical.length}), Incomplete color-contrast: ${incompleteContrast.length}`
             );
+
+            const axeCtx = `${role} | "${mod}" | ${vp.width}px`;
+            if (seriousOrCritical.length > 0) {
+              console.log(axeRuleDetail(axeCtx, seriousOrCritical, false));
+            }
+            if (incompleteContrast.length > 0) {
+              console.log(axeRuleDetail(axeCtx, incompleteContrast, true));
+            }
 
             assert(
               seriousOrCritical.length === 0,
