@@ -64,9 +64,11 @@ export function LoginForm() {
 
   const handleSelectRolePill = (role: UserRole) => {
     setChosenRole(role);
-    const demo = DEMO_ACCOUNTS[role];
-    setIdentifier(demo.user.identifier);
-    setPassword(demo.demoPassword);
+    if (process.env.NEXT_PUBLIC_AUTH_MODE !== "server") {
+      const demo = DEMO_ACCOUNTS[role];
+      setIdentifier(demo.user.identifier);
+      setPassword(demo.demoPassword);
+    }
     setErrorMessage(null);
   };
 
@@ -90,6 +92,42 @@ export function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+
+    if (process.env.NEXT_PUBLIC_AUTH_MODE === "server") {
+      setIsSubmitting(true);
+      try {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({
+            identifier: identifier.trim(),
+            password,
+          }),
+        });
+
+        if (res.status === 429) {
+          setErrorMessage("Too many attempts, try later");
+          return;
+        }
+
+        const data = await res.json().catch(() => null);
+        if (!res.ok || !data || !data.ok) {
+          setErrorMessage("Invalid credentials");
+          return;
+        }
+
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("aroush-auth-changed"));
+        }
+        router.push("/dashboard");
+      } catch {
+        setErrorMessage("Invalid credentials");
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
 
     if (!identifier.trim()) {
       setErrorMessage("Please enter your registered email address or phone number.");
