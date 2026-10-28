@@ -29,7 +29,8 @@
     "db:test:phase-a": "node --env-file=.env.local --import tsx scripts/db-test-phase-a.ts",
     "auth:timing": "node --env-file=.env.local --import tsx scripts/scrypt-timing.ts",
     "db:seed:test": "node --env-file=.env.local --import tsx scripts/db-seed.ts",
-    "db:seed:main": "node --env-file=.env.local --import tsx scripts/db-seed.ts --main"
+    "db:seed:main": "node --env-file=.env.local --import tsx scripts/db-seed.ts --main",
+    "db:test:auth": "node --env-file=.env.local --import tsx scripts/db-test-auth.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
