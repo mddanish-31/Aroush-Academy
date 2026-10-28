@@ -32,7 +32,8 @@
     "db:seed:main": "node --env-file=.env.local --import tsx scripts/db-seed.ts --main",
     "db:test:auth": "node --env-file=.env.local --import tsx scripts/db-test-auth.ts",
     "dev:test-server": "node scripts/dev-test-server.mjs",
-    "test:auth-http": "node --env-file=.env.local scripts/test-auth-http.mjs"
+    "test:auth-http": "node --env-file=.env.local scripts/test-auth-http.mjs",
+    "db:test:admissions": "node --env-file=.env.local --import tsx scripts/db-test-admissions.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",

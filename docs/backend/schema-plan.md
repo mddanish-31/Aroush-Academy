@@ -114,6 +114,12 @@ This document specifies the target PostgreSQL (Neon) relational schema for Arous
   - identifier: varchar(255), NOT NULL
   - password_hash: varchar(255), NOT NULL
   - role: varchar(50), NOT NULL
+  - class_id: uuid, NOT NULL
+  - board_id: uuid, NOT NULL
+  - guardian_name: varchar(255), NOT NULL
+  - guardian_identifier: varchar(255), NOT NULL
+  - guardian_email: varchar(255), NULL
+  - guardian_password_hash: varchar(255), NOT NULL
   - class_grade: varchar(50), NULL
   - ward_name: varchar(255), NULL
   - linked_student_id: uuid, NULL
@@ -127,6 +133,8 @@ This document specifies the target PostgreSQL (Neon) relational schema for Arous
   - updated_at: timestamptz, NOT NULL, DEFAULT now()
 - Primary Key: id
 - Foreign Keys:
+  - class_id REFERENCES academic_classes(id) ON DELETE RESTRICT
+  - board_id REFERENCES academic_boards(id) ON DELETE RESTRICT
   - linked_student_id REFERENCES students(id) ON DELETE SET NULL
   - approved_user_id REFERENCES users(id) ON DELETE SET NULL
   - reviewed_by_id REFERENCES users(id) ON DELETE SET NULL

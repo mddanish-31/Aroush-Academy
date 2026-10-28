@@ -3,6 +3,7 @@ import { index, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from "dri
 import { invitation_activation_status, registration_role, registration_status, user_role } from "./enums";
 import { users } from "./identity";
 import { students } from "./people";
+import { academic_boards, academic_classes } from "./taxonomy";
 
 export const registrations = pgTable(
   "registrations",
@@ -12,6 +13,16 @@ export const registrations = pgTable(
     identifier: varchar("identifier", { length: 255 }).notNull(),
     password_hash: varchar("password_hash", { length: 255 }).notNull(),
     role: registration_role("role").notNull(),
+    class_id: uuid("class_id")
+      .notNull()
+      .references(() => academic_classes.id, { onDelete: "restrict" }),
+    board_id: uuid("board_id")
+      .notNull()
+      .references(() => academic_boards.id, { onDelete: "restrict" }),
+    guardian_name: varchar("guardian_name", { length: 255 }).notNull(),
+    guardian_identifier: varchar("guardian_identifier", { length: 255 }).notNull(),
+    guardian_email: varchar("guardian_email", { length: 255 }),
+    guardian_password_hash: varchar("guardian_password_hash", { length: 255 }).notNull(),
     class_grade: varchar("class_grade", { length: 50 }),
     ward_name: varchar("ward_name", { length: 255 }),
     linked_student_id: uuid("linked_student_id").references(() => students.id, { onDelete: "set null" }),
