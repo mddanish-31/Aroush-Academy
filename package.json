@@ -26,7 +26,10 @@
     "db:migrate": "node --env-file=.env.local ./node_modules/.bin/drizzle-kit migrate",
     "db:studio": "node --env-file=.env.local ./node_modules/.bin/drizzle-kit studio",
     "db:migrate:test": "node --env-file=.env.local --import tsx scripts/db-migrate-test.ts",
-    "db:test:phase-a": "node --env-file=.env.local --import tsx scripts/db-test-phase-a.ts"
+    "db:test:phase-a": "node --env-file=.env.local --import tsx scripts/db-test-phase-a.ts",
+    "auth:timing": "node --env-file=.env.local --import tsx scripts/scrypt-timing.ts",
+    "db:seed:test": "node --env-file=.env.local --import tsx scripts/db-seed.ts",
+    "db:seed:main": "node --env-file=.env.local --import tsx scripts/db-seed.ts --main"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
