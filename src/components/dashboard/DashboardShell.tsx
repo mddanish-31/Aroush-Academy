@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
 import {
   UserRole,
@@ -61,6 +61,9 @@ const ClassroomModule = dynamic(() =>
 );
 const RegistrationApprovalsModule = dynamic(() =>
   import("./RegistrationApprovalsModule").then((m) => m.RegistrationApprovalsModule)
+);
+const RegistrationsModule = dynamic(() =>
+  import("./RegistrationsModule").then((m) => m.RegistrationsModule)
 );
 const FeesModule = dynamic(() =>
   import("./FeesModule").then((m) => m.FeesModule)
@@ -214,9 +217,12 @@ const ROLE_METRICS: Record<UserRole, MetricItem[]> = {
   ],
 };
 
+const IS_SERVER_AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE === "server";
+
 const ROLE_NAV_ITEMS: Record<UserRole, string[]> = {
   "academy-admin": [
     "Overview & Fee Ledger",
+    ...(IS_SERVER_AUTH_MODE ? ["Registrations"] : []),
     "Registration Approvals",
     "Students & Faculty Directory",
     "Academic Setup & Batches",
@@ -278,17 +284,26 @@ export function DashboardShell({
 }: DashboardShellProps) {
   const rolesList = ROLES_LIST;
 
-  const { user, isAuthenticated, logout, registrationRequests } = useAuth();
+  const { user, isAuthenticated, isLoading, logout, registrationRequests } = useAuth();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const queryRole = searchParams
     ? (searchParams.get("role") as UserRole | null)
     : null;
 
-  
-  
-  
-  
+  useEffect(() => {
+    if (IS_SERVER_AUTH_MODE && !isLoading && !user) {
+      router.replace("/login");
+    }
+  }, [isLoading, user, router]);
+
   const resolvedRole: UserRole = useMemo(() => {
+    if (IS_SERVER_AUTH_MODE) {
+      if (user?.role && ROLES_LIST.some((r) => r.id === user.role)) {
+        return user.role;
+      }
+      return "student";
+    }
     if (
       isAuthenticated &&
       user?.role &&
@@ -337,7 +352,7 @@ export function DashboardShell({
   }
 
   
-  if (isAuthenticated && activeRole !== resolvedRole) {
+  if ((IS_SERVER_AUTH_MODE || isAuthenticated) && activeRole !== resolvedRole) {
     setActiveRole(resolvedRole);
   }
 
@@ -780,6 +795,21 @@ export function DashboardShell({
     }
   };
 
+  if (IS_SERVER_AUTH_MODE && (isLoading || !user)) {
+    return (
+      <div
+        style={{
+          padding: "var(--space-12)",
+          textAlign: "center",
+          color: "var(--color-neutral-dark)",
+          fontSize: "var(--text-sm)",
+        }}
+      >
+        Loading workspace...
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
@@ -810,7 +840,7 @@ export function DashboardShell({
         >
           {rolesList.find((r) => r.id === activeRole)?.name} View:
         </span>
-        {activeRole === "teacher" && (
+        {!IS_SERVER_AUTH_MODE && activeRole === "teacher" && (
           <div
             style={{
               display: "flex",
@@ -867,7 +897,7 @@ export function DashboardShell({
             </select>
           </div>
         )}
-        {activeRole === "student" && (
+        {!IS_SERVER_AUTH_MODE && activeRole === "student" && (
           <select
             id="student-switcher-select"
             aria-label="Simulated student account"
@@ -889,7 +919,7 @@ export function DashboardShell({
             ))}
           </select>
         )}
-        {activeRole === "parent" && (
+        {!IS_SERVER_AUTH_MODE && activeRole === "parent" && (
           <span
             style={{
               fontSize: "11px",
@@ -2315,10 +2345,18 @@ export function DashboardShell({
 
             {activeRole === "academy-admin" && (
               <>
-                {(activeTab === "Registration Approvals" ||
-                  activeTab === "Pending Registrations") && (
-                  <RegistrationApprovalsModule />
-                )}
+                {IS_SERVER_AUTH_MODE &&
+                  (activeTab === "Registrations" ||
+                    activeTab === "Registration Approvals" ||
+                    activeTab === "Pending Registrations") && (
+                    <RegistrationsModule />
+                  )}
+
+                {!IS_SERVER_AUTH_MODE &&
+                  (activeTab === "Registration Approvals" ||
+                    activeTab === "Pending Registrations") && (
+                    <RegistrationApprovalsModule />
+                  )}
 
                 {isAcademyOverviewOrLedger && pendingRegistrationsCount > 0 && (
                   <div

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { desc } from "drizzle-orm";
 import { db } from "@/db";
 import { registrations } from "@/db/schema/admissions";
-import { requireRole } from "@/lib/auth/guard";
+import { getCurrentUser } from "@/lib/auth/guard";
 
 export async function GET(request: NextRequest) {
   if (process.env.NEXT_PUBLIC_AUTH_MODE !== "server") {
@@ -23,7 +23,13 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  await requireRole(["academy-admin"]);
+  const admin = await getCurrentUser();
+  if (!admin) {
+    return NextResponse.json({ ok: false, reason: "unauthorized" }, { status: 401 });
+  }
+  if (admin.role !== "academy-admin") {
+    return NextResponse.json({ ok: false, reason: "forbidden" }, { status: 403 });
+  }
 
   const rows = await db
     .select({

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rejectRegistration } from "@/lib/admissions/approve";
-import { requireRole } from "@/lib/auth/guard";
+import { getCurrentUser } from "@/lib/auth/guard";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -33,7 +33,13 @@ export async function POST(
     return NextResponse.json({ ok: false, error: "Invalid registration id" }, { status: 400 });
   }
 
-  const admin = await requireRole(["academy-admin"]);
+  const admin = await getCurrentUser();
+  if (!admin) {
+    return NextResponse.json({ ok: false, reason: "unauthorized" }, { status: 401 });
+  }
+  if (admin.role !== "academy-admin") {
+    return NextResponse.json({ ok: false, reason: "forbidden" }, { status: 403 });
+  }
 
   let body: unknown;
   try {
