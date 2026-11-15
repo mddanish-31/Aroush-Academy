@@ -5,7 +5,7 @@ import { termsDoc } from "@/content/legal";
 
 export const metadata: Metadata = {
   title: "Terms of Use and Conditions",
-  description: "Official terms and conditions governing enrollment, fees, and code of conduct at ArousH Academy, Park Circus, Kolkata.",
+  description: "Current portal use information for ArousH Academy. Academy-approved legal terms are pending.",
   alternates: {
     canonical: "/terms",
   },

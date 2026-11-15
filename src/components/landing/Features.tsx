@@ -9,7 +9,7 @@ import {
   LucideIcon,
 } from "lucide-react";
 import { Reveal } from "@/components/common/Reveal";
-import { landingContent } from "@/content/landing";
+import type { LandingContent } from "@/content/types";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   BookOpen,
@@ -20,7 +20,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   ClipboardCheck,
 };
 
-export function Features() {
+export function Features({ landing }: { landing: LandingContent }) {
   return (
     <section
       id="method"
@@ -72,7 +72,7 @@ export function Features() {
               margin: 0,
             }}
           >
-            {landingContent.features.map((feat) => {
+            {landing.features.map((feat) => {
               const Icon = ICON_MAP[feat.icon] || BookOpen;
 
               return (

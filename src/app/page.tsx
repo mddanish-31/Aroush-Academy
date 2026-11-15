@@ -1,34 +1,16 @@
-import React from "react";
-import { Hero } from "@/components/landing/Hero";
-import { WhatWeTeach } from "@/components/landing/WhatWeTeach";
-import { AcademyIntro } from "@/components/landing/AcademyIntro";
-import { Courses } from "@/components/landing/Courses";
-import { Features } from "@/components/landing/Features";
-import { Faculty } from "@/components/landing/Faculty";
-import { HowItWorks } from "@/components/landing/HowItWorks";
-import { EnquirySection } from "@/components/landing/EnquirySection";
-import { FaqPreview } from "@/components/landing/FaqPreview";
-import { FinalCta } from "@/components/landing/FinalCta";
-import { Pricing } from "@/components/landing/Pricing";
+import React, { Suspense } from "react";
+import { connection } from "next/server";
+import { WebsiteSections } from "@/components/landing/WebsiteSections";
 import { getSiteContent } from "@/content";
+import { readPublishedCms } from "@/lib/cms/store";
 
-export default async function HomePage() {
-  const { site, hero } = await getSiteContent();
+async function HomeContent() {
+  await connection();
+  const content = process.env.NEXT_PUBLIC_AUTH_MODE === "server" ? await readPublishedCms() : await getSiteContent();
+  return <WebsiteSections content={content} />;
+}
 
-  return (
-    <>
-      <Hero hero={hero} />
-      <WhatWeTeach />
-      <AcademyIntro />
-      <Courses />
-      <Features />
-      <Faculty />
-      <HowItWorks />
-      <EnquirySection />
-      <FaqPreview />
-      {site.featureFlags.showPricing && <Pricing />}
-      <FinalCta />
-    </>
-  );
+export default function HomePage() {
+  return <Suspense fallback={<main role="status">Loading website...</main>}><HomeContent /></Suspense>;
 }
 

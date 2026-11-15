@@ -24,9 +24,8 @@ export interface RegisterStudentInput {
   class_id: string;
   board_id: string;
   guardian_name: string;
-  guardian_identifier: string;
+  guardian_phone: string;
   guardian_email?: string | null;
-  guardian_password: string;
 }
 
 export interface RegisterResult {
@@ -48,7 +47,7 @@ export async function registerStudent(
     typeof input.name !== "string" ||
     typeof input.guardian_name !== "string" ||
     typeof input.password !== "string" ||
-    typeof input.guardian_password !== "string" ||
+    typeof input.guardian_phone !== "string" ||
     typeof input.class_id !== "string" ||
     typeof input.board_id !== "string"
   ) {
@@ -70,14 +69,11 @@ export async function registerStudent(
     return { ok: false, error: "Invalid registration details" };
   }
 
-  if (input.guardian_password.length < 12 || input.guardian_password.length > 200) {
-    return { ok: false, error: "Invalid registration details" };
-  }
-
   const studentIdentifier = normalizeIdentifier(input.identifier || "");
-  const guardianIdentifier = normalizeIdentifier(input.guardian_identifier || "");
+  const guardianIdentifier = normalizeIdentifier(input.guardian_phone);
 
-  if (!studentIdentifier || !guardianIdentifier) {
+  if (!studentIdentifier || (studentIdentifier.includes("@") && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(studentIdentifier)) ||
+      !guardianIdentifier?.startsWith("+91") || input.guardian_phone.length > 20) {
     return { ok: false, error: "Invalid registration details" };
   }
 
@@ -87,7 +83,7 @@ export async function registerStudent(
 
   const clientIp = ip && ip.trim() !== "" ? ip.trim() : "127.0.0.1";
   const rateLimitIdentifier = "register:" + clientIp;
-  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+  const oneHourAgo = sql`now() - interval '1 hour'`;
 
   const ipCountResult = await targetDb
     .select({ count: sql<number>`count(*)::int` })
@@ -125,15 +121,15 @@ export async function registerStudent(
   }
 
   const existingUsers = await targetDb
-    .select({ identifier: users.identifier, role: users.role })
+    .select({ identifier: users.identifier, email: users.email, phone: users.phone, role: users.role })
     .from(users)
-    .where(or(eq(users.identifier, studentIdentifier), eq(users.identifier, guardianIdentifier)));
+    .where(or(eq(users.identifier, studentIdentifier), eq(users.email, studentIdentifier), eq(users.phone, studentIdentifier), eq(users.identifier, guardianIdentifier), eq(users.phone, guardianIdentifier)));
 
   for (const existingUser of existingUsers) {
-    if (existingUser.identifier === studentIdentifier) {
+    if ([existingUser.identifier, existingUser.email, existingUser.phone].includes(studentIdentifier)) {
       return { ok: false, error: "Registration request could not be processed" };
     }
-    if (existingUser.identifier === guardianIdentifier && existingUser.role === "student") {
+    if (existingUser.role !== "parent" && [existingUser.identifier, existingUser.phone].includes(guardianIdentifier)) {
       return { ok: false, error: "Registration request could not be processed" };
     }
   }
@@ -157,22 +153,15 @@ export async function registerStudent(
     return { ok: false, error: "Registration request could not be processed" };
   }
 
-  const studentPasswordHash = await hashPassword(input.password);
-  const guardianPasswordHash = await hashPassword(input.guardian_password);
-
-  let guardianEmail: string | null = null;
-  if (
-    input.guardian_email &&
-    typeof input.guardian_email === "string" &&
-    input.guardian_email.includes("@") &&
-    input.guardian_email.length <= 255
-  ) {
-    guardianEmail = input.guardian_email.toLowerCase().trim();
+  const guardianEmail = input.guardian_email ? normalizeIdentifier(input.guardian_email) : null;
+  if (input.guardian_email != null && (typeof input.guardian_email !== "string" || !guardianEmail?.includes("@") ||
+    guardianEmail.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guardianEmail))) {
+    return { ok: false, error: "Invalid registration details" };
   }
+  const studentPasswordHash = await hashPassword(input.password);
 
-  const [created] = await targetDb
-    .insert(registrations)
-    .values({
+  const created = await targetDb.transaction(async (tx) => {
+    const [row] = await tx.insert(registrations).values({
       name: trimmedStudentName,
       identifier: studentIdentifier,
       password_hash: studentPasswordHash,
@@ -182,17 +171,17 @@ export async function registerStudent(
       guardian_name: trimmedGuardianName,
       guardian_identifier: guardianIdentifier,
       guardian_email: guardianEmail,
-      guardian_password_hash: guardianPasswordHash,
+      guardian_phone: guardianIdentifier,
       class_grade: classRows[0].name,
       ward_name: trimmedStudentName,
       status: "pending",
-    })
-    .returning({ id: registrations.id });
-
-  await targetDb.insert(login_attempts).values({
-    identifier: rateLimitIdentifier,
-    ip_address: clientIp,
-    success: true,
+    }).returning({ id: registrations.id });
+    await tx.insert(login_attempts).values({
+      identifier: rateLimitIdentifier,
+      ip_address: clientIp,
+      success: true,
+    });
+    return row;
   });
 
   return { ok: true, registrationId: created.id };

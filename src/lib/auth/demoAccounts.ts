@@ -9,7 +9,7 @@ export interface DemoAccountDefinition {
   notes: string;
 }
 
-export const DEMO_ACCOUNTS: Record<UserRole, DemoAccountDefinition> = {
+export const DEMO_ACCOUNTS: Partial<Record<UserRole, DemoAccountDefinition>> = {
   "academy-admin": {
     user: {
       id: "demo-usr-admin",

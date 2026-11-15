@@ -2,7 +2,7 @@ import { sql } from "drizzle-orm";
 import { boolean, date, index, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 import { student_status, teacher_status } from "./enums";
 import { users } from "./identity";
-import { academic_boards, academic_classes } from "./taxonomy";
+import { academic_boards, academic_classes, academic_subjects } from "./taxonomy";
 
 export const teachers = pgTable(
   "teachers",
@@ -21,6 +21,15 @@ export const teachers = pgTable(
     uniqueIndex("idx_teachers_user_id").on(table.user_id),
     index("idx_teachers_status").on(table.status),
   ]
+);
+
+export const teacher_subjects = pgTable(
+  "teacher_subjects",
+  {
+    teacher_id: uuid("teacher_id").notNull().references(() => teachers.id, { onDelete: "restrict" }),
+    subject_id: uuid("subject_id").notNull().references(() => academic_subjects.id, { onDelete: "restrict" }),
+  },
+  (table) => [uniqueIndex("idx_teacher_subjects_pair").on(table.teacher_id, table.subject_id)]
 );
 
 export const students = pgTable(

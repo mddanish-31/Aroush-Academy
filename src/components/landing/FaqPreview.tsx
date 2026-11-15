@@ -2,9 +2,9 @@ import React from "react";
 import Link from "next/link";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { Reveal } from "@/components/common/Reveal";
-import { landingContent } from "@/content/landing";
+import type { LandingContent } from "@/content/types";
 
-export function FaqPreview() {
+export function FaqPreview({ landing }: { landing: LandingContent }) {
   return (
     <section
       style={{
@@ -56,7 +56,7 @@ export function FaqPreview() {
 
         <Reveal delay={60}>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "36px" }}>
-            {landingContent.faqs.map((faq) => (
+            {landing.faqs.map((faq) => (
               <details
                 key={faq.id}
                 className="faq-item"

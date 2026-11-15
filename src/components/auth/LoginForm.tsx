@@ -66,8 +66,10 @@ export function LoginForm() {
     setChosenRole(role);
     if (process.env.NEXT_PUBLIC_AUTH_MODE !== "server") {
       const demo = DEMO_ACCOUNTS[role];
-      setIdentifier(demo.user.identifier);
-      setPassword(demo.demoPassword);
+      if (demo) {
+        setIdentifier(demo.user.identifier);
+        setPassword(demo.demoPassword);
+      }
     }
     setErrorMessage(null);
   };
@@ -93,42 +95,6 @@ export function LoginForm() {
     e.preventDefault();
     setErrorMessage(null);
 
-    if (process.env.NEXT_PUBLIC_AUTH_MODE === "server") {
-      setIsSubmitting(true);
-      try {
-        const res = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "same-origin",
-          body: JSON.stringify({
-            identifier: identifier.trim(),
-            password,
-          }),
-        });
-
-        if (res.status === 429) {
-          setErrorMessage("Too many attempts, try later");
-          return;
-        }
-
-        const data = await res.json().catch(() => null);
-        if (!res.ok || !data || !data.ok) {
-          setErrorMessage("Invalid credentials");
-          return;
-        }
-
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new Event("aroush-auth-changed"));
-        }
-        router.push("/dashboard");
-      } catch {
-        setErrorMessage("Invalid credentials");
-      } finally {
-        setIsSubmitting(false);
-      }
-      return;
-    }
-
     if (!identifier.trim()) {
       setErrorMessage("Please enter your registered email address or phone number.");
       return;
@@ -151,7 +117,7 @@ export function LoginForm() {
         router.push(dest);
       } else {
         setErrorMessage(
-          res.error || "Invalid credentials. Please verify your details or use one-click demo sign-in."
+          res.error || (process.env.NEXT_PUBLIC_AUTH_MODE === "server" || process.env.NODE_ENV === "production" ? "Sign in failed. Check your details and try again." : "Invalid credentials. Please verify your details or use one-click demo sign-in.")
         );
       }
     } catch {
@@ -232,7 +198,9 @@ export function LoginForm() {
             }}
           >
             {isForgotPasswordView
-              ? "Enter your registered email address or mobile number to receive a simulated recovery token."
+              ? process.env.NEXT_PUBLIC_AUTH_MODE === "server" || process.env.NODE_ENV === "production"
+                ? "Automatic recovery is unavailable. Contact the academy for manual identity verification and a one-time code."
+                : "Enter your registered email address or mobile number to receive a simulated recovery token."
               : "Access role-tailored dashboards for Academy Administration, Teachers, Students, and Parents."}
           </p>
 
@@ -251,7 +219,7 @@ export function LoginForm() {
             >
               <div>
                 <div style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)" }}>
-                  Current Active Demo Persona:
+                   {process.env.NEXT_PUBLIC_AUTH_MODE === "server" || process.env.NODE_ENV === "production" ? "Current account:" : "Current Active Demo Persona:"}
                 </div>
                 <div style={{ fontSize: "var(--text-sm)", fontWeight: 600 }}>
                   {user.name} ({ROLE_DISPLAY_NAMES[user.role]})
@@ -326,7 +294,7 @@ export function LoginForm() {
                   disabled={isResetSubmitting}
                   style={{ width: "100%" }}
                 >
-                  {isResetSubmitting ? "Generating Simulated Token..." : "Send Password Reset Instructions"}
+                  {isResetSubmitting ? "Checking..." : "Request recovery help"}
                 </Button>
                 <button
                   type="button"
@@ -345,10 +313,11 @@ export function LoginForm() {
                   &larr; Return to Sign In
                 </button>
               </div>
+              <p><Link href="/activate">Already have a one-time code? Set your password</Link></p>
             </form>
           ) : (
             <form onSubmit={handleSubmit} noValidate>
-              <div
+              {process.env.NEXT_PUBLIC_AUTH_MODE !== "server" && process.env.NODE_ENV !== "production" && <div
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -377,9 +346,9 @@ export function LoginForm() {
                 >
                   Change role
                 </button>
-              </div>
+              </div>}
 
-              {isRoleSelectorOpen && (
+              {process.env.NEXT_PUBLIC_AUTH_MODE !== "server" && process.env.NODE_ENV !== "production" && isRoleSelectorOpen && (
                 <div
                   role="radiogroup"
                   aria-label="Choose role"
@@ -567,7 +536,7 @@ export function LoginForm() {
                   disabled={isSubmitting}
                   style={{ width: "100%" }}
                 >
-                  {isSubmitting ? "Authenticating Persona..." : `Sign In as ${ROLE_DISPLAY_NAMES[selectedRole]}`}
+                  {isSubmitting ? "Signing in..." : process.env.NEXT_PUBLIC_AUTH_MODE === "server" || process.env.NODE_ENV === "production" ? "Sign in" : `Sign In as ${ROLE_DISPLAY_NAMES[selectedRole]}`}
                 </Button>
               </div>
 
@@ -611,6 +580,7 @@ export function LoginForm() {
                     >
                       {ROLES_ORDER.map((r) => {
                         const demo = DEMO_ACCOUNTS[r];
+                        if (!demo) return null;
                         return (
                           <button
                             key={`quick-${r}`}

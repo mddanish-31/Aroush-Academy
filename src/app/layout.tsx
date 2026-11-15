@@ -7,6 +7,8 @@ import { CookieConsent } from "@/components/common/CookieConsent";
 import { AuthProvider } from "@/lib/auth/AuthContext";
 import { MotionProvider } from "@/lib/motion/MotionProvider";
 import { MEDIA } from "@/content/media";
+import { heroContent } from "@/content";
+import { siteSettings } from "@/content/site";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -23,54 +25,28 @@ const manrope = Manrope({
 
 import { SITE_URL } from "@/lib/siteUrl";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: "ArousH Academy - Coaching for ICSE, CBSE & WB Board | Park Circus, Kolkata",
-    template: "%s | ArousH Academy",
-  },
-  description:
-    "Premier academic coaching for Class V-XII in Park Circus, Kolkata under Azhar Sir. Dedicated subject specialists, dual-faculty mathematics, and monthly mock test preparation.",
-  alternates: {
-    canonical: "/",
-  },
-  openGraph: {
-    type: "website",
-    locale: "en_IN",
-    url: "/",
-    siteName: "ArousH Academy",
-    title: "ArousH Academy - Coaching for ICSE, CBSE & WB Board | Park Circus, Kolkata",
-    description:
-      "Premier academic coaching for Class V-XII in Park Circus, Kolkata under Azhar Sir. Dedicated subject specialists, dual-faculty mathematics, and monthly mock test preparation.",
-    images: [
-      {
-        url: MEDIA.og.url,
-        width: MEDIA.og.width,
-        height: MEDIA.og.height,
-        alt: MEDIA.og.alt,
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "ArousH Academy - Coaching for ICSE, CBSE & WB Board | Park Circus, Kolkata",
-    description:
-      "Premier academic coaching for Class V-XII in Park Circus, Kolkata under Azhar Sir. Dedicated subject specialists, dual-faculty mathematics, and monthly mock test preparation.",
-    images: [MEDIA.og.url],
-  },
-  keywords: [
-    "ArousH Academy",
-    "Azhar Sir",
-    "Park Circus Coaching",
-    "ICSE Coaching Kolkata",
-    "CBSE Coaching Kolkata",
-    "West Bengal Board Tuition",
-    "Class V-XII Coaching",
-    "Class 10 Board Prep",
-    "Class 12 Maths Kolkata",
-  ],
-  authors: [{ name: "ArousH Academy" }],
-};
+async function publicContent() {
+  if (process.env.NEXT_PUBLIC_AUTH_MODE !== "server") return { site: siteSettings, hero: heroContent, media: MEDIA };
+  const { readPublishedCms } = await import("@/lib/cms/store");
+  return readPublishedCms();
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { site, hero, media } = await publicContent();
+  const title = site.siteName;
+  const description = hero.subheadline;
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: { default: title, template: `%s | ${title}` },
+    description,
+    alternates: { canonical: "/" },
+    openGraph: {
+      type: "website", locale: "en_IN", url: "/", siteName: title, title, description,
+      images: [{ url: media.og.url, width: media.og.width, height: media.og.height, alt: media.og.alt }],
+    },
+    twitter: { card: "summary_large_image", title, description, images: [media.og.url] },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#F5F5F7",
@@ -78,35 +54,27 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "EducationalOrganization",
-  name: "ArousH Academy",
-  alternateName: "ArousH Academy (Azhar Sir)",
-  url: SITE_URL,
-  telephone: "+919883005641",
-  email: "aroushacademyazharsir@gmail.com",
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: "1/1 Samsul Huda Road, near Jeebrail International School, Park Circus, Ballygunge",
-    addressLocality: "Kolkata",
-    addressRegion: "West Bengal",
-    postalCode: "700017",
-    addressCountry: "IN",
-  },
-};
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { site } = await publicContent();
+  const jsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "EducationalOrganization",
+    name: site.siteName,
+    url: SITE_URL,
+    telephone: site.phone,
+    email: site.email,
+    address: site.address,
+  }).replaceAll("<", "\\u003c");
   return (
     <html lang="en-IN" className={`${fraunces.variable} ${manrope.variable}`}>
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: jsonLd }}
         />
         <noscript>
           <style>{`.reveal-item { opacity: 1 !important; transform: none !important; }`}</style>

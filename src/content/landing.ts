@@ -131,7 +131,7 @@ export const landingContent: LandingContent = {
       id: "feat-doubts",
       title: "Dedicated In-Person Doubt Clearing",
       description:
-        "Structured doubt-clearing sessions guarantee that unresolved questions from earlier lectures never accumulate into exam anxiety.",
+        "Structured doubt-clearing sessions give students time to revisit questions from earlier lectures.",
       icon: "HelpCircle",
     },
     {

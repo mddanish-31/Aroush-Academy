@@ -68,9 +68,9 @@ export function normalizeAttendanceList(list: unknown): AttendanceRecord[] {
 }
 
 
-export function calculateAttendanceStats(records: AttendanceRecord[]): AttendanceStats {
+export function calculateAttendanceStats(records: Pick<AttendanceRecord, "id" | "studentId" | "sessionId" | "status">[]): AttendanceStats {
   
-  const uniqueRecords: AttendanceRecord[] = [];
+  const uniqueRecords: typeof records = [];
   const seenSessions = new Set<string>();
 
   for (const r of records) {

@@ -6,3 +6,7 @@ export * from "./people";
 export * from "./admissions";
 export * from "./cohorts";
 export * from "./audit";
+export * from "./attendance";
+export * from "./finance";
+export * from "./academic";
+export * from "./cms";

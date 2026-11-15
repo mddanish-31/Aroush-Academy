@@ -5,9 +5,9 @@ import { Phone, Mail, MapPin, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Reveal } from "@/components/common/Reveal";
 import { submitEnquiry } from "@/content/enquiry";
 import type { EnquiryResult } from "@/content/enquiry";
-import { siteSettings } from "@/content/site";
+import type { SiteSettings } from "@/content/types";
 
-export function EnquirySection() {
+export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings }) {
   const [formData, setFormData] = useState({
     studentName: "",
     contactNumber: "",

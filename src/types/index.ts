@@ -2,6 +2,7 @@
 
 export type UserRole =
   | "academy-admin"
+  | "developer"
   | "teacher"
   | "student"
   | "parent";

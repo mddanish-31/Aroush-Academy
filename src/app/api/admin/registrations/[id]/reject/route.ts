@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rejectRegistration } from "@/lib/admissions/approve";
 import { getCurrentUser } from "@/lib/auth/guard";
+import { readJsonBounded, sameOrigin } from "@/lib/auth/requestSafety";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -12,19 +13,7 @@ export async function POST(
     return NextResponse.json({ ok: false, reason: "not_found" }, { status: 404 });
   }
 
-  const origin = request.headers.get("origin");
-  const host = request.headers.get("host");
-
-  if (!origin || !host) {
-    return NextResponse.json({ ok: false, reason: "forbidden" }, { status: 403 });
-  }
-
-  try {
-    const originHost = new URL(origin).host;
-    if (originHost !== host) {
-      return NextResponse.json({ ok: false, reason: "forbidden" }, { status: 403 });
-    }
-  } catch {
+  if (!sameOrigin(request)) {
     return NextResponse.json({ ok: false, reason: "forbidden" }, { status: 403 });
   }
 
@@ -43,7 +32,7 @@ export async function POST(
 
   let body: unknown;
   try {
-    body = await request.json();
+    body = await readJsonBounded(request);
   } catch {
     return NextResponse.json({ ok: false, error: "Invalid JSON" }, { status: 400 });
   }

@@ -23,9 +23,8 @@ interface ServerFieldErrors {
   board_id?: string;
   password?: string;
   guardian_name?: string;
-  guardian_identifier?: string;
+  guardian_phone?: string;
   guardian_email?: string;
-  guardian_password?: string;
 }
 
 function ServerRegisterForm() {
@@ -45,12 +44,10 @@ function ServerRegisterForm() {
   const [boardId, setBoardId] = useState("");
   const [studentPassword, setStudentPassword] = useState("");
   const [guardianName, setGuardianName] = useState("");
-  const [guardianIdentifier, setGuardianIdentifier] = useState("");
+  const [guardianPhone, setGuardianPhone] = useState("");
   const [guardianEmail, setGuardianEmail] = useState("");
-  const [guardianPassword, setGuardianPassword] = useState("");
 
   const [showStudentPassword, setShowStudentPassword] = useState(false);
-  const [showGuardianPassword, setShowGuardianPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<ServerFieldErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -117,11 +114,11 @@ function ServerRegisterForm() {
       errors.guardian_name = "Guardian name must be between 2 and 100 characters.";
     }
 
-    const normGuardian = normalizeIdentifier(guardianIdentifier);
-    if (!normGuardian || guardianIdentifier.trim().length > 255) {
-      errors.guardian_identifier = "Enter a valid guardian phone number or email address.";
+    const normGuardian = normalizeIdentifier(guardianPhone);
+    if (!normGuardian?.startsWith("+91") || guardianPhone.trim().length > 20) {
+      errors.guardian_phone = "Enter a valid guardian phone number.";
     } else if (normStudent && normGuardian === normStudent) {
-      errors.guardian_identifier = "Guardian phone or email must differ from the student identifier.";
+      errors.guardian_phone = "Guardian phone must differ from the student identifier.";
     }
 
     const trimmedGuardianEmail = guardianEmail.trim();
@@ -130,10 +127,6 @@ function ServerRegisterForm() {
       (!trimmedGuardianEmail.includes("@") || trimmedGuardianEmail.length > 255)
     ) {
       errors.guardian_email = "Enter a valid guardian email address or leave blank.";
-    }
-
-    if (guardianPassword.length < 12 || guardianPassword.length > 200) {
-      errors.guardian_password = "Guardian password must be between 12 and 200 characters.";
     }
 
     return errors;
@@ -162,9 +155,8 @@ function ServerRegisterForm() {
           class_id: classId,
           board_id: boardId,
           guardian_name: guardianName.trim(),
-          guardian_identifier: guardianIdentifier.trim(),
+          guardian_phone: guardianPhone.trim(),
           guardian_email: guardianEmail.trim() ? guardianEmail.trim() : null,
-          guardian_password: guardianPassword,
         }),
       });
 
@@ -519,26 +511,26 @@ function ServerRegisterForm() {
                   </div>
 
                   <div>
-                    <label htmlFor="server-reg-guardian-identifier" style={labelStyle}>
-                      Guardian Phone or Email
+                      <label htmlFor="server-reg-guardian-identifier" style={labelStyle}>
+                        Guardian Phone
                     </label>
                     <input
                       id="server-reg-guardian-identifier"
-                      name="guardian_identifier"
-                      type="text"
-                      inputMode="email"
+                        name="guardian_phone"
+                        type="tel"
+                        inputMode="tel"
                       autoComplete="tel"
                       required
-                      value={guardianIdentifier}
-                      onChange={(e) => setGuardianIdentifier(e.target.value)}
-                      aria-invalid={!!fieldErrors.guardian_identifier}
-                      aria-describedby={fieldErrors.guardian_identifier ? "server-reg-guardian-identifier-error" : undefined}
-                      placeholder="10-digit mobile or email"
+                        value={guardianPhone}
+                        onChange={(e) => setGuardianPhone(e.target.value)}
+                        aria-invalid={!!fieldErrors.guardian_phone}
+                        aria-describedby={fieldErrors.guardian_phone ? "server-reg-guardian-identifier-error" : undefined}
+                        placeholder="10-digit mobile"
                       style={inputBaseStyle}
                     />
-                    {fieldErrors.guardian_identifier && (
-                      <div id="server-reg-guardian-identifier-error" style={fieldErrorStyle} role="alert">
-                        {fieldErrors.guardian_identifier}
+                      {fieldErrors.guardian_phone && (
+                        <div id="server-reg-guardian-identifier-error" style={fieldErrorStyle} role="alert">
+                          {fieldErrors.guardian_phone}
                       </div>
                     )}
                   </div>
@@ -564,56 +556,6 @@ function ServerRegisterForm() {
                   {fieldErrors.guardian_email && (
                     <div id="server-reg-guardian-email-error" style={fieldErrorStyle} role="alert">
                       {fieldErrors.guardian_email}
-                    </div>
-                  )}
-                </div>
-
-                <div style={{ marginBottom: "var(--space-4)" }}>
-                  <label htmlFor="server-reg-guardian-password" style={labelStyle}>
-                    Guardian Password (minimum 12 characters)
-                  </label>
-                  <div style={{ position: "relative" }}>
-                    <input
-                      id="server-reg-guardian-password"
-                      name="guardian_password"
-                      type={showGuardianPassword ? "text" : "password"}
-                      autoComplete="new-password"
-                      required
-                      value={guardianPassword}
-                      onChange={(e) => setGuardianPassword(e.target.value)}
-                      aria-invalid={!!fieldErrors.guardian_password}
-                      aria-describedby={fieldErrors.guardian_password ? "server-reg-guardian-password-error" : undefined}
-                      placeholder="At least 12 characters"
-                      style={{ ...inputBaseStyle, paddingRight: "76px" }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowGuardianPassword((prev) => !prev)}
-                      aria-label={showGuardianPassword ? "Hide guardian password" : "Show guardian password"}
-                      style={{
-                        position: "absolute",
-                        right: "10px",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        color: "var(--color-primary)",
-                        padding: "4px 6px",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "4px",
-                        fontSize: "11px",
-                        fontWeight: 600,
-                        background: "transparent",
-                        border: "none",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {showGuardianPassword ? <EyeOff size={14} aria-hidden="true" /> : <Eye size={14} aria-hidden="true" />}
-                      <span>{showGuardianPassword ? "Hide" : "Show"}</span>
-                    </button>
-                  </div>
-                  {fieldErrors.guardian_password && (
-                    <div id="server-reg-guardian-password-error" style={fieldErrorStyle} role="alert">
-                      {fieldErrors.guardian_password}
                     </div>
                   )}
                 </div>
@@ -689,7 +631,7 @@ function ServerRegisterForm() {
 }
 
 export function RegisterForm() {
-  if (process.env.NEXT_PUBLIC_AUTH_MODE === "server") {
+  if (process.env.NEXT_PUBLIC_AUTH_MODE === "server" || process.env.NODE_ENV === "production") {
     return <ServerRegisterForm />;
   }
   return <DemoRegisterForm />;

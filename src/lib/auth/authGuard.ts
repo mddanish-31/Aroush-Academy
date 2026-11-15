@@ -3,6 +3,7 @@ import { AuthUser } from "./authTypes";
 
 const VALID_USER_ROLES: readonly UserRole[] = [
   "academy-admin",
+  "developer",
   "teacher",
   "student",
   "parent",

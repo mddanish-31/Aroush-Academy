@@ -1,8 +1,8 @@
 import React from "react";
 import { Reveal } from "@/components/common/Reveal";
-import { landingContent } from "@/content/landing";
+import type { LandingContent } from "@/content/types";
 
-export function Faculty() {
+export function Faculty({ landing }: { landing: LandingContent }) {
   return (
     <section
       id="faculty"
@@ -50,7 +50,7 @@ export function Faculty() {
             gap: "24px",
           }}
         >
-          {landingContent.faculty.map((member, idx) => (
+          {landing.faculty.map((member, idx) => (
             <Reveal key={member.id} delay={idx * 60}>
               <div
                 style={{

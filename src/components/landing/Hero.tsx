@@ -1,17 +1,17 @@
 import React from "react";
 import { ArrowRight } from "lucide-react";
 import { HeroGallery } from "./HeroGallery";
-import type { HeroContent } from "@/content/types";
-import { landingContent } from "@/content/landing";
+import type { HeroContent, LandingContent } from "@/content/types";
 
 interface HeroProps {
   hero: HeroContent;
+  landing: LandingContent;
 }
 
-export function Hero({ hero }: HeroProps) {
+export function Hero({ hero, landing }: HeroProps) {
   const verifiedSubjects = Array.from(
     new Set(
-      landingContent.courses.flatMap((c) =>
+      landing.courses.flatMap((c) =>
         c.subjects.filter((s) => s.verified).map((s) => s.name)
       )
     )
@@ -69,8 +69,7 @@ export function Hero({ hero }: HeroProps) {
             margin: "0 auto 14px",
           }}
         >
-          <span style={{ display: "inline-block" }}>Clear the concept.</span>{" "}
-          <span style={{ display: "inline-block" }}>Then decode the question.</span>
+          {hero.headline}
         </h1>
 
         <p

@@ -64,7 +64,6 @@ async function run() {
   const student1Email = "adm_student_1@aroush.local";
   const student1Password = "StrongPassword123!";
   const guardian1Phone = "+919876540001";
-  const guardian1Password = "StrongGuardianPass123!";
 
   const student2Email = "adm_student_2@aroush.local";
   const student2Password = "StrongPassword123!";
@@ -147,9 +146,8 @@ async function run() {
         class_id: classId,
         board_id: boardId,
         guardian_name: "Rajesh Sharma",
-        guardian_identifier: guardian1Phone,
+        guardian_phone: guardian1Phone,
         guardian_email: "rajesh.sharma@aroush.local",
-        guardian_password: guardian1Password,
       },
       testIp,
       db
@@ -182,8 +180,7 @@ async function run() {
         class_id: classId,
         board_id: boardId,
         guardian_name: "Rajesh Sharma",
-        guardian_identifier: "+919876540002",
-        guardian_password: guardian1Password,
+        guardian_phone: "+919876540002",
       },
       testIp,
       db
@@ -198,8 +195,7 @@ async function run() {
         class_id: classId,
         board_id: boardId,
         guardian_name: "Same Guardian",
-        guardian_identifier: "same_ident@aroush.local",
-        guardian_password: guardian1Password,
+        guardian_phone: "same_ident@aroush.local",
       },
       testIp,
       db
@@ -216,8 +212,7 @@ async function run() {
           class_id: classId,
           board_id: boardId,
           guardian_name: `Rate Guardian ${i}`,
-          guardian_identifier: `+91987659000${i}`,
-          guardian_password: guardian1Password,
+          guardian_phone: `+91987659000${i}`,
         },
         rateLimitTestIp,
         db
@@ -235,8 +230,7 @@ async function run() {
         class_id: classId,
         board_id: boardId,
         guardian_name: "Rate Guardian 6",
-        guardian_identifier: "+919876590006",
-        guardian_password: guardian1Password,
+        guardian_phone: "+919876590006",
       },
       rateLimitTestIp,
       db
@@ -341,8 +335,7 @@ async function run() {
         class_id: classId,
         board_id: boardId,
         guardian_name: "Rajesh Sharma",
-        guardian_identifier: guardian1Phone,
-        guardian_password: guardian1Password,
+        guardian_phone: guardian1Phone,
       },
       testIp,
       db
@@ -350,7 +343,7 @@ async function run() {
 
     let test7Passed = false;
     if (reg2Result.ok && reg2Result.registrationId) {
-      const approve2 = await approveRegistration(reg2Result.registrationId, adminUserId, db);
+      const approve2 = await approveRegistration(reg2Result.registrationId, adminUserId, db, parent1UserId);
       if (approve2.ok && approve2.admissionNumber && approve2.admissionNumber.endsWith("-0002")) {
         const parentUsers = await db
           .select()
@@ -385,8 +378,7 @@ async function run() {
         class_id: classId,
         board_id: boardId,
         guardian_name: "Reject Guardian",
-        guardian_identifier: guardianRejectPhone,
-        guardian_password: guardian1Password,
+        guardian_phone: guardianRejectPhone,
       },
       testIp,
       db
@@ -447,8 +439,7 @@ async function run() {
         class_id: classId,
         board_id: boardId,
         guardian_name: "Clash Guardian",
-        guardian_identifier: guardianClashPhone,
-        guardian_password: guardian1Password,
+        guardian_phone: guardianClashPhone,
       },
       testIp,
       db
@@ -511,14 +502,13 @@ async function run() {
     );
 
     const studentLogin = await loginWithPassword(student1Email, student1Password, testIp, db);
-    const parentLogin = await loginWithPassword(guardian1Phone, guardian1Password, testIp, db);
+    const parentLogin = await loginWithPassword(guardian1Phone, student1Password, testIp, db);
 
     report(
-      "student and parent can log in with loginWithPassword after approval",
+      "student can log in and parent cannot before their own activation",
       studentLogin.ok === true &&
         studentLogin.userId === student1UserId &&
-        parentLogin.ok === true &&
-        parentLogin.userId === parent1UserId
+        parentLogin.ok === false && parent1UserId.length > 0
     );
   } finally {
     try {

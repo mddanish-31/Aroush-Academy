@@ -2,7 +2,7 @@ import { sql } from "drizzle-orm";
 import { date, index, integer, pgTable, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 import { batch_status, enrollment_status } from "./enums";
 import { students, teachers } from "./people";
-import { academic_classes, academic_subjects } from "./taxonomy";
+import { academic_boards, academic_classes, academic_subjects } from "./taxonomy";
 
 export const batches = pgTable(
   "batches",
@@ -15,6 +15,7 @@ export const batches = pgTable(
     class_id: uuid("class_id")
       .notNull()
       .references(() => academic_classes.id, { onDelete: "restrict" }),
+    board_id: uuid("board_id").references(() => academic_boards.id, { onDelete: "restrict" }),
     teacher_id: uuid("teacher_id")
       .notNull()
       .references(() => teachers.id, { onDelete: "restrict" }),

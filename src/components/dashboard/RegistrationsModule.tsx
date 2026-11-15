@@ -17,6 +17,7 @@ interface AdminRegistrationRow {
   guardian_name: string | null;
   guardian_identifier: string | null;
   guardian_email: string | null;
+  guardian_phone: string | null;
   class_grade: string | null;
   ward_name: string | null;
   status: "pending" | "approved" | "rejected";
@@ -59,6 +60,8 @@ export function RegistrationsModule() {
       : "background-color 150ms ease-out, border-color 150ms ease-out";
 
   const [rows, setRows] = useState<AdminRegistrationRow[]>([]);
+  const [parentAccounts, setParentAccounts] = useState<{ id: string; name: string; phone: string }[]>([]);
+  const [reviewedParents, setReviewedParents] = useState<Record<string, string>>({});
   const [classMap, setClassMap] = useState<Record<string, string>>({});
   const [boardMap, setBoardMap] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -144,6 +147,7 @@ export function RegistrationsModule() {
         if (regData && regData.ok && Array.isArray(regData.registrations)) {
           setLoadError(null);
           setRows(regData.registrations);
+          setParentAccounts(Array.isArray(regData.parentAccounts) ? regData.parentAccounts : []);
         } else {
           setLoadError("Could not load registration requests.");
         }
@@ -221,6 +225,7 @@ export function RegistrationsModule() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
+        body: JSON.stringify({ parentUserId: reviewedParents[id] || undefined }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data || !data.ok) {
@@ -246,7 +251,9 @@ export function RegistrationsModule() {
         ...prev,
         [id]: {
           type: "success",
-          text: admissionLabel,
+           text: data.activationToken
+             ? `${admissionLabel} Parent activation code (shown once, expires in 24 hours): ${data.activationToken}. Verify identity manually before handing it to the parent.`
+             : admissionLabel,
         },
       }));
       if (rejectingRowId === id) {
@@ -375,6 +382,16 @@ export function RegistrationsModule() {
 
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
+        <p style={{ fontSize: "var(--text-xs)" }}>Review guardian: {row.guardian_name}, {row.guardian_phone ?? row.guardian_identifier}. Confirm the relationship and identity before approval.</p>
+        <label htmlFor={`parent-account-${row.id}`} style={{ fontSize: "var(--text-xs)" }}>Parent account for this student</label>
+        <select id={`parent-account-${row.id}`} value={reviewedParents[row.id] ?? ""}
+          onChange={(event) => setReviewedParents((previous) => ({ ...previous, [row.id]: event.target.value }))}
+          style={{ padding: "var(--space-2)", border: "1px solid var(--color-border)", background: "var(--color-surface)", maxWidth: "100%" }}>
+          <option value="">Create new parent account</option>
+          {parentAccounts.filter((parent) => parent.phone === (row.guardian_phone ?? row.guardian_identifier)).map((parent) => (
+            <option key={parent.id} value={parent.id}>{parent.name} - {parent.phone}</option>
+          ))}
+        </select>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--space-2)" }}>
           <Button
             type="button"

@@ -121,6 +121,7 @@ export interface AuthProvider {
 
 export const ROLE_DEFAULT_ROUTES: Record<UserRole, string> = {
   "academy-admin": "/dashboard?role=academy-admin",
+  "developer": "/developer",
   "teacher": "/dashboard?role=teacher",
   "student": "/dashboard?role=student",
   "parent": "/dashboard?role=parent",
@@ -128,6 +129,7 @@ export const ROLE_DEFAULT_ROUTES: Record<UserRole, string> = {
 
 export const ROLE_DISPLAY_NAMES: Record<UserRole, string> = {
   "academy-admin": "Academy Admin",
+  "developer": "Content Developer",
   "teacher": "Teacher Portal",
   "student": "Student Workspace",
   "parent": "Parent Oversight",
@@ -135,6 +137,7 @@ export const ROLE_DISPLAY_NAMES: Record<UserRole, string> = {
 
 export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
   "academy-admin": "Institutional branches, faculty rosters & subject fee ledgers",
+  "developer": "Website content management",
   "teacher": "Assigned student rosters, subject monthly fees & cash collections",
   "student": "Enrolled subject classes, mock exams & digital ID cards",
   "parent": "Subject fee receipts, progress reports & attendance records",

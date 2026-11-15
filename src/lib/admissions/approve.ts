@@ -1,10 +1,12 @@
 import "server-only";
-import { and, eq, sql } from "drizzle-orm";
+import { createHash, randomBytes } from "node:crypto";
+import { eq, or, sql } from "drizzle-orm";
 import type { db as defaultAppDb } from "../../db";
 import { registrations } from "../../db/schema/admissions";
 import { audit_logs } from "../../db/schema/audit";
-import { users } from "../../db/schema/identity";
+import { password_reset_tokens, users } from "../../db/schema/identity";
 import { parent_student_links, parents, students } from "../../db/schema/people";
+import { hashPassword } from "../auth/password";
 
 type DbClient = typeof defaultAppDb;
 
@@ -31,12 +33,14 @@ export interface ApproveResult {
   studentId: string;
   studentUserId: string;
   admissionNumber: string;
+  activationToken?: string;
 }
 
 export async function approveRegistration(
   registrationId: string,
   adminUserId: string,
-  db?: DbClient
+  db?: DbClient,
+  parentUserId?: string,
 ): Promise<ApproveResult> {
   const targetDb = await resolveDb(db);
 
@@ -68,25 +72,28 @@ export async function approveRegistration(
       throw new Error("Registration is not pending");
     }
 
+    if (adminUser.role !== "academy-admin") throw new Error("Forbidden");
+    const guardianPhone = registration.guardian_phone ?? (registration.guardian_identifier.startsWith("+91") ? registration.guardian_identifier : null);
+    if (!guardianPhone) throw new Error("Guardian phone requires administrator review and backfill");
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${guardianPhone}))`);
+
     const existingStudentUser = await tx
       .select({ id: users.id })
       .from(users)
-      .where(eq(users.identifier, registration.identifier))
+      .where(or(eq(users.identifier, registration.identifier), eq(users.email, registration.identifier), eq(users.phone, registration.identifier)))
       .limit(1);
 
     if (existingStudentUser.length > 0) {
       throw new Error("Student identifier already taken");
     }
 
-    const existingGuardianUser = await tx
+    const existingGuardianUsers = await tx
       .select({ id: users.id, role: users.role })
       .from(users)
-      .where(eq(users.identifier, registration.guardian_identifier))
-      .limit(1);
+      .where(or(eq(users.identifier, guardianPhone), eq(users.phone, guardianPhone)));
 
-    if (existingGuardianUser.length > 0 && existingGuardianUser[0].role === "student") {
-      throw new Error("Guardian identifier cannot be a student");
-    }
+    if (existingGuardianUsers.some((user) => user.role !== "parent")) throw new Error("Guardian identity collision requires review");
+    if (existingGuardianUsers.length && (!parentUserId || existingGuardianUsers.some((user) => user.id !== parentUserId))) throw new Error("Select the reviewed parent account");
 
     const { year: istYear, dateStr: istDateStr } = getIstDateInfo();
 
@@ -115,12 +122,7 @@ export async function approveRegistration(
       })
       .returning({ id: users.id, name: users.name });
 
-    const guardianPhone = registration.guardian_identifier.startsWith("+91")
-      ? registration.guardian_identifier
-      : "N/A";
-    const guardianEmail = registration.guardian_identifier.includes("@")
-      ? registration.guardian_identifier
-      : registration.guardian_email;
+    const guardianEmail = registration.guardian_email;
 
     const [studentRow] = await tx
       .insert(students)
@@ -139,50 +141,41 @@ export async function approveRegistration(
       .returning({ id: students.id });
 
     let parentId: string;
-    const existingParentUsers = await tx
-      .select({ id: users.id, role: users.role })
-      .from(users)
-      .where(eq(users.identifier, registration.guardian_identifier))
-      .limit(1);
-
-    if (existingParentUsers.length > 0) {
-      const existingUser = existingParentUsers[0];
-      if (existingUser.role !== "parent") {
-        throw new Error("Guardian user already exists with a non-parent role");
-      }
+    let activationToken: string | undefined;
+    if (parentUserId) {
+      const [existingUser] = await tx.select({ id: users.id, role: users.role, phone: users.phone })
+        .from(users).where(eq(users.id, parentUserId)).for("update").limit(1);
+      if (!existingUser || existingUser.role !== "parent" || existingUser.phone !== guardianPhone) throw new Error("Reviewed parent does not match guardian phone");
       const parentRows = await tx
         .select({ id: parents.id })
         .from(parents)
         .where(eq(parents.user_id, existingUser.id))
         .limit(1);
 
-      if (parentRows.length === 0) {
-        const [newParent] = await tx
-          .insert(parents)
-          .values({
-            user_id: existingUser.id,
-            name: registration.guardian_name,
-            phone: guardianPhone,
-            email: guardianEmail,
-          })
-          .returning({ id: parents.id });
-        parentId = newParent.id;
-      } else {
-        parentId = parentRows[0].id;
-      }
+      if (!parentRows.length) throw new Error("Reviewed parent profile is missing");
+      parentId = parentRows[0].id;
     } else {
+      const existingContact = await tx.select({ id: parents.id }).from(parents).where(eq(parents.phone, guardianPhone)).limit(1);
+      if (existingContact.length) throw new Error("Select the reviewed parent account");
+      activationToken = randomBytes(32).toString("hex");
       const [newParentUser] = await tx
         .insert(users)
         .values({
-          identifier: registration.guardian_identifier,
-          email: guardianEmail,
-          phone: registration.guardian_identifier.startsWith("+91") ? registration.guardian_identifier : null,
-          password_hash: registration.guardian_password_hash,
+          identifier: guardianPhone,
+          email: null,
+          phone: guardianPhone,
+          password_hash: await hashPassword(randomBytes(32).toString("hex")),
           role: "parent",
           name: registration.guardian_name,
-          status: "active",
+          status: "inactive",
         })
         .returning({ id: users.id });
+      await tx.insert(password_reset_tokens).values({
+        user_id: newParentUser.id,
+        token_hash: createHash("sha256").update(activationToken).digest("hex"),
+        purpose: "activation",
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      });
 
       const [newParent] = await tx
         .insert(parents)
@@ -196,25 +189,12 @@ export async function approveRegistration(
       parentId = newParent.id;
     }
 
-    const existingLinks = await tx
-      .select({ id: parent_student_links.id })
-      .from(parent_student_links)
-      .where(
-        and(
-          eq(parent_student_links.parent_id, parentId),
-          eq(parent_student_links.student_id, studentRow.id)
-        )
-      )
-      .limit(1);
-
-    if (existingLinks.length === 0) {
-      await tx.insert(parent_student_links).values({
-        parent_id: parentId,
-        student_id: studentRow.id,
-        relationship: "parent",
-        is_verified: true,
-      });
-    }
+    await tx.insert(parent_student_links).values({
+      parent_id: parentId,
+      student_id: studentRow.id,
+      relationship: "parent",
+      is_verified: true,
+    });
 
     await tx
       .update(registrations)
@@ -247,6 +227,7 @@ export async function approveRegistration(
       studentId: studentRow.id,
       studentUserId: studentUser.id,
       admissionNumber,
+      activationToken,
     };
   });
 }

@@ -1,5 +1,5 @@
 import "server-only";
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, eq, gte, notLike, or, sql } from "drizzle-orm";
 import type { db as defaultAppDb } from "../../db";
 import { login_attempts, users } from "../../db/schema/identity";
 import { normalizeIdentifier } from "./identifier";
@@ -33,7 +33,7 @@ export async function loginWithPassword(
   const normalized = normalizeIdentifier(identifier || "");
   const lookupIdentifier = normalized || identifier || "unknown";
 
-  const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+  const fifteenMinutesAgo = sql`now() - interval '15 minutes'`;
 
   const identifierCountResult = await targetDb
     .select({ count: sql<number>`count(*)::int` })
@@ -54,9 +54,13 @@ export async function loginWithPassword(
       .from(login_attempts)
       .where(
         and(
-          eq(login_attempts.ip_address, ip),
-          eq(login_attempts.success, false),
-          gte(login_attempts.created_at, fifteenMinutesAgo)
+           eq(login_attempts.ip_address, ip),
+           eq(login_attempts.success, false),
+           notLike(login_attempts.identifier, "redeem:%"),
+           notLike(login_attempts.identifier, "handoff:%"),
+           notLike(login_attempts.identifier, "change:%"),
+           notLike(login_attempts.identifier, "register:%"),
+           gte(login_attempts.created_at, fifteenMinutesAgo)
         )
       );
     ipFailures = ipCountResult[0]?.count ?? 0;
@@ -71,9 +75,13 @@ export async function loginWithPassword(
     const rows = await targetDb
       .select()
       .from(users)
-      .where(eq(users.identifier, normalized))
-      .limit(1);
-    if (rows.length > 0) {
+      .where(or(
+        eq(users.identifier, normalized),
+        and(eq(users.email, normalized), sql`${users.email_verified_at} IS NOT NULL`),
+        and(eq(users.phone, normalized), sql`${users.phone_verified_at} IS NOT NULL`),
+      ))
+      .limit(2);
+    if (rows.length === 1) {
       user = rows[0];
     }
   }

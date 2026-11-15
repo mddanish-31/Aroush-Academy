@@ -2,8 +2,9 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { ServerDashboardShell } from "./ServerDashboardShell";
 import {
   UserRole,
   MetricItem,
@@ -62,9 +63,6 @@ const ClassroomModule = dynamic(() =>
 const RegistrationApprovalsModule = dynamic(() =>
   import("./RegistrationApprovalsModule").then((m) => m.RegistrationApprovalsModule)
 );
-const RegistrationsModule = dynamic(() =>
-  import("./RegistrationsModule").then((m) => m.RegistrationsModule)
-);
 const FeesModule = dynamic(() =>
   import("./FeesModule").then((m) => m.FeesModule)
 );
@@ -95,6 +93,7 @@ interface DashboardShellProps {
 }
 
 const ROLE_METRICS: Record<UserRole, MetricItem[]> = {
+  developer: [],
   "academy-admin": [
     {
       id: "enrolled",
@@ -217,9 +216,10 @@ const ROLE_METRICS: Record<UserRole, MetricItem[]> = {
   ],
 };
 
-const IS_SERVER_AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE === "server";
+const IS_SERVER_AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE === "server" || process.env.NODE_ENV === "production";
 
 const ROLE_NAV_ITEMS: Record<UserRole, string[]> = {
+  developer: [],
   "academy-admin": [
     "Overview & Fee Ledger",
     ...(IS_SERVER_AUTH_MODE ? ["Registrations"] : []),
@@ -234,6 +234,7 @@ const ROLE_NAV_ITEMS: Record<UserRole, string[]> = {
     "Notices & Circulars",
     "Digital Student IDs",
     "Audit Logs",
+    ...(IS_SERVER_AUTH_MODE ? ["Website Content"] : []),
   ],
   teacher: [
     "Overview",
@@ -279,31 +280,23 @@ const ROLES_LIST: { id: UserRole; name: string }[] = [
   { id: "parent", name: "Parent" },
 ];
 
-export function DashboardShell({
+export function DashboardShell(props: DashboardShellProps) {
+  if (IS_SERVER_AUTH_MODE) return <ServerDashboardShell navigation={ROLE_NAV_ITEMS} />;
+  return <DemoDashboardShell {...props} />;
+}
+
+function DemoDashboardShell({
   initialRole = "teacher",
 }: DashboardShellProps) {
   const rolesList = ROLES_LIST;
 
-  const { user, isAuthenticated, isLoading, logout, registrationRequests } = useAuth();
-  const router = useRouter();
+  const { user, isAuthenticated, logout, registrationRequests } = useAuth();
   const searchParams = useSearchParams();
   const queryRole = searchParams
     ? (searchParams.get("role") as UserRole | null)
     : null;
 
-  useEffect(() => {
-    if (IS_SERVER_AUTH_MODE && !isLoading && !user) {
-      router.replace("/login");
-    }
-  }, [isLoading, user, router]);
-
   const resolvedRole: UserRole = useMemo(() => {
-    if (IS_SERVER_AUTH_MODE) {
-      if (user?.role && ROLES_LIST.some((r) => r.id === user.role)) {
-        return user.role;
-      }
-      return "student";
-    }
     if (
       isAuthenticated &&
       user?.role &&
@@ -352,7 +345,7 @@ export function DashboardShell({
   }
 
   
-  if ((IS_SERVER_AUTH_MODE || isAuthenticated) && activeRole !== resolvedRole) {
+  if (isAuthenticated && activeRole !== resolvedRole) {
     setActiveRole(resolvedRole);
   }
 
@@ -795,21 +788,6 @@ export function DashboardShell({
     }
   };
 
-  if (IS_SERVER_AUTH_MODE && (isLoading || !user)) {
-    return (
-      <div
-        style={{
-          padding: "var(--space-12)",
-          textAlign: "center",
-          color: "var(--color-neutral-dark)",
-          fontSize: "var(--text-sm)",
-        }}
-      >
-        Loading workspace...
-      </div>
-    );
-  }
-
   return (
     <div
       style={{
@@ -840,7 +818,7 @@ export function DashboardShell({
         >
           {rolesList.find((r) => r.id === activeRole)?.name} View:
         </span>
-        {!IS_SERVER_AUTH_MODE && activeRole === "teacher" && (
+        {activeRole === "teacher" && (
           <div
             style={{
               display: "flex",
@@ -897,7 +875,7 @@ export function DashboardShell({
             </select>
           </div>
         )}
-        {!IS_SERVER_AUTH_MODE && activeRole === "student" && (
+        {activeRole === "student" && (
           <select
             id="student-switcher-select"
             aria-label="Simulated student account"
@@ -919,7 +897,7 @@ export function DashboardShell({
             ))}
           </select>
         )}
-        {!IS_SERVER_AUTH_MODE && activeRole === "parent" && (
+        {activeRole === "parent" && (
           <span
             style={{
               fontSize: "11px",
@@ -2345,15 +2323,7 @@ export function DashboardShell({
 
             {activeRole === "academy-admin" && (
               <>
-                {IS_SERVER_AUTH_MODE &&
-                  (activeTab === "Registrations" ||
-                    activeTab === "Registration Approvals" ||
-                    activeTab === "Pending Registrations") && (
-                    <RegistrationsModule />
-                  )}
-
-                {!IS_SERVER_AUTH_MODE &&
-                  (activeTab === "Registration Approvals" ||
+                {(activeTab === "Registration Approvals" ||
                     activeTab === "Pending Registrations") && (
                     <RegistrationApprovalsModule />
                   )}

@@ -1,9 +1,9 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { landingContent } from "@/content/landing";
+import type { LandingContent } from "@/content/types";
 
-export function WhatWeTeach() {
+export function WhatWeTeach({ landing }: { landing: LandingContent }) {
   return (
     <section
       id="what-we-teach"
@@ -44,7 +44,7 @@ export function WhatWeTeach() {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "clamp(36px, 5vw, 56px)" }}>
-          {landingContent.courses.map((course) => (
+          {landing.courses.map((course) => (
             <div key={course.id}>
               <div
                 style={{

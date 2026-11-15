@@ -1,0 +1,61 @@
+import assert from "node:assert/strict";
+import { id } from "./fixtures.mjs";
+
+export async function verifyAcademic(pool, base, fixture) {
+  const login = async (account) => {
+    const response = await fetch(`${base}/api/auth/login`, { method: "POST", headers: { Origin: base, "Content-Type": "application/json" }, body: JSON.stringify({ identifier: account.identifier, password: fixture.password }) });
+    assert.equal(response.status, 200);
+    return response.headers.get("set-cookie").split(";")[0];
+  };
+  const teacher = await login(fixture.accounts.newTeacher);
+  const student = await login(fixture.accounts.a);
+  const parent = await login(fixture.accounts.parent);
+  const otherParent = await login(fixture.accounts["other-parent"]);
+  const admin = await login(fixture.accounts.admin);
+  const teacherId = (await pool.query("SELECT id FROM teachers WHERE email='teacher.new@synthetic.example.test'")).rows[0].id;
+  const batchId = id(970);
+  await pool.query("INSERT INTO batches (id,name,subject_id,class_id,board_id,teacher_id) VALUES ($1,'Academic Test Batch',$2,$3,$4,$5)", [batchId, id(202), id(200), id(201), teacherId]);
+  await pool.query("INSERT INTO enrollments (student_id,batch_id,monthly_fee_paise) VALUES ($1,$2,0)", [fixture.accounts.a.studentId, batchId]);
+  const request = async (cookie, method, body, status, search = "") => {
+    const response = await fetch(`${base}/api/academic${search}`, { method, headers: { Origin: base, Cookie: cookie, "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined });
+    assert.equal(response.status, status, `${method} /api/academic ${response.status}: ${(await response.clone().text()).slice(0, 200)}`);
+    return response.json();
+  };
+  await request(otherParent, "GET", null, 403, `?studentId=${fixture.accounts.a.studentId}`);
+  await request(student, "POST", { action: "attendance", batchId, studentId: fixture.accounts.a.studentId, date: fixture.today, status: "present" }, 403);
+  await request(teacher, "POST", { action: "attendance", batchId: id(401), studentId: fixture.accounts.a.studentId, date: fixture.today, status: "present" }, 403);
+  const date = fixture.shift(fixture.today, -2);
+  const first = (await request(teacher, "POST", { action: "attendance", batchId, studentId: fixture.accounts.a.studentId, date, status: "present" }, 201)).item;
+  await request(teacher, "POST", { action: "attendance", batchId, studentId: fixture.accounts.a.studentId, date, status: "absent" }, 409);
+  await request(teacher, "POST", { action: "attendance", batchId, studentId: fixture.accounts.a.studentId, date, status: "absent", version: first.updatedAt, reason: "Synthetic correction" }, 201);
+  assert.equal((await pool.query("SELECT count(*)::int AS n FROM attendance_corrections WHERE attendance_id=$1", [first.id])).rows[0].n, 1);
+  const start = new Date(Date.now() + 3 * 86400000).toISOString();
+  const end = new Date(Date.now() + 3 * 86400000 + 3600000).toISOString();
+  const timetable = (await request(teacher, "POST", { action: "timetable", batchId, title: "Synthetic lesson", startsAt: start, endsAt: end }, 201)).item;
+  await request(teacher, "POST", { action: "timetable", batchId, title: "Overlap", startsAt: start, endsAt: end }, 409);
+  const view = await request(teacher, "GET", null, 200, `?batchId=${batchId}&date=${date}`);
+  assert.equal(view.roster.length, 1);
+  assert.equal(view.dayMarks[0].status, "absent");
+  await request(teacher, "PATCH", { action: "cancelTimetable", id: timetable.id, version: "stale", reason: "Synthetic change" }, 409);
+  await request(teacher, "PATCH", { action: "cancelTimetable", id: timetable.id, version: view.events.find((event) => event.id === timetable.id).version, reason: "Synthetic change" }, 200);
+  const post = (await request(teacher, "POST", { action: "post", kind: "material", batchId, title: "Synthetic notes", body: "Synthetic lesson text" }, 201)).item;
+  assert.ok(post.id);
+  await request(admin, "POST", { action: "post", kind: "notice", title: "Synthetic notice", body: "Synthetic announcement", audience: "parents" }, 201);
+  assert.equal((await request(teacher, "GET", null, 200, `?batchId=${batchId}`)).posts.some((item) => item.title === "Synthetic notice"), false);
+  assert.equal((await request(student, "GET", null, 200)).posts.some((item) => item.title === "Synthetic notice"), false);
+  await request(teacher, "POST", { action: "post", kind: "notice", title: "Global", body: "Denied" }, 403);
+  const result = (await request(teacher, "POST", { action: "assessment", batchId, title: "Synthetic assessment", maxMarks: 20 }, 201)).item;
+  await request(teacher, "POST", { action: "mark", assessmentId: result.id, studentId: fixture.accounts.a.studentId, marks: 25 }, 400);
+  await request(teacher, "PATCH", { action: "publishAssessment", id: result.id, confirm: true }, 409);
+  assert.equal((await request(student, "GET", null, 200)).assessments.some((item) => item.id === result.id), false);
+  await request(teacher, "POST", { action: "mark", assessmentId: result.id, studentId: fixture.accounts.a.studentId, marks: 18 }, 201);
+  await request(teacher, "PATCH", { action: "publishAssessment", id: result.id, confirm: true }, 200);
+  await request(teacher, "POST", { action: "mark", assessmentId: result.id, studentId: fixture.accounts.a.studentId, marks: 19 }, 409);
+  const published = await request(parent, "GET", null, 200, `?studentId=${fixture.accounts.a.studentId}`);
+  assert.equal(published.marks.find((mark) => mark.assessmentId === result.id).marks, 18);
+  assert.ok(published.posts.some((item) => item.title === "Synthetic notice"));
+  await request(teacher, "POST", { action: "remark", batchId, studentId: fixture.accounts.a.studentId, body: "Synthetic progress remark" }, 201);
+  assert.ok((await request(parent, "GET", null, 200, `?studentId=${fixture.accounts.a.studentId}`)).remarks.some((item) => item.body === "Synthetic progress remark"));
+  assert.ok((await pool.query("SELECT count(*)::int AS n FROM audit_logs WHERE action LIKE 'assessment_%' OR action LIKE 'attendance_%' OR action LIKE 'timetable_%'")).rows[0].n >= 6);
+  console.log("PASS: academic marking and correction, timetable conflicts, publication gates, parent scope and audit in PostgreSQL");
+}

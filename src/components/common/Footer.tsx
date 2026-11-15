@@ -7,16 +7,18 @@ import { openCookiePreferences } from "./CookieConsent";
 import { MotionToggle } from "@/lib/motion/MotionProvider";
 import { siteSettings } from "@/content/site";
 import { MEDIA } from "@/content/media";
+import type { MediaCollection } from "@/content/media";
+import type { SiteSettings } from "@/content/types";
 
-export function Footer() {
+export function Footer({ settings = siteSettings, media = MEDIA }: { settings?: SiteSettings; media?: MediaCollection }) {
   const photoCredits = useMemo(() => {
     const list: string[] = [];
-    MEDIA.heroGallery.forEach((m) => m.credit && list.push(m.credit));
-    MEDIA.campus.forEach((m) => m.credit && list.push(m.credit));
-    Object.values(MEDIA.courses).forEach((m) => m.credit && list.push(m.credit));
-    if (MEDIA.og.credit) list.push(MEDIA.og.credit);
+    media.heroGallery.forEach((m) => m.credit && list.push(m.credit));
+    media.campus.forEach((m) => m.credit && list.push(m.credit));
+    Object.values(media.courses).forEach((m) => m.credit && list.push(m.credit));
+    if (media.og.credit) list.push(media.og.credit);
     return Array.from(new Set(list)).sort().join(", ");
-  }, []);
+  }, [media]);
 
   return (
     <footer
@@ -57,7 +59,7 @@ export function Footer() {
                 A
               </span>
               <strong style={{ fontSize: "var(--text-base)", color: "#1D1D1F" }}>
-                {siteSettings.siteName}
+                {settings.siteName}
               </strong>
             </div>
             <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", lineHeight: 1.6, marginBottom: "var(--space-4)" }}>
@@ -74,7 +76,7 @@ export function Footer() {
               }}
             >
               <MapPin size={16} strokeWidth={2} style={{ color: "#007AFF", flexShrink: 0, marginTop: "2px" }} />
-              <span>{siteSettings.address}</span>
+              <span>{settings.address}</span>
             </div>
           </div>
 
@@ -176,27 +178,27 @@ export function Footer() {
               </li>
               <li style={{ marginTop: "var(--space-2)" }}>
                 <a
-                  href={`tel:${siteSettings.phone.replace(/\s+/g, "")}`}
+                  href={`tel:${settings.phone.replace(/\s+/g, "")}`}
                   style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "var(--text-sm)", color: "#1D1D1F", textDecoration: "none" }}
                 >
                   <Phone size={14} style={{ color: "#007AFF" }} />
-                  <span>{siteSettings.phone}</span>
+                  <span>{settings.phone}</span>
                 </a>
               </li>
-              {siteSettings.phoneSecondary && (
+              {settings.phoneSecondary && (
                 <li>
                   <a
-                    href={`tel:${siteSettings.phoneSecondary.replace(/\s+/g, "")}`}
+                    href={`tel:${settings.phoneSecondary.replace(/\s+/g, "")}`}
                     style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "var(--text-sm)", color: "#1D1D1F", textDecoration: "none" }}
                   >
                     <Phone size={14} style={{ color: "#007AFF" }} />
-                    <span>{siteSettings.phoneSecondary}</span>
+                    <span>{settings.phoneSecondary}</span>
                   </a>
                 </li>
               )}
               <li>
                 <a
-                  href={`mailto:${siteSettings.email}`}
+                  href={`mailto:${settings.email}`}
                   style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "var(--text-sm)", color: "#1D1D1F", textDecoration: "none" }}
                 >
                   <Mail size={14} style={{ color: "#007AFF" }} />

@@ -5,7 +5,7 @@ import { privacyDoc } from "@/content/legal";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "Privacy and student data protection policy for ArousH Academy, Park Circus, Kolkata under the DPDP Act 2023.",
+  description: "Current privacy notice for the ArousH Academy website and account portal.",
   alternates: {
     canonical: "/privacy",
   },

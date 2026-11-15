@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { SESSION_COOKIE } from "@/lib/auth/cookie";
 
 export function proxy(request: NextRequest) {
-  if (process.env.NEXT_PUBLIC_AUTH_MODE !== "server") {
+  if (process.env.NEXT_PUBLIC_AUTH_MODE !== "server" && process.env.NODE_ENV !== "production") {
     return NextResponse.next();
   }
 

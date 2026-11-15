@@ -2,10 +2,10 @@ import React from "react";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Reveal } from "@/components/common/Reveal";
-import { MEDIA } from "@/content/media";
-import { landingContent } from "@/content/landing";
+import type { MediaCollection } from "@/content/media";
+import type { LandingContent } from "@/content/types";
 
-export function Courses() {
+export function Courses({ landing, media }: { landing: LandingContent; media: MediaCollection }) {
   return (
     <section
       id="courses"
@@ -56,8 +56,8 @@ export function Courses() {
             overscrollBehaviorX: "contain",
           }}
         >
-          {landingContent.courses.map((course, idx) => {
-            const mediaItem = MEDIA.courses[course.mediaKey];
+          {landing.courses.map((course, idx) => {
+            const mediaItem = media.courses[course.mediaKey];
             const isReversed = idx % 2 === 1;
 
             return (

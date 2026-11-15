@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { registrations } from "@/db/schema/admissions";
+import { parents } from "@/db/schema/people";
+import { users } from "@/db/schema/identity";
 import { getCurrentUser } from "@/lib/auth/guard";
 
 export async function GET(request: NextRequest) {
@@ -42,6 +44,7 @@ export async function GET(request: NextRequest) {
       guardian_name: registrations.guardian_name,
       guardian_identifier: registrations.guardian_identifier,
       guardian_email: registrations.guardian_email,
+      guardian_phone: registrations.guardian_phone,
       class_grade: registrations.class_grade,
       ward_name: registrations.ward_name,
       status: registrations.status,
@@ -53,5 +56,7 @@ export async function GET(request: NextRequest) {
     .from(registrations)
     .orderBy(desc(registrations.submitted_at));
 
-  return NextResponse.json({ ok: true, registrations: rows });
+  const parentAccounts = await db.select({ id: users.id, name: parents.name, phone: parents.phone })
+    .from(parents).innerJoin(users, eq(parents.user_id, users.id));
+  return NextResponse.json({ ok: true, registrations: rows, parentAccounts }, { headers: { "Cache-Control": "private, no-store" } });
 }

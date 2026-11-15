@@ -9,6 +9,8 @@ export const users = pgTable(
     identifier: varchar("identifier", { length: 255 }).notNull(),
     email: varchar("email", { length: 255 }),
     phone: varchar("phone", { length: 20 }),
+    email_verified_at: timestamp("email_verified_at", { withTimezone: true }),
+    phone_verified_at: timestamp("phone_verified_at", { withTimezone: true }),
     password_hash: varchar("password_hash", { length: 255 }).notNull(),
     role: user_role("role").notNull(),
     name: varchar("name", { length: 255 }).notNull(),
@@ -70,6 +72,7 @@ export const password_reset_tokens = pgTable(
     token_hash: varchar("token_hash", { length: 255 }).notNull(),
     expires_at: timestamp("expires_at", { withTimezone: true }).notNull(),
     used_at: timestamp("used_at", { withTimezone: true }),
+    purpose: varchar("purpose", { length: 20 }).notNull().default("recovery"),
     created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [

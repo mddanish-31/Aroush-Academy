@@ -5,31 +5,20 @@ import { users } from "@/db/schema/identity";
 import { SESSION_COOKIE, SESSION_COOKIE_OPTIONS } from "@/lib/auth/cookie";
 import { loginWithPassword } from "@/lib/auth/login";
 import { createSession } from "@/lib/auth/session";
+import { readJsonBounded, sameOrigin } from "@/lib/auth/requestSafety";
 
 export async function POST(request: NextRequest) {
   if (process.env.NEXT_PUBLIC_AUTH_MODE !== "server") {
     return NextResponse.json({ ok: false, reason: "not_found" }, { status: 404 });
   }
 
-  const origin = request.headers.get("origin");
-  const host = request.headers.get("host");
-
-  if (!origin || !host) {
-    return NextResponse.json({ ok: false, reason: "forbidden" }, { status: 403 });
-  }
-
-  try {
-    const originHost = new URL(origin).host;
-    if (originHost !== host) {
-      return NextResponse.json({ ok: false, reason: "forbidden" }, { status: 403 });
-    }
-  } catch {
+  if (!sameOrigin(request)) {
     return NextResponse.json({ ok: false, reason: "forbidden" }, { status: 403 });
   }
 
   let body: unknown;
   try {
-    body = await request.json();
+    body = await readJsonBounded(request);
   } catch {
     return NextResponse.json({ ok: false, reason: "invalid" }, { status: 401 });
   }
@@ -54,6 +43,7 @@ export async function POST(request: NextRequest) {
   const forwardedFor = request.headers.get("x-forwarded-for");
   const ip = forwardedFor ? forwardedFor.split(",")[0].trim() : "127.0.0.1";
 
+  try {
   const loginResult = await loginWithPassword(identifier, password, ip);
 
   if (!loginResult.ok) {
@@ -89,4 +79,7 @@ export async function POST(request: NextRequest) {
   response.cookies.set(SESSION_COOKIE, rawToken, SESSION_COOKIE_OPTIONS);
 
   return response;
+  } catch {
+    return NextResponse.json({ ok: false, reason: "server_error" }, { status: 503, headers: { "Cache-Control": "private, no-store" } });
+  }
 }

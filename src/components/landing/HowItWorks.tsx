@@ -1,8 +1,8 @@
 import React from "react";
 import { Reveal } from "@/components/common/Reveal";
-import { landingContent } from "@/content/landing";
+import type { LandingContent } from "@/content/types";
 
-export function HowItWorks() {
+export function HowItWorks({ landing }: { landing: LandingContent }) {
   return (
     <section
       id="mock-tests"
@@ -54,7 +54,7 @@ export function HowItWorks() {
               position: "relative",
             }}
           >
-            {landingContent.timeline.map((step) => (
+            {landing.timeline.map((step) => (
               <div
                 key={step.number}
                 style={{

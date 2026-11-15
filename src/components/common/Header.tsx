@@ -23,7 +23,7 @@ import {
 import { useAuth } from "@/lib/auth/AuthContext";
 import { ROLE_DEFAULT_ROUTES, ROLE_DISPLAY_NAMES } from "@/lib/auth/authTypes";
 import { siteSettings } from "@/content/site";
-import type { NavItem } from "@/content/types";
+import type { NavItem, SiteSettings } from "@/content/types";
 import { MotionToggle } from "@/lib/motion/MotionProvider";
 
 const LOGIN_ROLES = [
@@ -52,7 +52,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   HelpCircle,
 };
 
-export function Header() {
+export function Header({ settings = siteSettings }: { settings?: SiteSettings }) {
   const pathname = usePathname();
   const [prevPathname, setPrevPathname] = useState(pathname);
   const { user, isAuthenticated, logout } = useAuth();
@@ -205,7 +205,7 @@ export function Header() {
   };
 
   const handleDropdownKeyDown = (e: React.KeyboardEvent, groupIndex: number) => {
-    const groups = siteSettings.navGroups;
+    const groups = settings.navGroups;
     if (e.key === "ArrowRight") {
       e.preventDefault();
       const nextIndex = (groupIndex + 1) % groups.length;
@@ -331,7 +331,7 @@ export function Header() {
             position: "relative",
           }}
         >
-          {siteSettings.navGroups.map((group, groupIndex) => {
+          {settings.navGroups.map((group, groupIndex) => {
             const isOpen = activeDropdown === group.id;
             return (
               <div
@@ -798,7 +798,7 @@ export function Header() {
         }}
       >
           <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
-            {siteSettings.navGroups.map((group) => {
+            {settings.navGroups.map((group) => {
               const isExpanded = Boolean(mobileAccordion[group.id]);
               return (
                 <div

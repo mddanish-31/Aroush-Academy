@@ -1,11 +1,11 @@
 import React from "react";
 import Image from "next/image";
 import { Reveal } from "@/components/common/Reveal";
-import { MEDIA } from "@/content/media";
-import { landingContent } from "@/content/landing";
+import type { MediaCollection } from "@/content/media";
+import type { LandingContent } from "@/content/types";
 
-export function AcademyIntro() {
-  const campusImage = MEDIA.campus[0];
+export function AcademyIntro({ landing, media }: { landing: LandingContent; media: MediaCollection }) {
+  const campusImage = media.campus[0];
 
   return (
     <section
@@ -98,7 +98,7 @@ export function AcademyIntro() {
 
           <Reveal delay={120}>
             <div style={{ display: "flex", flexDirection: "column" }}>
-              {landingContent.pillars.map((pillar, idx) => (
+              {landing.pillars.map((pillar, idx) => (
                 <div
                   key={pillar.id}
                   style={{

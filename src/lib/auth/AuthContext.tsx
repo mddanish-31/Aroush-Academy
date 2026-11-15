@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useTransition } from "react";
+import React, { createContext, useContext, useState, useEffect, useTransition, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { UserRole } from "@/types";
 import {
@@ -17,12 +17,16 @@ import {
 } from "./authTypes";
 import { demoAuthAdapter } from "./demoAuthAdapter";
 import { DEMO_ACCOUNTS } from "./demoAccounts";
+import { loadServerIdentity } from "./loadServerIdentity";
+import type { ServerAuthState } from "./profileTypes";
 
 interface AuthContextValue {
   user: AuthUser | null;
   role: UserRole | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  serverAuth: ServerAuthState;
+  refreshIdentity: () => Promise<ServerAuthState>;
   registrationRequests: RegistrationRequest[];
   invitations: AccountInvitation[];
   refreshRegistrations: () => void;
@@ -52,15 +56,31 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
-const isServerMode = process.env.NEXT_PUBLIC_AUTH_MODE === "server";
+const isServerMode = process.env.NEXT_PUBLIC_AUTH_MODE === "server" || process.env.NODE_ENV === "production";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [serverAuth, setServerAuth] = useState<ServerAuthState>({ status: "loading" });
+  const identityRequest = useRef(0);
   const [registrationRequests, setRegistrationRequests] = useState<RegistrationRequest[]>([]);
   const [invitations, setInvitations] = useState<AccountInvitation[]>([]);
   const [, startTransition] = useTransition();
   const router = useRouter();
+
+  const refreshIdentity = useCallback(async (): Promise<ServerAuthState> => {
+    if (!isServerMode) return { status: "unauthenticated" };
+    const requestId = ++identityRequest.current;
+    setServerAuth({ status: "loading" });
+    setUser(null);
+    setIsLoading(true);
+    const state = await loadServerIdentity();
+    if (requestId !== identityRequest.current) return { status: "unauthenticated" };
+    setServerAuth(state);
+    setUser(state.status === "authenticated" ? state.user : null);
+    setIsLoading(false);
+    return state;
+  }, []);
 
   const refreshRegistrations = () => {
     if (isServerMode) {
@@ -86,48 +106,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (isServerMode) {
-      let active = true;
-      const loadServerUser = async () => {
-        try {
-          const res = await fetch("/api/auth/me", {
-            method: "GET",
-            credentials: "same-origin",
-          });
-          if (!active) {
-            return;
-          }
-          if (res.ok) {
-            const data = await res.json().catch(() => null);
-            startTransition(() => {
-              setUser(data && data.ok && data.user ? data.user : null);
-              setIsLoading(false);
-            });
-          } else {
-            startTransition(() => {
-              setUser(null);
-              setIsLoading(false);
-            });
-          }
-        } catch {
-          if (!active) {
-            return;
-          }
-          startTransition(() => {
-            setUser(null);
-            setIsLoading(false);
-          });
-        }
-      };
-
-      loadServerUser();
-
+      const requestCounter = identityRequest;
       const handleServerAuthChanged = () => {
-        loadServerUser();
+        startTransition(() => { void refreshIdentity(); });
       };
 
+      handleServerAuthChanged();
       window.addEventListener("aroush-auth-changed", handleServerAuthChanged);
       return () => {
-        active = false;
+        requestCounter.current++;
         window.removeEventListener("aroush-auth-changed", handleServerAuthChanged);
       };
     }
@@ -174,10 +161,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener("aroush-registration-updated", handleRegistrationSync);
       window.removeEventListener("aroush-invitations-updated", handleInvitationSync);
     };
-  }, []);
+  }, [refreshIdentity]);
 
   const login = async (credentials: LoginCredentials): Promise<AuthResult> => {
     if (isServerMode) {
+      identityRequest.current++;
+      setUser(null);
+      setServerAuth({ status: "loading" });
       setIsLoading(true);
       try {
         const res = await fetch("/api/auth/login", {
@@ -190,30 +180,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }),
         });
         if (res.status === 429) {
+          setServerAuth({ status: "unauthenticated" });
           return { success: false, error: "Too many attempts, try later" };
+        }
+        if (res.status >= 500) {
+          setServerAuth({ status: "error" });
+          return { success: false, error: "Sign in is currently unavailable. Please try again later." };
         }
         const data = await res.json().catch(() => null);
         if (!res.ok || !data || !data.ok) {
+          setServerAuth({ status: "unauthenticated" });
           return { success: false, error: "Invalid credentials" };
         }
-        const meRes = await fetch("/api/auth/me", {
-          method: "GET",
-          credentials: "same-origin",
-        });
-        const meData = meRes.ok ? await meRes.json().catch(() => null) : null;
-        const serverUser: AuthUser =
-          meData && meData.ok && meData.user
-            ? meData.user
-            : {
-                id: "server-user",
-                name: typeof data.name === "string" ? data.name : "",
-                identifier: credentials.identifier,
-                role: data.role,
-              };
-        setUser(serverUser);
-        return { success: true, user: serverUser };
+        const identity = await refreshIdentity();
+        if (identity.status !== "authenticated") {
+          return { success: false, error: "Could not load your account. Please try again." };
+        }
+        return { success: true, user: identity.user };
       } catch {
-        return { success: false, error: "Invalid credentials" };
+        setServerAuth({ status: "error" });
+        return { success: false, error: "Could not load your account. Please try again." };
       } finally {
         setIsLoading(false);
       }
@@ -288,6 +274,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     targetRole: "student" | "parent";
     identifier: string;
   }): Promise<AccountInvitation> => {
+    if (isServerMode) throw new Error("Unsupported in server mode");
     const inv = await demoAuthAdapter.createAccountInvitation(data);
     refreshInvitations();
     return inv;
@@ -297,6 +284,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     invitationId: string,
     tempPassword?: string
   ): Promise<{ success: boolean; user?: AuthUser; error?: string }> => {
+    if (isServerMode) return { success: false, error: "Unsupported in server mode" };
     const res = await demoAuthAdapter.activateAccountInvitation(invitationId, tempPassword);
     if (res.success && res.user) {
       setUser(res.user);
@@ -308,19 +296,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async (): Promise<void> => {
     if (isServerMode) {
+      identityRequest.current++;
+      setUser(null);
+      setServerAuth({ status: "loading" });
       setIsLoading(true);
       try {
-        await fetch("/api/auth/logout", {
+        const response = await fetch("/api/auth/logout", {
           method: "POST",
           credentials: "same-origin",
         });
+        if (!response.ok) throw new Error("Sign out failed");
       } catch {
-      } finally {
-        setUser(null);
+        setServerAuth({ status: "error" });
         setIsLoading(false);
-        if (typeof window !== "undefined") {
-          router.replace("/login");
-        }
+        return;
+      }
+      identityRequest.current++;
+      setUser(null);
+      setServerAuth({ status: "unauthenticated" });
+      setIsLoading(false);
+      if (typeof window !== "undefined") {
+        router.replace("/login");
       }
       return;
     }
@@ -341,11 +337,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     req: PasswordResetRequest
   ): Promise<PasswordResetResult> => {
     if (isServerMode) {
-      return {
-        success: true,
-        message: "If an account exists for that identifier, recovery instructions will be sent.",
-        isSimulated: false,
-      };
+      return { success: false, message: "Automatic recovery is unavailable. Contact the academy for manual identity verification.", isSimulated: false };
     }
     return await demoAuthAdapter.requestPasswordReset(req);
   };
@@ -376,6 +368,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: user?.role || null,
         isAuthenticated: !!user,
         isLoading,
+        serverAuth,
+        refreshIdentity,
         registrationRequests,
         invitations,
         refreshRegistrations,
