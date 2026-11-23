@@ -15,6 +15,10 @@ import { Button } from "@/components/ui/Button";
 import { Check, Eye, EyeOff } from "lucide-react";
 
 const ROLES_ORDER: UserRole[] = ["academy-admin", "teacher", "student", "parent"];
+const isServerAuthMode =
+  process.env.NEXT_PUBLIC_AUTH_MODE === "server" ||
+  process.env.NODE_ENV === "production";
+const isDemoAuthMode = !isServerAuthMode;
 
 export function LoginForm() {
   const router = useRouter();
@@ -29,14 +33,14 @@ export function LoginForm() {
 
   const [isRoleSelectorOpen, setIsRoleSelectorOpen] = useState(false);
   const [identifier, setIdentifier] = useState(() => {
-    if (process.env.NEXT_PUBLIC_AUTH_MODE === "demo") {
+    if (isDemoAuthMode) {
       const demo = DEMO_ACCOUNTS[selectedRole];
       return demo ? demo.user.identifier : "";
     }
     return "";
   });
   const [password, setPassword] = useState(() => {
-    if (process.env.NEXT_PUBLIC_AUTH_MODE === "demo") {
+    if (isDemoAuthMode) {
       const demo = DEMO_ACCOUNTS[selectedRole];
       return demo ? demo.demoPassword : "";
     }
@@ -53,7 +57,7 @@ export function LoginForm() {
   const [prevSelectedRole, setPrevSelectedRole] = useState(selectedRole);
   if (prevSelectedRole !== selectedRole) {
     setPrevSelectedRole(selectedRole);
-    if (process.env.NEXT_PUBLIC_AUTH_MODE === "demo") {
+    if (isDemoAuthMode) {
       const demo = DEMO_ACCOUNTS[selectedRole];
       if (demo) {
         setIdentifier(demo.user.identifier);
@@ -64,7 +68,7 @@ export function LoginForm() {
 
   const handleSelectRolePill = (role: UserRole) => {
     setChosenRole(role);
-    if (process.env.NEXT_PUBLIC_AUTH_MODE !== "server") {
+    if (isDemoAuthMode) {
       const demo = DEMO_ACCOUNTS[role];
       if (demo) {
         setIdentifier(demo.user.identifier);
@@ -117,7 +121,7 @@ export function LoginForm() {
         router.push(dest);
       } else {
         setErrorMessage(
-          res.error || (process.env.NEXT_PUBLIC_AUTH_MODE === "server" || process.env.NODE_ENV === "production" ? "Sign in failed. Check your details and try again." : "Invalid credentials. Please verify your details or use one-click demo sign-in.")
+          res.error || (isServerAuthMode ? "Sign in failed. Check your details and try again." : "Invalid credentials. Please verify your details or use one-click demo sign-in.")
         );
       }
     } catch {
@@ -148,8 +152,10 @@ export function LoginForm() {
   };
 
   const showDemoHelper =
-    process.env.NEXT_PUBLIC_AUTH_MODE === "demo" &&
-    process.env.NODE_ENV !== "production";
+    isDemoAuthMode ||
+    process.env.NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS === "true" ||
+    (process.env.NODE_ENV !== "production" &&
+      process.env.NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS !== "false");
 
   return (
     <div
@@ -198,7 +204,7 @@ export function LoginForm() {
             }}
           >
             {isForgotPasswordView
-              ? process.env.NEXT_PUBLIC_AUTH_MODE === "server" || process.env.NODE_ENV === "production"
+              ? isServerAuthMode
                 ? "Automatic recovery is unavailable. Contact the academy for manual identity verification and a one-time code."
                 : "Enter your registered email address or mobile number to receive a simulated recovery token."
               : "Access role-tailored dashboards for Academy Administration, Teachers, Students, and Parents."}
@@ -219,7 +225,7 @@ export function LoginForm() {
             >
               <div>
                 <div style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)" }}>
-                   {process.env.NEXT_PUBLIC_AUTH_MODE === "server" || process.env.NODE_ENV === "production" ? "Current account:" : "Current Active Demo Persona:"}
+                   {isServerAuthMode ? "Current account:" : "Current Active Demo Persona:"}
                 </div>
                 <div style={{ fontSize: "var(--text-sm)", fontWeight: 600 }}>
                   {user.name} ({ROLE_DISPLAY_NAMES[user.role]})
@@ -317,7 +323,7 @@ export function LoginForm() {
             </form>
           ) : (
             <form onSubmit={handleSubmit} noValidate>
-              {process.env.NEXT_PUBLIC_AUTH_MODE !== "server" && process.env.NODE_ENV !== "production" && <div
+              {isDemoAuthMode && <div
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -348,7 +354,7 @@ export function LoginForm() {
                 </button>
               </div>}
 
-              {process.env.NEXT_PUBLIC_AUTH_MODE !== "server" && process.env.NODE_ENV !== "production" && isRoleSelectorOpen && (
+              {isDemoAuthMode && isRoleSelectorOpen && (
                 <div
                   role="radiogroup"
                   aria-label="Choose role"
@@ -536,7 +542,7 @@ export function LoginForm() {
                   disabled={isSubmitting}
                   style={{ width: "100%" }}
                 >
-                  {isSubmitting ? "Signing in..." : process.env.NEXT_PUBLIC_AUTH_MODE === "server" || process.env.NODE_ENV === "production" ? "Sign in" : `Sign In as ${ROLE_DISPLAY_NAMES[selectedRole]}`}
+                  {isSubmitting ? "Signing in..." : isServerAuthMode ? "Sign in" : `Sign In as ${ROLE_DISPLAY_NAMES[selectedRole]}`}
                 </Button>
               </div>
 
@@ -569,7 +575,9 @@ export function LoginForm() {
                         lineHeight: 1.4,
                       }}
                     >
-                      Mock adapter preview. Select any role below for instant demo credentials:
+                      {isServerAuthMode
+                        ? "Demo accounts. Select any role below to sign in or view saved credentials:"
+                        : "Mock adapter preview. Select any role below for instant demo credentials:"}
                     </div>
                     <div
                       style={{
@@ -600,6 +608,9 @@ export function LoginForm() {
                           >
                             <span style={{ fontSize: "11px", fontWeight: 600, color: "#1D1D1F" }}>
                               {demo.user.name}
+                            </span>
+                            <span style={{ fontSize: "10px", color: "#48484A", overflowWrap: "anywhere" }}>
+                              {demo.user.identifier}
                             </span>
                             <span style={{ fontSize: "10px", color: "#48484A" }}>
                               {ROLE_DISPLAY_NAMES[r]} &bull; {demo.demoPassword}

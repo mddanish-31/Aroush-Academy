@@ -57,6 +57,11 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 const isServerMode = process.env.NEXT_PUBLIC_AUTH_MODE === "server" || process.env.NODE_ENV === "production";
+const allowDemoQuickSignIn =
+  !isServerMode ||
+  process.env.NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS === "true" ||
+  (process.env.NODE_ENV !== "production" &&
+    process.env.NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS !== "false");
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -343,7 +348,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const quickSignInDemo = async (role: UserRole): Promise<AuthResult> => {
-    if (isServerMode) {
+    if (!allowDemoQuickSignIn) {
       return { success: false, error: "Invalid credentials" };
     }
     const demo = DEMO_ACCOUNTS[role];
