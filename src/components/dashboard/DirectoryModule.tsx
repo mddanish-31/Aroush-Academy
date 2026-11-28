@@ -1062,10 +1062,10 @@ export function DirectoryModule({
           style={{
             backgroundColor:
               actionAlert.type === "success"
-                ? "rgba(52, 199, 89, 0.12)"
+                ? "var(--color-success-bg)"
                 : actionAlert.type === "warning"
-                  ? "rgba(255, 149, 0, 0.12)"
-                  : "rgba(0, 122, 255, 0.12)",
+                  ? "var(--color-warning-bg)"
+                  : "var(--brand-sky-subtle)",
             border: `1px solid ${
               actionAlert.type === "success"
                 ? "var(--color-success)"
@@ -1087,6 +1087,7 @@ export function DirectoryModule({
           <button
             type="button"
             onClick={() => setActionAlert(null)}
+            aria-label="Dismiss alert"
             style={{
               background: "none",
               border: "none",
@@ -1094,7 +1095,7 @@ export function DirectoryModule({
               fontSize: "14px",
             }}
           >
-            
+            &times;
           </button>
         </div>
       )}
@@ -1151,7 +1152,8 @@ export function DirectoryModule({
                 gap: "var(--space-1)",
                 backgroundColor: "var(--color-surface-muted)",
                 padding: "4px",
-                borderRadius: "var(--radius-full)",
+                borderRadius: "var(--radius-md)",
+                border: "1px solid var(--color-border)",
               }}
             >
               <button
@@ -1159,7 +1161,7 @@ export function DirectoryModule({
                 onClick={() => setActiveSubTab("students")}
                 style={{
                   padding: "6px 14px",
-                  borderRadius: "var(--radius-full)",
+                  borderRadius: "var(--radius-sm)",
                   fontSize: "var(--text-xs)",
                   fontWeight: activeSubTab === "students" ? 600 : 400,
                   backgroundColor:
@@ -1168,7 +1170,7 @@ export function DirectoryModule({
                       : "transparent",
                   color:
                     activeSubTab === "students"
-                      ? "#FFFFFF"
+                      ? "var(--brand-white)"
                       : "var(--color-neutral-dark)",
                   border: "none",
                   cursor: "pointer",
@@ -1182,7 +1184,7 @@ export function DirectoryModule({
                 onClick={() => setActiveSubTab("teachers")}
                 style={{
                   padding: "6px 14px",
-                  borderRadius: "var(--radius-full)",
+                  borderRadius: "var(--radius-sm)",
                   fontSize: "var(--text-xs)",
                   fontWeight: activeSubTab === "teachers" ? 600 : 400,
                   backgroundColor:
@@ -1191,7 +1193,7 @@ export function DirectoryModule({
                       : "transparent",
                   color:
                     activeSubTab === "teachers"
-                      ? "#FFFFFF"
+                      ? "var(--brand-white)"
                       : "var(--color-neutral-dark)",
                   border: "none",
                   cursor: "pointer",
@@ -2049,7 +2051,7 @@ export function DirectoryModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.55)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(6px)",
             display: "flex",
             alignItems: "center",
@@ -2070,7 +2072,7 @@ export function DirectoryModule({
               maxHeight: "90vh",
               display: "flex",
               flexDirection: "column",
-              boxShadow: "var(--shadow-xl)",
+              boxShadow: "var(--shadow-lg)",
               border: "1px solid var(--color-border)",
               overflow: "hidden",
             }}
@@ -2098,9 +2100,9 @@ export function DirectoryModule({
                   style={{
                     width: "44px",
                     height: "44px",
-                    borderRadius: "var(--radius-full)",
+                    borderRadius: "50%",
                     backgroundColor: "var(--color-accent)",
-                    color: "#FFFFFF",
+                    color: "var(--brand-white)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -3883,7 +3885,7 @@ export function DirectoryModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.55)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(6px)",
             display: "flex",
             alignItems: "center",
@@ -3904,7 +3906,7 @@ export function DirectoryModule({
               maxHeight: "90vh",
               display: "flex",
               flexDirection: "column",
-              boxShadow: "var(--shadow-xl)",
+              boxShadow: "var(--shadow-lg)",
               border: "1px solid var(--color-border)",
               overflow: "hidden",
             }}
@@ -3942,6 +3944,7 @@ export function DirectoryModule({
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
+                aria-label="Close modal"
                 style={{
                   background: "none",
                   border: "none",
@@ -3950,7 +3953,7 @@ export function DirectoryModule({
                   cursor: "pointer",
                 }}
               >
-                
+                &times;
               </button>
             </div>
 
@@ -3970,9 +3973,9 @@ export function DirectoryModule({
                   style={{
                     padding: "8px 12px",
                     borderRadius: "var(--radius-sm)",
-                    backgroundColor: "rgba(255, 59, 48, 0.1)",
-                    border: "1px solid rgba(255, 59, 48, 0.3)",
-                    color: "#D32F2F",
+                    backgroundColor: "var(--color-danger-bg)",
+                    border: "1px solid var(--color-danger-border)",
+                    color: "var(--color-danger)",
                     fontSize: "var(--text-xs)",
                   }}
                 >
@@ -4302,7 +4305,7 @@ export function DirectoryModule({
                           borderRadius: "var(--radius-md)",
                           border: `1px solid ${isChecked ? "var(--color-accent)" : "var(--color-border)"}`,
                           backgroundColor: isChecked
-                            ? "rgba(0, 122, 255, 0.04)"
+                            ? "var(--brand-sky-soft)"
                             : "var(--color-surface)",
                           display: "flex",
                           flexDirection: "column",
@@ -4553,17 +4556,17 @@ export function DirectoryModule({
                                   gap: "2px",
                                   padding: "4px 8px",
                                   borderRadius: "var(--radius-sm)",
-                                  backgroundColor: "rgba(255, 59, 48, 0.08)",
-                                  border: "1px solid rgba(255, 59, 48, 0.2)",
+                                  backgroundColor: "var(--color-danger-bg)",
+                                  border: "1px solid var(--color-danger-border)",
                                 }}
                               >
                                 {teachersList.length === 0 && (
-                                  <span style={{ fontSize: "10px", color: "#D32F2F" }}>
+                                  <span style={{ fontSize: "10px", color: "var(--color-danger)" }}>
                                     Notice: No active faculty allocated to {subOpt.name}. Please allocate an instructor in Academic Setup.
                                   </span>
                                 )}
                                 {matchingBatches.length === 0 && (
-                                  <span style={{ fontSize: "10px", color: "#D32F2F" }}>
+                                  <span style={{ fontSize: "10px", color: "var(--color-danger)" }}>
                                     Notice: No active batch configured for {addFormClass} {subOpt.name}.
                                   </span>
                                 )}
@@ -4589,7 +4592,7 @@ export function DirectoryModule({
                   justifyContent: "flex-end",
                   gap: "var(--space-2)",
                   zIndex: 10,
-                  boxShadow: "0 -4px 10px rgba(0, 0, 0, 0.04)",
+                  boxShadow: "var(--shadow-sm)",
                 }}
               >
                 <Button
@@ -4617,7 +4620,7 @@ export function DirectoryModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.55)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(6px)",
             display: "flex",
             alignItems: "center",
@@ -4704,9 +4707,9 @@ export function DirectoryModule({
                   style={{
                     padding: "8px 12px",
                     borderRadius: "var(--radius-sm)",
-                    backgroundColor: "rgba(255, 59, 48, 0.1)",
-                    border: "1px solid rgba(255, 59, 48, 0.3)",
-                    color: "#D32F2F",
+                    backgroundColor: "var(--color-danger-bg)",
+                    border: "1px solid var(--color-danger-border)",
+                    color: "var(--color-danger)",
                     fontSize: "var(--text-xs)",
                   }}
                 >
@@ -5167,14 +5170,15 @@ export function DirectoryModule({
                           style={{
                             background: "none",
                             border: "none",
-                            color: "#D32F2F",
+                            color: "var(--color-danger)",
                             cursor: "pointer",
                             fontSize: "14px",
                             padding: "2px",
                           }}
                           title="Remove subject enrollment"
+                          aria-label="Remove subject enrollment"
                         >
-                          
+                          &times;
                         </button>
                       </div>
                     );
@@ -5194,7 +5198,7 @@ export function DirectoryModule({
                   justifyContent: "flex-end",
                   gap: "var(--space-2)",
                   zIndex: 10,
-                  boxShadow: "0 -4px 10px rgba(0, 0, 0, 0.04)",
+                  boxShadow: "var(--shadow-sm)",
                 }}
               >
                 <Button
@@ -5222,7 +5226,7 @@ export function DirectoryModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.55)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(6px)",
             display: "flex",
             alignItems: "center",
@@ -5325,7 +5329,7 @@ export function DirectoryModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.55)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(6px)",
             display: "flex",
             alignItems: "center",
@@ -5577,7 +5581,7 @@ export function DirectoryModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.55)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(6px)",
             display: "flex",
             alignItems: "center",
@@ -5781,7 +5785,7 @@ export function DirectoryModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.55)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(6px)",
             display: "flex",
             alignItems: "center",
@@ -5800,7 +5804,7 @@ export function DirectoryModule({
               maxWidth: "500px",
               width: "100%",
               padding: "var(--space-6)",
-              boxShadow: "var(--shadow-xl)",
+              boxShadow: "var(--shadow-lg)",
               border: "1px solid var(--color-border)",
             }}
           >
@@ -5835,6 +5839,7 @@ export function DirectoryModule({
               <button
                 type="button"
                 onClick={() => setIsInviteModalOpen(false)}
+                aria-label="Close modal"
                 style={{
                   fontSize: "18px",
                   color: "var(--color-neutral-dark)",
@@ -5843,7 +5848,7 @@ export function DirectoryModule({
                   border: "none",
                 }}
               >
-                
+                &times;
               </button>
             </div>
 
@@ -5858,8 +5863,8 @@ export function DirectoryModule({
               <div
                 style={{
                   padding: "8px 12px",
-                  backgroundColor: "rgba(0, 122, 255, 0.08)",
-                  border: "1px solid rgba(0, 122, 255, 0.25)",
+                  backgroundColor: "var(--brand-sky-subtle)",
+                  border: "1px solid var(--color-border)",
                   borderRadius: "var(--radius-md)",
                   fontSize: "11px",
                   color: "var(--color-primary)",

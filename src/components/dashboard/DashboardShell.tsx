@@ -1006,11 +1006,11 @@ function DemoDashboardShell({
                   fontSize: "12px",
                   fontWeight: isActive ? 600 : 500,
                   padding: "5px 12px",
-                  borderRadius: "var(--radius-full)",
+                  borderRadius: "var(--radius-md)",
                   backgroundColor: isActive
                     ? "var(--color-primary)"
                     : "var(--color-surface-muted)",
-                  color: isActive ? "#FFFFFF" : "var(--color-neutral-dark)",
+                  color: isActive ? "var(--brand-white)" : "var(--color-neutral-dark)",
                   border: "1px solid",
                   borderColor: isActive
                     ? "var(--color-primary)"
@@ -1030,13 +1030,13 @@ function DemoDashboardShell({
                     <span
                       style={{
                         backgroundColor: isActive
-                          ? "#FFFFFF"
+                          ? "var(--brand-white)"
                           : "var(--color-primary)",
-                        color: isActive ? "var(--color-primary)" : "#FFFFFF",
+                        color: isActive ? "var(--color-primary)" : "var(--brand-white)",
                         fontSize: "10px",
                         fontWeight: 700,
                         padding: "1px 6px",
-                        borderRadius: "var(--radius-full)",
+                        borderRadius: "var(--radius-sm)",
                       }}
                     >
                       {pendingRegistrationsCount}
@@ -1325,9 +1325,9 @@ function DemoDashboardShell({
                 style={{
                   marginTop: "var(--space-3)",
                   padding: "var(--space-3)",
-                  backgroundColor: "rgba(0, 122, 255, 0.06)",
+                  backgroundColor: "var(--brand-sky-subtle)",
                   borderRadius: "var(--radius-md)",
-                  border: "1px solid rgba(0, 122, 255, 0.15)",
+                  border: "1px solid var(--color-border)",
                 }}
               >
                 <span
@@ -1399,7 +1399,7 @@ function DemoDashboardShell({
                     activeTab === item ? "var(--color-primary)" : "transparent",
                   color:
                     activeTab === item
-                      ? "#FFFFFF"
+                      ? "var(--brand-white)"
                       : "var(--color-neutral-dark)",
                   fontWeight: activeTab === item ? 600 : 400,
                   transition: "all var(--transition-fast)",
@@ -1416,16 +1416,16 @@ function DemoDashboardShell({
                       style={{
                         backgroundColor:
                           activeTab === item
-                            ? "#FFFFFF"
+                            ? "var(--brand-white)"
                             : "var(--color-primary)",
                         color:
                           activeTab === item
                             ? "var(--color-primary)"
-                            : "#FFFFFF",
+                            : "var(--brand-white)",
                         fontSize: "10px",
                         fontWeight: 700,
                         padding: "1px 6px",
-                        borderRadius: "var(--radius-full)",
+                        borderRadius: "var(--radius-sm)",
                       }}
                     >
                       {pendingRegistrationsCount}
@@ -1453,7 +1453,7 @@ function DemoDashboardShell({
                 }}
                 style={{
                   fontSize: "var(--text-xs)",
-                  color: "#D32F2F",
+                  color: "var(--color-danger)",
                   display: "flex",
                   alignItems: "center",
                   gap: "4px",
@@ -1510,8 +1510,8 @@ function DemoDashboardShell({
             {!isAuthenticated && (
               <div
                 style={{
-                  backgroundColor: "rgba(0, 122, 255, 0.06)",
-                  border: "1px solid rgba(0, 122, 255, 0.2)",
+                  backgroundColor: "var(--brand-sky-subtle)",
+                  border: "1px solid var(--color-border)",
                   borderRadius: "var(--radius-md)",
                   padding: "var(--space-3) var(--space-4)",
                   marginBottom: "var(--space-6)",
@@ -2331,8 +2331,8 @@ function DemoDashboardShell({
                 {isAcademyOverviewOrLedger && pendingRegistrationsCount > 0 && (
                   <div
                     style={{
-                      backgroundColor: "rgba(255, 149, 0, 0.08)",
-                      border: "1px solid rgba(255, 149, 0, 0.3)",
+                      backgroundColor: "var(--color-warning-bg)",
+                      border: "1px solid var(--color-warning-border)",
                       borderRadius: "var(--radius-md)",
                       padding: "var(--space-3) var(--space-4)",
                       marginBottom: "var(--space-5)",
@@ -3992,7 +3992,7 @@ function DemoDashboardShell({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.45)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(6px)",
             display: "flex",
             alignItems: "center",
@@ -4026,13 +4026,14 @@ function DemoDashboardShell({
               <button
                 type="button"
                 onClick={() => setRecordingModal(null)}
+                aria-label="Close modal"
                 style={{
                   fontSize: "var(--text-lg)",
                   color: "var(--color-neutral-dark)",
                   cursor: "pointer",
                 }}
               >
-                
+                &times;
               </button>
             </div>
 
@@ -4103,7 +4104,7 @@ function DemoDashboardShell({
                     width: "100%",
                     padding: "8px 12px",
                     borderRadius: "var(--radius-sm)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                     fontSize: "var(--text-sm)",
                   }}
                 />
@@ -4129,7 +4130,7 @@ function DemoDashboardShell({
                     width: "100%",
                     padding: "8px 12px",
                     borderRadius: "var(--radius-sm)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                     fontSize: "var(--text-sm)",
                   }}
                 />
@@ -4154,7 +4155,7 @@ function DemoDashboardShell({
                     width: "100%",
                     padding: "8px 12px",
                     borderRadius: "var(--radius-sm)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                     fontSize: "var(--text-sm)",
                   }}
                 />
@@ -4164,7 +4165,7 @@ function DemoDashboardShell({
                 style={{
                   fontSize: "11px",
                   color: "var(--color-neutral-dark)",
-                  backgroundColor: "rgba(0, 122, 255, 0.06)",
+                  backgroundColor: "var(--brand-sky-subtle)",
                   padding: "6px 10px",
                   borderRadius: "var(--radius-sm)",
                 }}
@@ -4225,7 +4226,7 @@ function DemoDashboardShell({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.45)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(6px)",
             display: "flex",
             alignItems: "center",

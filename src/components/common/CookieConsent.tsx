@@ -138,17 +138,17 @@ export function CookieConsent() {
           right: "var(--space-4)",
           maxWidth: "760px",
           margin: "0 auto",
-          backgroundColor: "#FFFFFF",
-          border: "1px solid rgba(170, 170, 170, 0.4)",
-          borderRadius: "16px",
-          boxShadow: "0 12px 32px rgba(0, 0, 0, 0.08)",
+          backgroundColor: "var(--color-surface)",
+          border: "1px solid var(--color-border)",
+          borderRadius: "var(--radius-lg)",
+          boxShadow: "var(--shadow-lg)",
           padding: "var(--space-5)",
           zIndex: 90,
         }}
       >
           <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "var(--space-2)" }}>
-              <h3 style={{ fontSize: "var(--text-base)", fontWeight: 600, color: "#1D1D1F" }}>
+              <h3 style={{ fontSize: "var(--text-base)", fontWeight: 600, color: "var(--brand-navy)" }}>
                 Cookie and Privacy Preferences
               </h3>
               <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>
@@ -191,7 +191,7 @@ export function CookieConsent() {
               <button
                 type="button"
                 onClick={handleAcceptAll}
-                className="btn-secondary"
+                className="btn-primary"
                 style={{ fontSize: "var(--text-xs)", minWidth: "110px", height: "36px" }}
                 aria-label="Accept all cookies"
               >
@@ -211,7 +211,7 @@ export function CookieConsent() {
         style={{
           position: "fixed",
           inset: 0,
-          backgroundColor: "rgba(0, 0, 0, 0.45)",
+          backgroundColor: "var(--color-overlay)",
           backdropFilter: "blur(6px)",
           WebkitBackdropFilter: "blur(6px)",
           display: isModalOpen ? "flex" : "none",
@@ -224,12 +224,12 @@ export function CookieConsent() {
         <div
           className="cookie-modal-card"
             style={{
-              backgroundColor: "#FFFFFF",
-              borderRadius: "16px",
+              backgroundColor: "var(--color-surface)",
+              borderRadius: "var(--radius-lg)",
               maxWidth: "600px",
               width: "100%",
-              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.12)",
-              border: "1px solid rgba(170, 170, 170, 0.4)",
+              boxShadow: "var(--shadow-lg)",
+              border: "1px solid var(--color-border)",
               padding: "var(--space-6)",
               display: "flex",
               flexDirection: "column",
@@ -240,7 +240,7 @@ export function CookieConsent() {
           >
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <h2 id="cookie-preferences-title" style={{ fontSize: "var(--text-xl)", fontWeight: 600, color: "#1D1D1F" }}>
+                <h2 id="cookie-preferences-title" style={{ fontSize: "var(--text-xl)", fontWeight: 600, color: "var(--brand-navy)" }}>
                   Cookie Settings
                 </h2>
                 <button
@@ -256,7 +256,7 @@ export function CookieConsent() {
                     borderRadius: "8px",
                     border: "none",
                     background: "transparent",
-                    color: "#1D1D1F",
+                    color: "var(--brand-navy)",
                     cursor: "pointer",
                   }}
                 >
@@ -272,14 +272,14 @@ export function CookieConsent() {
               <div
                 style={{
                   padding: "var(--space-3) var(--space-4)",
-                  border: "1px solid rgba(170, 170, 170, 0.35)",
+                  border: "1px solid var(--color-border)",
                   borderRadius: "10px",
-                  backgroundColor: "rgba(245, 245, 247, 0.7)",
+                  backgroundColor: "var(--brand-beige)",
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
-                    <strong style={{ fontSize: "var(--text-sm)", color: "#1D1D1F" }}>Strictly Necessary Cookies</strong>
+                    <strong style={{ fontSize: "var(--text-sm)", color: "var(--brand-navy)" }}>Strictly Necessary Cookies</strong>
                     <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)", margin: "4px 0 0", lineHeight: 1.5 }}>
                       Essential for authentication, secure portal access, and session integrity. Cannot be disabled.
                     </p>
@@ -293,14 +293,14 @@ export function CookieConsent() {
               <div
                 style={{
                   padding: "var(--space-3) var(--space-4)",
-                  border: "1px solid rgba(170, 170, 170, 0.35)",
+                  border: "1px solid var(--color-border)",
                   borderRadius: "10px",
-                  backgroundColor: "#FFFFFF",
+                  backgroundColor: "var(--color-surface)",
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div style={{ paddingRight: "var(--space-3)" }}>
-                    <label htmlFor="pref-functional" style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "#1D1D1F", cursor: "pointer" }}>
+                    <label htmlFor="pref-functional" style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--brand-navy)", cursor: "pointer" }}>
                       Functional Preferences
                     </label>
                     <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)", margin: "4px 0 0", lineHeight: 1.5 }}>
@@ -312,7 +312,7 @@ export function CookieConsent() {
                     type="checkbox"
                     checked={draftPreferences.functional}
                     onChange={(e) => setDraftPreferences({ ...draftPreferences, functional: e.target.checked })}
-                    style={{ width: "18px", height: "18px", accentColor: "#007AFF", cursor: "pointer" }}
+                    style={{ width: "18px", height: "18px", accentColor: "var(--brand-navy)", cursor: "pointer" }}
                   />
                 </div>
               </div>
@@ -320,14 +320,14 @@ export function CookieConsent() {
               <div
                 style={{
                   padding: "var(--space-3) var(--space-4)",
-                  border: "1px solid rgba(170, 170, 170, 0.35)",
+                  border: "1px solid var(--color-border)",
                   borderRadius: "10px",
-                  backgroundColor: "#FFFFFF",
+                  backgroundColor: "var(--color-surface)",
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div style={{ paddingRight: "var(--space-3)" }}>
-                    <label htmlFor="pref-analytics" style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "#1D1D1F", cursor: "pointer" }}>
+                    <label htmlFor="pref-analytics" style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--brand-navy)", cursor: "pointer" }}>
                       Performance and Reliability
                     </label>
                     <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)", margin: "4px 0 0", lineHeight: 1.5 }}>
@@ -339,7 +339,7 @@ export function CookieConsent() {
                     type="checkbox"
                     checked={draftPreferences.analytics}
                     onChange={(e) => setDraftPreferences({ ...draftPreferences, analytics: e.target.checked })}
-                    style={{ width: "18px", height: "18px", accentColor: "#007AFF", cursor: "pointer" }}
+                    style={{ width: "18px", height: "18px", accentColor: "var(--brand-navy)", cursor: "pointer" }}
                   />
                 </div>
               </div>
@@ -352,7 +352,7 @@ export function CookieConsent() {
                 gap: "var(--space-3)",
                 justifyContent: "flex-end",
                 paddingTop: "var(--space-3)",
-                borderTop: "1px solid rgba(170, 170, 170, 0.35)",
+                borderTop: "1px solid var(--color-border)",
               }}
             >
               <button

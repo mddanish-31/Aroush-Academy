@@ -762,7 +762,7 @@ export function IdCardManagementModule({
           <div style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
             Inactive / Revoked
           </div>
-          <div style={{ fontSize: "var(--text-3xl)", fontWeight: 700, color: "#64748B", marginTop: "4px" }}>
+          <div style={{ fontSize: "var(--text-3xl)", fontWeight: 700, color: "var(--color-text-secondary)", marginTop: "4px" }}>
             {metrics.inactive}
           </div>
           <div style={{ fontSize: "11px", color: "var(--color-neutral-dark)", marginTop: "4px" }}>
@@ -1262,7 +1262,7 @@ export function IdCardManagementModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.65)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(6px)",
             display: "flex",
             alignItems: "center",
@@ -1277,7 +1277,7 @@ export function IdCardManagementModule({
               backgroundColor: "var(--color-surface)",
               borderRadius: "var(--radius-xl)",
               border: "1px solid var(--color-border)",
-              boxShadow: "var(--shadow-xl)",
+              boxShadow: "var(--shadow-lg)",
               width: "100%",
               maxWidth: "680px",
               maxHeight: "90vh",
@@ -1322,8 +1322,8 @@ export function IdCardManagementModule({
               <div
                 style={{
                   padding: "var(--space-3) var(--space-4)",
-                  backgroundColor: "rgba(255, 59, 48, 0.1)",
-                  border: "1px solid rgba(255, 59, 48, 0.25)",
+                  backgroundColor: "var(--color-danger-bg)",
+                  border: "1px solid var(--color-danger-border)",
                   borderRadius: "var(--radius-md)",
                   marginBottom: "var(--space-4)",
                 }}
@@ -1354,13 +1354,13 @@ export function IdCardManagementModule({
                     padding: "8px 12px",
                     fontSize: "var(--text-xs)",
                     borderRadius: "var(--radius-md)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                     backgroundColor: editingCardRecord ? "var(--color-surface-muted)" : "var(--color-surface)",
                   }}
                 >
                   {students.map((s) => (
                     <option key={s.id} value={s.id}>
-                      {s.name} ({s.classGrade} &bull; {s.board}) &mdash; {s.id}
+                      {s.name} ({s.classGrade} &bull; {s.board}) - {s.id}
                     </option>
                   ))}
                 </select>
@@ -1379,7 +1379,7 @@ export function IdCardManagementModule({
                     padding: "8px 12px",
                     fontSize: "var(--text-xs)",
                     borderRadius: "var(--radius-md)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                   }}
                 />
               </div>
@@ -1397,7 +1397,7 @@ export function IdCardManagementModule({
                     padding: "8px 12px",
                     fontSize: "var(--text-xs)",
                     borderRadius: "var(--radius-md)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                     fontFamily: "monospace",
                   }}
                 />
@@ -1416,7 +1416,7 @@ export function IdCardManagementModule({
                     padding: "8px 12px",
                     fontSize: "var(--text-xs)",
                     borderRadius: "var(--radius-md)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                   }}
                 />
               </div>
@@ -1434,7 +1434,7 @@ export function IdCardManagementModule({
                     padding: "8px 12px",
                     fontSize: "var(--text-xs)",
                     borderRadius: "var(--radius-md)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                   }}
                 />
               </div>
@@ -1452,7 +1452,7 @@ export function IdCardManagementModule({
                     padding: "8px 12px",
                     fontSize: "var(--text-xs)",
                     borderRadius: "var(--radius-md)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                   }}
                 />
               </div>
@@ -1470,7 +1470,7 @@ export function IdCardManagementModule({
                     padding: "8px 12px",
                     fontSize: "var(--text-xs)",
                     borderRadius: "var(--radius-md)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                   }}
                 />
               </div>
@@ -1488,7 +1488,7 @@ export function IdCardManagementModule({
                     padding: "8px 12px",
                     fontSize: "var(--text-xs)",
                     borderRadius: "var(--radius-md)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                   }}
                 />
               </div>
@@ -1506,7 +1506,7 @@ export function IdCardManagementModule({
                     padding: "8px 12px",
                     fontSize: "var(--text-xs)",
                     borderRadius: "var(--radius-md)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                   }}
                 />
               </div>
@@ -1524,7 +1524,7 @@ export function IdCardManagementModule({
                     padding: "8px 12px",
                     fontSize: "var(--text-xs)",
                     borderRadius: "var(--radius-md)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                   }}
                 />
               </div>
@@ -1542,7 +1542,7 @@ export function IdCardManagementModule({
                     padding: "8px 12px",
                     fontSize: "var(--text-xs)",
                     borderRadius: "var(--radius-md)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                   }}
                 />
               </div>
@@ -1558,7 +1558,7 @@ export function IdCardManagementModule({
                       height: "68px",
                       borderRadius: "6px",
                       border: "1px solid var(--color-border)",
-                      backgroundColor: "#FFFFFF",
+                      backgroundColor: "var(--brand-white)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -1671,7 +1671,7 @@ export function IdCardManagementModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.65)",
+            backgroundColor: "var(--color-overlay)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -1686,7 +1686,8 @@ export function IdCardManagementModule({
               padding: "var(--space-6)",
               maxWidth: "440px",
               width: "100%",
-              boxShadow: "var(--shadow-xl)",
+              boxShadow: "var(--shadow-lg)",
+              border: "1px solid var(--color-border)",
             }}
           >
             <h4 style={{ margin: "0 0 8px", fontSize: "var(--text-base)", fontWeight: 700, color: "var(--color-primary)" }}>
@@ -1716,7 +1717,7 @@ export function IdCardManagementModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.65)",
+            backgroundColor: "var(--color-overlay)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -1731,7 +1732,8 @@ export function IdCardManagementModule({
               padding: "var(--space-6)",
               maxWidth: "440px",
               width: "100%",
-              boxShadow: "var(--shadow-xl)",
+              boxShadow: "var(--shadow-lg)",
+              border: "1px solid var(--color-border)",
             }}
           >
             <h4 style={{ margin: "0 0 8px", fontSize: "var(--text-base)", fontWeight: 700, color: "var(--color-danger)" }}>
@@ -1750,7 +1752,7 @@ export function IdCardManagementModule({
                 padding: "8px 10px",
                 fontSize: "var(--text-xs)",
                 borderRadius: "var(--radius-md)",
-                border: "1px solid var(--color-border)",
+                border: "1px solid var(--color-input-border)",
                 marginBottom: "16px",
               }}
             />
@@ -1773,7 +1775,7 @@ export function IdCardManagementModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.65)",
+            backgroundColor: "var(--color-overlay)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -1788,7 +1790,8 @@ export function IdCardManagementModule({
               padding: "var(--space-6)",
               maxWidth: "440px",
               width: "100%",
-              boxShadow: "var(--shadow-xl)",
+              boxShadow: "var(--shadow-lg)",
+              border: "1px solid var(--color-border)",
             }}
           >
             <h4 style={{ margin: "0 0 8px", fontSize: "var(--text-base)", fontWeight: 700, color: "var(--color-danger)" }}>
@@ -1807,7 +1810,7 @@ export function IdCardManagementModule({
                 padding: "8px 10px",
                 fontSize: "var(--text-xs)",
                 borderRadius: "var(--radius-md)",
-                border: "1px solid var(--color-border)",
+                border: "1px solid var(--color-input-border)",
                 marginBottom: "16px",
               }}
             />
@@ -1830,7 +1833,7 @@ export function IdCardManagementModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.65)",
+            backgroundColor: "var(--color-overlay)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -1845,7 +1848,8 @@ export function IdCardManagementModule({
               padding: "var(--space-6)",
               maxWidth: "420px",
               width: "100%",
-              boxShadow: "var(--shadow-xl)",
+              boxShadow: "var(--shadow-lg)",
+              border: "1px solid var(--color-border)",
             }}
           >
             <h4 style={{ margin: "0 0 8px", fontSize: "var(--text-base)", fontWeight: 700, color: "var(--color-primary)" }}>
@@ -1866,7 +1870,7 @@ export function IdCardManagementModule({
                 padding: "8px 10px",
                 fontSize: "var(--text-xs)",
                 borderRadius: "var(--radius-md)",
-                border: "1px solid var(--color-border)",
+                border: "1px solid var(--color-input-border)",
                 marginBottom: "16px",
               }}
             />
@@ -1889,7 +1893,7 @@ export function IdCardManagementModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.65)",
+            backgroundColor: "var(--color-overlay)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

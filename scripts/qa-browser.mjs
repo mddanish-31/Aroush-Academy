@@ -1090,7 +1090,7 @@ async function run() {
 
       for (const item of mediaItems) {
         const photoPage = await browser.newPage({ viewport: { width: 800, height: 600 } });
-        await photoPage.setContent(`<!DOCTYPE html><html><body style="margin:0;background:#1D1D1F;display:flex;align-items:center;justify-content:center;height:100vh;"><img src="${item.url}" style="max-width:100%;max-height:100vh;object-fit:contain;" /></body></html>`, { waitUntil: "domcontentloaded" });
+        await photoPage.setContent(`<!DOCTYPE html><html><body style="margin:0;background:#2F4156;display:flex;align-items:center;justify-content:center;height:100vh;"><img src="${item.url}" style="max-width:100%;max-height:100vh;object-fit:contain;" /></body></html>`, { waitUntil: "domcontentloaded" });
         await photoPage.waitForSelector("img");
         await photoPage.waitForTimeout(300);
 

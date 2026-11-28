@@ -1015,16 +1015,16 @@ export function StudyMaterialsModule({
           style={{
             backgroundColor:
               actionNotification.type === "success"
-                ? "rgba(52, 199, 89, 0.08)"
+                ? "var(--color-success-bg)"
                 : actionNotification.type === "warning"
-                ? "rgba(255, 149, 0, 0.08)"
-                : "rgba(255, 59, 48, 0.08)",
+                ? "var(--color-warning-bg)"
+                : "var(--color-danger-bg)",
             border: `1px solid ${
               actionNotification.type === "success"
-                ? "rgba(52, 199, 89, 0.25)"
+                ? "var(--color-success-border)"
                 : actionNotification.type === "warning"
-                ? "rgba(255, 149, 0, 0.25)"
-                : "rgba(255, 59, 48, 0.25)"
+                ? "var(--color-warning-border)"
+                : "var(--color-danger-border)"
             }`,
             borderRadius: "var(--radius-md)",
             padding: "10px 14px",
@@ -1046,7 +1046,7 @@ export function StudyMaterialsModule({
                       ? "var(--color-success)"
                       : actionNotification.type === "warning"
                       ? "var(--color-warning)"
-                      : "#FF3B30",
+                      : "var(--color-danger)",
                   fontWeight: 700,
                 }}
               >
@@ -1063,6 +1063,7 @@ export function StudyMaterialsModule({
           <button
             type="button"
             onClick={() => setActionNotification(null)}
+            aria-label="Dismiss notification"
             style={{
               fontSize: "12px",
               color: "var(--color-neutral-dark)",
@@ -1072,7 +1073,7 @@ export function StudyMaterialsModule({
               padding: "2px",
             }}
           >
-            
+            &times;
           </button>
         </div>
       )}
@@ -1273,7 +1274,7 @@ export function StudyMaterialsModule({
                     backgroundColor: "var(--color-surface)",
                     borderRadius: "var(--radius-lg)",
                     border: isDraft
-                      ? "1px dashed rgba(255, 149, 0, 0.5)"
+                      ? "1px dashed var(--color-warning-border)"
                       : "1px solid var(--color-border)",
                     padding: "var(--space-4)",
                     display: "flex",
@@ -1336,8 +1337,8 @@ export function StudyMaterialsModule({
                                 fontSize: "11px",
                                 padding: "2px 8px",
                                 borderRadius: "var(--radius-sm)",
-                                border: "1px solid rgba(52, 199, 89, 0.4)",
-                                backgroundColor: "rgba(52, 199, 89, 0.12)",
+                                border: "1px solid var(--color-success-border)",
+                                backgroundColor: "var(--color-success-bg)",
                                 color: "var(--color-success)",
                                 cursor: "pointer",
                                 fontWeight: 600,
@@ -1384,17 +1385,18 @@ export function StudyMaterialsModule({
                             type="button"
                             onClick={() => handleDeleteMaterial(mat)}
                             title="Delete resource"
+                            aria-label="Delete resource"
                             style={{
                               fontSize: "11px",
                               padding: "2px 6px",
                               borderRadius: "var(--radius-sm)",
-                              border: "1px solid rgba(255, 59, 48, 0.3)",
-                              backgroundColor: "rgba(255, 59, 48, 0.08)",
-                              color: "#FF3B30",
+                              border: "1px solid var(--color-danger-border)",
+                              backgroundColor: "var(--color-danger-bg)",
+                              color: "var(--color-danger)",
                               cursor: "pointer",
                             }}
                           >
-                            
+                            &times;
                           </button>
                         </div>
                       )}
@@ -1484,7 +1486,7 @@ export function StudyMaterialsModule({
                             style={{
                               fontSize: "11px",
                               fontWeight: 600,
-                              color: "#FFFFFF",
+                              color: "var(--brand-white)",
                               backgroundColor: "var(--color-primary)",
                               border: "none",
                               cursor: "pointer",
@@ -1504,8 +1506,8 @@ export function StudyMaterialsModule({
                             fontSize: "11px",
                             fontWeight: 500,
                             color: "var(--color-warning)",
-                            backgroundColor: "rgba(255, 149, 0, 0.08)",
-                            border: "1px solid rgba(255, 149, 0, 0.3)",
+                            backgroundColor: "var(--color-warning-bg)",
+                            border: "1px solid var(--color-warning-border)",
                             cursor: "pointer",
                             padding: "4px 8px",
                             borderRadius: "var(--radius-sm)",
@@ -1552,7 +1554,7 @@ export function StudyMaterialsModule({
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.45)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(4px)",
             display: "flex",
             alignItems: "center",
@@ -1614,7 +1616,7 @@ export function StudyMaterialsModule({
                   padding: "4px",
                 }}
               >
-                
+                &times;
               </button>
             </div>
 
@@ -1682,8 +1684,8 @@ export function StudyMaterialsModule({
                 style={{
                   padding: "10px 12px",
                   borderRadius: "var(--radius-sm)",
-                  border: "1px solid var(--color-border-subtle)",
-                  backgroundColor: "rgba(255, 149, 0, 0.08)",
+                  border: "1px solid var(--color-warning-border)",
+                  backgroundColor: "var(--color-warning-bg)",
                   fontSize: "11px",
                   color: "var(--color-primary)",
                   marginBottom: "var(--space-4)",
@@ -1699,7 +1701,7 @@ export function StudyMaterialsModule({
                   padding: "10px 12px",
                   borderRadius: "var(--radius-sm)",
                   border: "1px solid var(--color-border-subtle)",
-                  backgroundColor: "rgba(0, 122, 255, 0.04)",
+                  backgroundColor: "var(--brand-sky-soft)",
                   fontSize: "11px",
                   color: "var(--color-primary)",
                   marginBottom: "var(--space-4)",
@@ -1742,7 +1744,7 @@ export function StudyMaterialsModule({
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.45)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(4px)",
             display: "flex",
             alignItems: "center",
@@ -1816,7 +1818,7 @@ export function StudyMaterialsModule({
                   onClick={() => fileInputRef.current?.click()}
                   style={{
                     border: fileError
-                      ? "2px dashed #FF3B30"
+                      ? "2px dashed var(--color-danger)"
                       : selectedFile
                       ? "2px solid var(--color-accent)"
                       : "2px dashed var(--color-border)",
@@ -1825,7 +1827,7 @@ export function StudyMaterialsModule({
                     textAlign: "center",
                     cursor: "pointer",
                     backgroundColor: selectedFile
-                      ? "rgba(0, 122, 255, 0.03)"
+                      ? "var(--brand-sky-soft)"
                       : "var(--color-surface-muted)",
                     transition: "border-color var(--transition-fast)",
                   }}
@@ -1859,7 +1861,7 @@ export function StudyMaterialsModule({
                         style={{
                           marginTop: "8px",
                           fontSize: "11px",
-                          color: "#FF3B30",
+                          color: "var(--color-danger)",
                           backgroundColor: "transparent",
                           border: "none",
                           cursor: "pointer",
@@ -1886,7 +1888,7 @@ export function StudyMaterialsModule({
                   <div
                     style={{
                       fontSize: "11px",
-                      color: "#FF3B30",
+                      color: "var(--color-danger)",
                       marginTop: "4px",
                       fontWeight: 500,
                     }}
@@ -2162,8 +2164,8 @@ export function StudyMaterialsModule({
 
               <div
                 style={{
-                  backgroundColor: "rgba(0, 122, 255, 0.05)",
-                  border: "1px solid rgba(0, 122, 255, 0.2)",
+                  backgroundColor: "var(--brand-sky-subtle)",
+                  border: "1px solid var(--color-border)",
                   borderRadius: "var(--radius-sm)",
                   padding: "8px 12px",
                   fontSize: "11px",
@@ -2210,7 +2212,7 @@ export function StudyMaterialsModule({
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.45)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(4px)",
             display: "flex",
             alignItems: "center",
@@ -2267,7 +2269,7 @@ export function StudyMaterialsModule({
                   padding: "4px",
                 }}
               >
-                
+                &times;
               </button>
             </div>
 
@@ -2299,8 +2301,8 @@ export function StudyMaterialsModule({
                       fontWeight: 600,
                       padding: "2px 6px",
                       borderRadius: "var(--radius-sm)",
-                      backgroundColor: "rgba(0, 122, 255, 0.08)",
-                      border: "1px solid rgba(0, 122, 255, 0.2)",
+                      backgroundColor: "var(--brand-sky-subtle)",
+                      border: "1px solid var(--color-border)",
                     }}
                   >
                     {editSelectedFile ? "Change" : "Replace File"}
@@ -2325,7 +2327,7 @@ export function StudyMaterialsModule({
                   </label>
                 </div>
                 {editFileError && (
-                  <div style={{ fontSize: "11px", color: "#FF3B30", marginTop: "4px" }}>
+                  <div style={{ fontSize: "11px", color: "var(--color-danger)", marginTop: "4px" }}>
                     Notice: {editFileError}
                   </div>
                 )}
@@ -2567,7 +2569,7 @@ export function StudyMaterialsModule({
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.45)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(4px)",
             display: "flex",
             alignItems: "center",
@@ -2624,7 +2626,7 @@ export function StudyMaterialsModule({
                   padding: "4px",
                 }}
               >
-                
+                &times;
               </button>
             </div>
 
@@ -2673,7 +2675,7 @@ export function StudyMaterialsModule({
                         title={`Remove "${t}" resource type`}
                         style={{
                           fontSize: "11px",
-                          color: "#FF3B30",
+                          color: "var(--color-danger)",
                           background: "none",
                           border: "none",
                           cursor: "pointer",
@@ -2710,7 +2712,7 @@ export function StudyMaterialsModule({
                       flex: 1,
                       padding: "8px 12px",
                       borderRadius: "var(--radius-sm)",
-                      border: typeSettingsError ? "1px solid #FF3B30" : "1px solid var(--color-border)",
+                      border: typeSettingsError ? "1px solid var(--color-danger)" : "1px solid var(--color-input-border)",
                       fontSize: "var(--text-xs)",
                       backgroundColor: "var(--color-surface)",
                     }}
@@ -2720,7 +2722,7 @@ export function StudyMaterialsModule({
                   </Button>
                 </div>
                 {typeSettingsError && (
-                  <div style={{ fontSize: "11px", color: "#FF3B30", marginTop: "4px" }}>
+                  <div style={{ fontSize: "11px", color: "var(--color-danger)", marginTop: "4px" }}>
                     Notice: {typeSettingsError}
                   </div>
                 )}

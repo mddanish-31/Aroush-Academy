@@ -8,9 +8,9 @@ export function WhatWeTeach({ landing }: { landing: LandingContent }) {
     <section
       id="what-we-teach"
       style={{
-        backgroundColor: "#F5F5F7",
+        backgroundColor: "var(--brand-beige)",
         padding: "clamp(48px, 6vw, 84px) 0 clamp(40px, 5vw, 64px)",
-        borderBottom: "1px solid rgba(170, 170, 170, 0.35)",
+        borderBottom: "1px solid var(--color-border)",
       }}
     >
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 24px" }}>
@@ -33,7 +33,7 @@ export function WhatWeTeach({ landing }: { landing: LandingContent }) {
               fontFamily: "var(--font-display)",
               fontSize: "clamp(2rem, 4.2vw, 3.25rem)",
               lineHeight: 1.08,
-              color: "#1D1D1F",
+              color: "var(--brand-navy)",
               fontWeight: 700,
               maxWidth: "24ch",
               margin: 0,
@@ -49,7 +49,7 @@ export function WhatWeTeach({ landing }: { landing: LandingContent }) {
               <div
                 style={{
                   paddingBottom: "12px",
-                  borderBottom: "1px solid #1D1D1F",
+                  borderBottom: "1px solid var(--brand-navy)",
                   marginBottom: "4px",
                   display: "flex",
                   alignItems: "baseline",
@@ -64,7 +64,7 @@ export function WhatWeTeach({ landing }: { landing: LandingContent }) {
                     fontWeight: 600,
                     textTransform: "uppercase",
                     letterSpacing: "0.06em",
-                    color: "#1D1D1F",
+                    color: "var(--brand-navy)",
                     margin: 0,
                   }}
                 >
@@ -86,7 +86,7 @@ export function WhatWeTeach({ landing }: { landing: LandingContent }) {
                           alignItems: "center",
                           justifyContent: "space-between",
                           padding: "clamp(16px, 2.2vw, 24px) 0",
-                          borderBottom: "1px solid rgba(170, 170, 170, 0.35)",
+                          borderBottom: "1px solid var(--color-divider-subtle)",
                           flexWrap: "wrap",
                           gap: "12px",
                         }}
@@ -104,9 +104,9 @@ export function WhatWeTeach({ landing }: { landing: LandingContent }) {
                           style={{
                             fontSize: "15px",
                             fontWeight: 600,
-                            color: "#1D1D1F",
+                            color: "var(--brand-navy)",
                             textDecoration: "underline",
-                            textDecorationColor: "#007AFF",
+                            textDecorationColor: "var(--brand-teal)",
                             textUnderlineOffset: "3px",
                             display: "inline-flex",
                             alignItems: "center",
@@ -114,7 +114,7 @@ export function WhatWeTeach({ landing }: { landing: LandingContent }) {
                           }}
                         >
                           <span>Ask us about this class</span>
-                          <ArrowRight size={16} style={{ color: "#007AFF" }} />
+                          <ArrowRight size={16} style={{ color: "var(--brand-teal)" }} />
                         </a>
                       </div>
                     );
@@ -131,7 +131,7 @@ export function WhatWeTeach({ landing }: { landing: LandingContent }) {
                         alignItems: "center",
                         justifyContent: "space-between",
                         padding: "clamp(16px, 2.2vw, 24px) 0",
-                        borderBottom: "1px solid rgba(170, 170, 170, 0.35)",
+                        borderBottom: "1px solid var(--color-divider-subtle)",
                         textDecoration: "none",
                         transition: "transform 200ms ease-out",
                       }}
@@ -141,7 +141,7 @@ export function WhatWeTeach({ landing }: { landing: LandingContent }) {
                           fontFamily: "var(--font-display)",
                           fontSize: "clamp(24px, 3.2vw, 42px)",
                           fontWeight: 600,
-                          color: "#1D1D1F",
+                          color: "var(--brand-navy)",
                           lineHeight: 1.15,
                         }}
                       >
@@ -169,7 +169,7 @@ export function WhatWeTeach({ landing }: { landing: LandingContent }) {
                           size={18}
                           className="what-we-teach-arrow"
                           style={{
-                            color: "#007AFF",
+                            color: "var(--brand-teal)",
                             transition: "transform 200ms ease-out, opacity 200ms ease-out",
                           }}
                         />

@@ -104,7 +104,7 @@ export function MotionToggle({ className }: { className?: string }) {
         padding: "4px 6px",
         borderRadius: "8px",
         cursor: "pointer",
-        color: "#1D1D1F",
+        color: "var(--color-primary)",
         fontSize: "13px",
         fontWeight: 500,
         userSelect: "none",
@@ -117,7 +117,7 @@ export function MotionToggle({ className }: { className?: string }) {
           alignItems: "center",
           width: "32px",
           height: "18px",
-          backgroundColor: isMotionOn ? "#1D1D1F" : "rgba(170, 170, 170, 0.4)",
+          backgroundColor: isMotionOn ? "var(--brand-teal)" : "var(--brand-sky)",
           borderRadius: "9px",
           position: "relative",
           transition: "background-color 150ms ease-out",
@@ -131,8 +131,8 @@ export function MotionToggle({ className }: { className?: string }) {
             width: "14px",
             height: "14px",
             borderRadius: "50%",
-            backgroundColor: "#FFFFFF",
-            boxShadow: "0 1px 2px rgba(0, 0, 0, 0.2)",
+            backgroundColor: "var(--brand-white)",
+            boxShadow: "0 1px 2px rgba(47, 65, 86, 0.25)",
             transition: "left 150ms ease-out",
           }}
         />

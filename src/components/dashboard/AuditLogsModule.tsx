@@ -193,38 +193,38 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
     switch (actionType) {
       case "CREATE":
         return (
-          <span style={{ fontSize: "10px", padding: "2px 6px", borderRadius: "var(--radius-sm)", backgroundColor: "rgba(52, 199, 89, 0.12)", color: "var(--color-success, #34C759)", fontWeight: 700 }}>
+          <span style={{ fontSize: "10px", padding: "2px 6px", borderRadius: "var(--radius-sm)", backgroundColor: "var(--color-success-bg)", color: "var(--color-success)", fontWeight: 700 }}>
             CREATE
           </span>
         );
       case "UPDATE":
         return (
-          <span style={{ fontSize: "10px", padding: "2px 6px", borderRadius: "var(--radius-sm)", backgroundColor: "rgba(0, 122, 255, 0.12)", color: "var(--color-primary)", fontWeight: 700 }}>
+          <span style={{ fontSize: "10px", padding: "2px 6px", borderRadius: "var(--radius-sm)", backgroundColor: "var(--brand-sky-subtle)", color: "var(--color-primary)", fontWeight: 700 }}>
             UPDATE
           </span>
         );
       case "DELETE":
         return (
-          <span style={{ fontSize: "10px", padding: "2px 6px", borderRadius: "var(--radius-sm)", backgroundColor: "rgba(255, 59, 48, 0.12)", color: "var(--color-danger, #FF3B30)", fontWeight: 700 }}>
+          <span style={{ fontSize: "10px", padding: "2px 6px", borderRadius: "var(--radius-sm)", backgroundColor: "var(--color-danger-bg)", color: "var(--color-danger)", fontWeight: 700 }}>
             DELETE
           </span>
         );
       case "APPROVE":
         return (
-          <span style={{ fontSize: "10px", padding: "2px 6px", borderRadius: "var(--radius-sm)", backgroundColor: "rgba(52, 199, 89, 0.15)", color: "var(--color-success, #34C759)", fontWeight: 700 }}>
+          <span style={{ fontSize: "10px", padding: "2px 6px", borderRadius: "var(--radius-sm)", backgroundColor: "var(--color-success-bg)", color: "var(--color-success)", fontWeight: 700 }}>
             APPROVE
           </span>
         );
       case "REJECT":
       case "CANCEL":
         return (
-          <span style={{ fontSize: "10px", padding: "2px 6px", borderRadius: "var(--radius-sm)", backgroundColor: "rgba(255, 149, 0, 0.15)", color: "var(--color-warning, #FF9500)", fontWeight: 700 }}>
+          <span style={{ fontSize: "10px", padding: "2px 6px", borderRadius: "var(--radius-sm)", backgroundColor: "var(--color-warning-bg)", color: "var(--color-warning)", fontWeight: 700 }}>
             {actionType}
           </span>
         );
       case "EXPORT":
         return (
-          <span style={{ fontSize: "10px", padding: "2px 6px", borderRadius: "var(--radius-sm)", backgroundColor: "rgba(110, 110, 115, 0.15)", color: "var(--color-neutral-dark)", fontWeight: 700 }}>
+          <span style={{ fontSize: "10px", padding: "2px 6px", borderRadius: "var(--radius-sm)", backgroundColor: "var(--color-surface-muted)", color: "var(--color-neutral-dark)", fontWeight: 700 }}>
             EXPORT
           </span>
         );
@@ -238,8 +238,8 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
       <div
         style={{
           padding: "10px 16px",
-          backgroundColor: "rgba(0, 122, 255, 0.08)",
-          border: "1px solid rgba(0, 122, 255, 0.2)",
+          backgroundColor: "var(--brand-sky-subtle)",
+          border: "1px solid var(--color-border)",
           borderRadius: "var(--radius-md)",
           fontSize: "var(--text-xs)",
           color: "var(--color-primary)",
@@ -346,7 +346,7 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
             <div style={{ fontSize: "11px", color: "var(--color-neutral-dark)", marginBottom: "2px" }}>
               Successful Changes
             </div>
-            <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--color-success, #34C759)" }}>
+            <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--color-success)" }}>
               {metrics.successes}
             </div>
           </div>
@@ -366,7 +366,7 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
               style={{
                 fontSize: "var(--text-xl)",
                 fontWeight: 700,
-                color: metrics.failures > 0 ? "var(--color-danger, #FF3B30)" : "var(--color-neutral-dark)",
+                color: metrics.failures > 0 ? "var(--color-danger)" : "var(--color-neutral-dark)",
               }}
             >
               {metrics.failures}
@@ -723,7 +723,7 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
                         </span>
                       </div>
                       {log.outcome === "FAILURE" && (
-                        <span style={{ fontSize: "10px", color: "var(--color-danger, #FF3B30)", fontWeight: 700 }}>
+                        <span style={{ fontSize: "10px", color: "var(--color-danger)", fontWeight: 700 }}>
                           Failed
                         </span>
                       )}
@@ -841,7 +841,7 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(4px)",
             display: "flex",
             alignItems: "center",
@@ -862,7 +862,7 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
               maxHeight: "90vh",
               overflowY: "auto",
               padding: "var(--space-6)",
-              boxShadow: "var(--shadow-xl)",
+              boxShadow: "var(--shadow-lg)",
               border: "1px solid var(--color-border)",
             }}
           >
@@ -899,7 +899,7 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
                   padding: "4px",
                 }}
               >
-                
+                &times;
               </button>
             </div>
 
@@ -921,7 +921,7 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
               </div>
               <div>
                 <span style={{ color: "var(--color-neutral-dark)" }}>Outcome:</span>{" "}
-                <strong style={{ color: selectedLog.outcome === "FAILURE" ? "var(--color-danger, #FF3B30)" : "var(--color-success, #34C759)" }}>
+                <strong style={{ color: selectedLog.outcome === "FAILURE" ? "var(--color-danger)" : "var(--color-success)" }}>
                   {selectedLog.outcome || "SUCCESS"}
                 </strong>
               </div>
@@ -1028,7 +1028,7 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(4px)",
             display: "flex",
             alignItems: "center",
@@ -1046,7 +1046,7 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
               maxWidth: "420px",
               width: "100%",
               padding: "var(--space-6)",
-              boxShadow: "var(--shadow-xl)",
+              boxShadow: "var(--shadow-lg)",
               border: "1px solid var(--color-border)",
             }}
           >
@@ -1068,9 +1068,9 @@ export function AuditLogsModule({ role = "academy-admin" }: AuditLogsModuleProps
                   setIsResetConfirmOpen(false);
                 }}
                 style={{
-                  backgroundColor: "var(--color-danger, #FF3B30)",
-                  borderColor: "var(--color-danger, #FF3B30)",
-                  color: "#FFFFFF",
+                  backgroundColor: "var(--color-danger)",
+                  borderColor: "var(--color-danger)",
+                  color: "var(--brand-white)",
                 }}
               >
                 Confirm Reset

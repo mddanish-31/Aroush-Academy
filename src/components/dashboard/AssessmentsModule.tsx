@@ -1294,7 +1294,7 @@ export function AssessmentsModule({
             style={{
               position: "fixed",
               inset: 0,
-              backgroundColor: "rgba(0,0,0,0.45)",
+              backgroundColor: "var(--color-overlay)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -1338,8 +1338,8 @@ export function AssessmentsModule({
       <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
         <div
           style={{
-            backgroundColor: "#1D1D1F",
-            color: "#FFFFFF",
+            backgroundColor: "var(--brand-navy)",
+            color: "var(--brand-white)",
             borderRadius: "var(--radius-lg)",
             padding: "var(--space-4) var(--space-6)",
             display: "flex",
@@ -1350,7 +1350,7 @@ export function AssessmentsModule({
           }}
         >
           <div>
-            <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.7)", textTransform: "uppercase" }}>
+            <div style={{ fontSize: "11px", color: "var(--brand-sky)", textTransform: "uppercase" }}>
               {selectedExam.subject} &bull; {selectedExam.classGrade}
             </div>
             <div style={{ fontSize: "var(--text-base)", fontWeight: 700 }}>
@@ -1361,7 +1361,8 @@ export function AssessmentsModule({
           <div style={{ display: "flex", alignItems: "center", gap: "var(--space-4)" }}>
             <div
               style={{
-                backgroundColor: isTimerCritical ? "#FF3B30" : "rgba(255,255,255,0.15)",
+                backgroundColor: isTimerCritical ? "var(--color-danger)" : "var(--brand-navy-hover)",
+                border: "1px solid var(--brand-teal)",
                 padding: "6px 14px",
                 borderRadius: "var(--radius-md)",
                 fontSize: "var(--text-lg)",
@@ -1373,10 +1374,9 @@ export function AssessmentsModule({
             </div>
 
             <Button
-              variant="primary"
+              variant="accent"
               size="sm"
               onClick={() => setIsConfirmSubmitOpen(true)}
-              style={{ backgroundColor: "#34C759", border: "none" }}
             >
               Finish &amp; Submit Exam
             </Button>
@@ -1412,8 +1412,8 @@ export function AssessmentsModule({
                       style={{
                         padding: "12px 16px",
                         borderRadius: "var(--radius-md)",
-                        border: isSelected ? "2px solid #007AFF" : "1px solid var(--color-border)",
-                        backgroundColor: isSelected ? "rgba(0, 122, 255, 0.08)" : "var(--color-surface)",
+                        border: isSelected ? "2px solid var(--brand-teal)" : "1px solid var(--color-border)",
+                        backgroundColor: isSelected ? "var(--brand-sky-subtle)" : "var(--color-surface)",
                         textAlign: "left",
                         cursor: "pointer",
                         display: "flex",
@@ -1426,12 +1426,12 @@ export function AssessmentsModule({
                         style={{
                           width: "24px",
                           height: "24px",
-                          borderRadius: "var(--radius-full)",
+                          borderRadius: "50%",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          backgroundColor: isSelected ? "#007AFF" : "var(--color-surface-muted)",
-                          color: isSelected ? "#FFFFFF" : "var(--color-primary)",
+                          backgroundColor: isSelected ? "var(--brand-navy)" : "var(--color-surface-muted)",
+                          color: isSelected ? "var(--brand-white)" : "var(--color-primary)",
                           fontWeight: 700,
                           fontSize: "12px",
                         }}
@@ -1508,11 +1508,11 @@ export function AssessmentsModule({
                 let bg = "var(--color-surface-muted)";
                 let color = "var(--color-primary)";
                 if (isAns) {
-                  bg = "#34C759";
-                  color = "#FFFFFF";
+                  bg = "var(--color-success)";
+                  color = "var(--brand-white)";
                 } else if (isMrk) {
-                  bg = "#AF52DE";
-                  color = "#FFFFFF";
+                  bg = "var(--brand-teal)";
+                  color = "var(--brand-white)";
                 }
 
                 return (
@@ -1525,7 +1525,7 @@ export function AssessmentsModule({
                       borderRadius: "var(--radius-sm)",
                       backgroundColor: bg,
                       color,
-                      border: isCurrent ? "2px solid #007AFF" : "1px solid var(--color-border)",
+                      border: isCurrent ? "2px solid var(--brand-navy)" : "1px solid var(--color-border)",
                       fontWeight: 700,
                       cursor: "pointer",
                       fontSize: "12px",
@@ -1539,11 +1539,11 @@ export function AssessmentsModule({
 
             <div style={{ fontSize: "11px", color: "var(--color-neutral-dark)", display: "flex", flexDirection: "column", gap: "6px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: "#34C759" }} />
+                <span style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: "var(--color-success)" }} />
                 <span>Answered ({answeredCount})</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: "#AF52DE" }} />
+                <span style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: "var(--brand-teal)" }} />
                 <span>Marked for Review ({markedCount})</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -1564,7 +1564,7 @@ export function AssessmentsModule({
             style={{
               position: "fixed",
               inset: 0,
-              backgroundColor: "rgba(0,0,0,0.5)",
+              backgroundColor: "var(--color-overlay)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -1637,23 +1637,23 @@ export function AssessmentsModule({
               </div>
             </div>
 
-            <div style={{ backgroundColor: "rgba(52, 199, 89, 0.08)", padding: "14px", borderRadius: "var(--radius-md)", textAlign: "center", border: "1px solid rgba(52, 199, 89, 0.2)" }}>
+            <div style={{ backgroundColor: "var(--color-success-bg)", padding: "14px", borderRadius: "var(--radius-md)", textAlign: "center", border: "1px solid var(--color-success-border)" }}>
               <div style={{ fontSize: "10px", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>Correct</div>
-              <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "#34C759" }}>
+              <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--color-success)" }}>
                 {activeResult.correctCount} / {activeResult.totalQuestions}
               </div>
             </div>
 
-            <div style={{ backgroundColor: "rgba(255, 59, 48, 0.08)", padding: "14px", borderRadius: "var(--radius-md)", textAlign: "center", border: "1px solid rgba(255, 59, 48, 0.2)" }}>
+            <div style={{ backgroundColor: "var(--color-danger-bg)", padding: "14px", borderRadius: "var(--radius-md)", textAlign: "center", border: "1px solid var(--color-danger-border)" }}>
               <div style={{ fontSize: "10px", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>Incorrect</div>
-              <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "#FF3B30" }}>
+              <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--color-danger)" }}>
                 {activeResult.incorrectCount}
               </div>
             </div>
 
             <div style={{ backgroundColor: "var(--color-surface-muted)", padding: "14px", borderRadius: "var(--radius-md)", textAlign: "center" }}>
               <div style={{ fontSize: "10px", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>Outcome</div>
-              <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: activeResult.isPassed ? "#34C759" : "var(--color-primary)" }}>
+              <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: activeResult.isPassed ? "var(--color-success)" : "var(--color-primary)" }}>
                 {activeResult.isPassed !== undefined ? (activeResult.isPassed ? "PASSED" : "NEEDS PRACTICE") : "EVALUATED"}
               </div>
             </div>
@@ -1675,7 +1675,7 @@ export function AssessmentsModule({
                     key={q.id}
                     padding="sm"
                     style={{
-                      borderLeft: isCorrect ? "4px solid #34C759" : isUnanswered ? "4px solid var(--color-neutral)" : "4px solid #FF3B30",
+                      borderLeft: isCorrect ? "4px solid var(--color-success)" : isUnanswered ? "4px solid var(--color-neutral)" : "4px solid var(--color-danger)",
                     }}
                   >
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
@@ -1709,15 +1709,15 @@ export function AssessmentsModule({
         <div
           role="status"
           style={{
-            backgroundColor: "#1D1D1F",
-            color: "#FFFFFF",
+            backgroundColor: "var(--brand-navy)",
+            color: "var(--brand-white)",
             padding: "10px 16px",
             borderRadius: "var(--radius-md)",
             fontSize: "var(--text-xs)",
             fontWeight: 600,
             textAlign: "center",
             boxShadow: "var(--shadow-md)",
-            borderLeft: "4px solid #34C759",
+            borderLeft: "4px solid var(--color-success)",
           }}
         >
           {actionNotice}
@@ -1792,11 +1792,11 @@ export function AssessmentsModule({
             onClick={() => setActiveTab("overview")}
             style={{
               padding: "6px 14px",
-              borderRadius: "var(--radius-full)",
+              borderRadius: "var(--radius-md)",
               fontSize: "var(--text-xs)",
               fontWeight: activeTab === "overview" ? 700 : 500,
               backgroundColor: activeTab === "overview" ? "var(--color-primary)" : "var(--color-surface-muted)",
-              color: activeTab === "overview" ? "#FFFFFF" : "var(--color-primary)",
+              color: activeTab === "overview" ? "var(--brand-white)" : "var(--color-primary)",
               border: "1px solid var(--color-border)",
               cursor: "pointer",
             }}
@@ -1809,11 +1809,11 @@ export function AssessmentsModule({
             onClick={() => setActiveTab("tests")}
             style={{
               padding: "6px 14px",
-              borderRadius: "var(--radius-full)",
+              borderRadius: "var(--radius-md)",
               fontSize: "var(--text-xs)",
               fontWeight: activeTab === "tests" ? 700 : 500,
               backgroundColor: activeTab === "tests" ? "var(--color-primary)" : "var(--color-surface-muted)",
-              color: activeTab === "tests" ? "#FFFFFF" : "var(--color-primary)",
+              color: activeTab === "tests" ? "var(--brand-white)" : "var(--color-primary)",
               border: "1px solid var(--color-border)",
               cursor: "pointer",
             }}
@@ -1826,11 +1826,11 @@ export function AssessmentsModule({
             onClick={() => setActiveTab("results")}
             style={{
               padding: "6px 14px",
-              borderRadius: "var(--radius-full)",
+              borderRadius: "var(--radius-md)",
               fontSize: "var(--text-xs)",
               fontWeight: activeTab === "results" ? 700 : 500,
               backgroundColor: activeTab === "results" ? "var(--color-primary)" : "var(--color-surface-muted)",
-              color: activeTab === "results" ? "#FFFFFF" : "var(--color-primary)",
+              color: activeTab === "results" ? "var(--brand-white)" : "var(--color-primary)",
               border: "1px solid var(--color-border)",
               cursor: "pointer",
             }}
@@ -1843,11 +1843,11 @@ export function AssessmentsModule({
             onClick={() => setActiveTab("certificates")}
             style={{
               padding: "6px 14px",
-              borderRadius: "var(--radius-full)",
+              borderRadius: "var(--radius-md)",
               fontSize: "var(--text-xs)",
               fontWeight: activeTab === "certificates" ? 700 : 500,
               backgroundColor: activeTab === "certificates" ? "var(--color-primary)" : "var(--color-surface-muted)",
-              color: activeTab === "certificates" ? "#FFFFFF" : "var(--color-primary)",
+              color: activeTab === "certificates" ? "var(--brand-white)" : "var(--color-primary)",
               border: "1px solid var(--color-border)",
               cursor: "pointer",
             }}
@@ -2021,7 +2021,7 @@ export function AssessmentsModule({
           </div>
 
           {role === "academy-admin" && (
-            <Card padding="sm" style={{ borderLeft: "4px solid #007AFF" }}>
+            <Card padding="sm" style={{ borderLeft: "4px solid var(--brand-teal)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-2)" }}>
                 <div>
                   <strong style={{ fontSize: "var(--text-xs)" }}>Faculty Certificate Policy Authorization:</strong>
@@ -2260,13 +2260,13 @@ export function AssessmentsModule({
                           marginTop: "var(--space-3)",
                           padding: "6px 10px",
                           borderRadius: "var(--radius-sm)",
-                          backgroundColor: certEnabled ? "rgba(52, 199, 89, 0.08)" : "var(--color-surface-muted)",
-                          border: certEnabled ? "1px solid rgba(52, 199, 89, 0.3)" : "1px solid var(--color-border)",
+                          backgroundColor: certEnabled ? "var(--color-success-bg)" : "var(--color-surface-muted)",
+                          border: certEnabled ? "1px solid var(--color-success-border)" : "1px solid var(--color-border)",
                           fontSize: "11px",
                         }}
                       >
                         {certEnabled ? (
-                          <div style={{ color: "#34C759", fontWeight: 600 }}>
+                          <div style={{ color: "var(--color-success)", fontWeight: 600 }}>
                             Certificate Policy: <strong>Active (≥{certThreshold}%)</strong>
                             <div style={{ fontSize: "10px", color: "var(--color-neutral-dark)", fontWeight: 400 }}>
                               {exam.certificatePolicy?.certificateTitle || "Merit Certificate"}
@@ -2319,7 +2319,7 @@ export function AssessmentsModule({
                                 onClick={() => handleTogglePublishStatus(exam, "draft")}
                                 style={{
                                   fontSize: "11px",
-                                  color: "var(--color-warning, #FF9500)",
+                                  color: "var(--color-warning)",
                                   background: "none",
                                   border: "none",
                                   cursor: "pointer",
@@ -2336,7 +2336,7 @@ export function AssessmentsModule({
                                 onClick={() => handleTogglePublishStatus(exam, "published")}
                                 style={{
                                   fontSize: "11px",
-                                  color: "var(--color-success, #34C759)",
+                                  color: "var(--color-success)",
                                   background: "none",
                                   border: "none",
                                   cursor: "pointer",
@@ -2402,7 +2402,7 @@ export function AssessmentsModule({
           </Card>
         ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
-          <Card padding="lg" style={{ borderLeft: "4px solid #007AFF" }}>
+          <Card padding="lg" style={{ borderLeft: "4px solid var(--brand-teal)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "var(--space-3)", marginBottom: "var(--space-4)" }}>
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
@@ -2452,7 +2452,7 @@ export function AssessmentsModule({
               {Object.keys(resultsSummary.subjectStats).map((subj) => {
                 const item = resultsSummary.subjectStats[subj];
                 return (
-                  <div key={subj} style={{ backgroundColor: "rgba(0, 122, 255, 0.05)", border: "1px solid rgba(0, 122, 255, 0.2)", padding: "12px", borderRadius: "var(--radius-md)", textAlign: "center" }}>
+                  <div key={subj} style={{ backgroundColor: "var(--brand-sky-subtle)", border: "1px solid var(--color-border)", padding: "12px", borderRadius: "var(--radius-md)", textAlign: "center" }}>
                     <div style={{ fontSize: "10px", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>{subj}</div>
                     <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--color-primary)" }}>
                       {item.obtained}/{item.max} ({item.pct}%)
@@ -2504,7 +2504,7 @@ export function AssessmentsModule({
                         <td style={{ padding: "10px 12px", fontWeight: 600, color: "var(--color-primary)" }}>
                           {record.title}
                           {record.certPolicyEnabled && (
-                            <div style={{ fontSize: "10px", color: "#34C759", fontWeight: 600, marginTop: "2px" }}>
+                            <div style={{ fontSize: "10px", color: "var(--color-success)", fontWeight: 600, marginTop: "2px" }}>
                               Certificate Qualified (Policy ≥ {record.certThreshold}%)
                             </div>
                           )}
@@ -2541,9 +2541,9 @@ export function AssessmentsModule({
                                 borderRadius: "var(--radius-sm)",
                                 fontSize: "10px",
                                 fontWeight: 700,
-                                backgroundColor: "rgba(52, 199, 89, 0.1)",
-                                color: "#34C759",
-                                border: "1px solid rgba(52, 199, 89, 0.3)",
+                                backgroundColor: "var(--color-success-bg)",
+                                color: "var(--color-success)",
+                                border: "1px solid var(--color-success-border)",
                                 cursor: "pointer",
                               }}
                             >
@@ -2568,7 +2568,7 @@ export function AssessmentsModule({
 
       {activeTab === "certificates" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-5)" }}>
-          <Card padding="md" style={{ borderLeft: "4px solid #34C759" }}>
+          <Card padding="md" style={{ borderLeft: "4px solid var(--color-success)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "var(--space-2)" }}>
               <div>
                 <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: "0 0 4px" }}>
@@ -2729,9 +2729,9 @@ export function AssessmentsModule({
                                 </Button>
                                 {(role === "academy-admin" || (role === "teacher" && canTeacherConfigureCert)) && (
                                   <Button
-                                    variant="secondary"
+                                    variant="outline"
                                     size="sm"
-                                    style={{ color: "#FF3B30" }}
+                                    style={{ color: "var(--color-danger)", borderColor: "var(--color-danger-border)" }}
                                     onClick={() => handleOpenRevokeConfirm(item.issuedCert!)}
                                   >
                                     Revoke
@@ -2880,7 +2880,7 @@ export function AssessmentsModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: "var(--color-overlay)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -2900,15 +2900,16 @@ export function AssessmentsModule({
               </div>
               <button
                 type="button"
+                aria-label="Close modal"
                 onClick={() => setIsAssessmentModalOpen(false)}
                 style={{ background: "none", border: "none", fontSize: "18px", cursor: "pointer", color: "var(--color-neutral-dark)" }}
               >
-                
+                &times;
               </button>
             </div>
 
             {formError && (
-              <div style={{ backgroundColor: "rgba(255, 59, 48, 0.1)", border: "1px solid rgba(255, 59, 48, 0.3)", borderRadius: "var(--radius-sm)", padding: "8px 12px", fontSize: "11px", color: "#FF3B30", marginBottom: "var(--space-3)" }}>
+              <div style={{ backgroundColor: "var(--color-danger-bg)", border: "1px solid var(--color-danger-border)", borderRadius: "var(--radius-sm)", padding: "8px 12px", fontSize: "11px", color: "var(--color-danger)", marginBottom: "var(--space-3)" }}>
                 {formError}
               </div>
             )}
@@ -2922,7 +2923,7 @@ export function AssessmentsModule({
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
                   placeholder="e.g. Class X Mathematics Quadratic Equations Unit Test"
-                  style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                  style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                 />
               </div>
 
@@ -2933,7 +2934,7 @@ export function AssessmentsModule({
                     aria-label="Category / Type"
                     value={formType}
                     onChange={(e) => setFormType(e.target.value as AssessmentType)}
-                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                   >
                     <option value="regular-class-test">Regular Class Test (No Cert Default)</option>
                     <option value="periodic-unit-test">Periodic Unit Test</option>
@@ -2948,7 +2949,7 @@ export function AssessmentsModule({
                     aria-label="Subject"
                     value={formSubject}
                     onChange={(e) => setFormSubject(e.target.value)}
-                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                   >
                     <option value="Mathematics">Mathematics</option>
                     <option value="Physics">Physics</option>
@@ -2969,7 +2970,7 @@ export function AssessmentsModule({
                       const matching = batches.find((b) => b.name === e.target.value);
                       if (matching) setFormClassGrade(matching.classGrade);
                     }}
-                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                   >
                     {batches.map((b) => (
                       <option key={b.id} value={b.name}>{b.name} ({b.classGrade})</option>
@@ -2984,7 +2985,7 @@ export function AssessmentsModule({
                     required
                     value={formDate}
                     onChange={(e) => setFormDate(e.target.value)}
-                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                   />
                 </div>
               </div>
@@ -2999,7 +3000,7 @@ export function AssessmentsModule({
                     required
                     value={formTotalMarks}
                     onChange={(e) => setFormTotalMarks(parseInt(e.target.value) || 0)}
-                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                   />
                 </div>
 
@@ -3010,7 +3011,7 @@ export function AssessmentsModule({
                     value={formTeacherId}
                     onChange={(e) => setFormTeacherId(e.target.value)}
                     disabled={role === "teacher"} 
-                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                   >
                     {faculty.map((t) => (
                       <option key={t.id} value={t.id}>{t.name} ({t.assignedSubjects.join(", ")})</option>
@@ -3024,7 +3025,7 @@ export function AssessmentsModule({
                     aria-label="Result Status"
                     value={formStatus}
                     onChange={(e) => setFormStatus(e.target.value as AssessmentStatus)}
-                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                   >
                     <option value="draft">Draft (Unpublished)</option>
                     <option value="scheduled">Scheduled</option>
@@ -3036,8 +3037,8 @@ export function AssessmentsModule({
 
               <div
                 style={{
-                  backgroundColor: formCertEnabled ? "rgba(52, 199, 89, 0.06)" : "var(--color-surface-muted)",
-                  border: formCertEnabled ? "1px solid rgba(52, 199, 89, 0.3)" : "1px solid var(--color-border)",
+                  backgroundColor: formCertEnabled ? "var(--color-success-bg)" : "var(--color-surface-muted)",
+                  border: formCertEnabled ? "1px solid var(--color-success-border)" : "1px solid var(--color-border)",
                   borderRadius: "var(--radius-md)",
                   padding: "var(--space-3)",
                   marginBottom: "var(--space-4)",
@@ -3050,7 +3051,7 @@ export function AssessmentsModule({
                     checked={formCertEnabled}
                     disabled={!canTeacherConfigureCert}
                     onChange={(e) => setFormCertEnabled(e.target.checked)}
-                    style={{ width: "16px", height: "16px", accentColor: "#34C759", cursor: "pointer" }}
+                    style={{ width: "16px", height: "16px", accentColor: "var(--brand-navy)", cursor: "pointer" }}
                   />
                   <label htmlFor="formCertEnabled" style={{ fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer" }}>
                     Enable Certificate Issuance Policy for this Assessment
@@ -3058,7 +3059,7 @@ export function AssessmentsModule({
                 </div>
 
                 {!canTeacherConfigureCert && (
-                  <div style={{ fontSize: "10px", color: "#FF9500", marginBottom: "6px" }}>
+                  <div style={{ fontSize: "10px", color: "var(--color-warning)", marginBottom: "6px" }}>
                     Note: Certificate policy configuration has been restricted by the Academy Administrator.
                   </div>
                 )}
@@ -3076,7 +3077,7 @@ export function AssessmentsModule({
                         required={formCertEnabled}
                         value={formCertMinPercentage}
                         onChange={(e) => setFormCertMinPercentage(parseInt(e.target.value) || 0)}
-                        style={{ width: "100%", padding: "5px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                        style={{ width: "100%", padding: "5px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                       />
                       <span style={{ fontSize: "10px", color: "var(--color-neutral-dark)" }}>
                         e.g. 75% for merit, 80% for board preparation distinction.
@@ -3092,7 +3093,7 @@ export function AssessmentsModule({
                         value={formCertTitle}
                         onChange={(e) => setFormCertTitle(e.target.value)}
                         placeholder="e.g. Certificate of Academic Distinction"
-                        style={{ width: "100%", padding: "5px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                        style={{ width: "100%", padding: "5px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                       />
                     </div>
                   </div>
@@ -3122,7 +3123,7 @@ export function AssessmentsModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: "var(--color-overlay)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -3139,7 +3140,7 @@ export function AssessmentsModule({
             </p>
 
             {recordError && (
-              <div style={{ backgroundColor: "rgba(255, 59, 48, 0.1)", border: "1px solid rgba(255, 59, 48, 0.3)", borderRadius: "var(--radius-sm)", padding: "8px 12px", fontSize: "11px", color: "#FF3B30", marginBottom: "var(--space-3)" }}>
+              <div style={{ backgroundColor: "var(--color-danger-bg)", border: "1px solid var(--color-danger-border)", borderRadius: "var(--radius-sm)", padding: "8px 12px", fontSize: "11px", color: "var(--color-danger)", marginBottom: "var(--space-3)" }}>
                 {recordError}
               </div>
             )}
@@ -3151,7 +3152,7 @@ export function AssessmentsModule({
                   aria-label="Target Assessment"
                   value={recordExamId}
                   onChange={(e) => setRecordExamId(e.target.value)}
-                  style={{ width: "100%", padding: "6px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                  style={{ width: "100%", padding: "6px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                 >
                   {visibleAssessments.map((ex) => (
                     <option key={ex.id} value={ex.id}>
@@ -3167,7 +3168,7 @@ export function AssessmentsModule({
                   aria-label="Student"
                   value={recordStudentId}
                   onChange={(e) => setRecordStudentId(e.target.value)}
-                  style={{ width: "100%", padding: "6px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                  style={{ width: "100%", padding: "6px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                 >
                   {teacherStudents.map((std) => (
                     <option key={std.id} value={std.id}>
@@ -3187,7 +3188,7 @@ export function AssessmentsModule({
                     required
                     value={recordMarksInput}
                     onChange={(e) => setRecordMarksInput(e.target.value)}
-                    style={{ width: "100%", padding: "6px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                    style={{ width: "100%", padding: "6px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                   />
                 </div>
 
@@ -3197,7 +3198,7 @@ export function AssessmentsModule({
                     aria-label="Evaluation State"
                     value={recordStatusInput}
                     onChange={(e) => setRecordStatusInput(e.target.value as "evaluated" | "absent" | "pending")}
-                    style={{ width: "100%", padding: "6px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                    style={{ width: "100%", padding: "6px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                   >
                     <option value="evaluated">Evaluated</option>
                     <option value="absent">Absent</option>
@@ -3213,7 +3214,7 @@ export function AssessmentsModule({
                   value={recordFeedbackInput}
                   onChange={(e) => setRecordFeedbackInput(e.target.value)}
                   placeholder="e.g. Excellent conceptual rigor; practice numerical calculations"
-                  style={{ width: "100%", padding: "6px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                  style={{ width: "100%", padding: "6px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                 />
               </div>
 
@@ -3240,7 +3241,7 @@ export function AssessmentsModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: "var(--color-overlay)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -3286,7 +3287,7 @@ export function AssessmentsModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: "var(--color-overlay)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -3295,7 +3296,7 @@ export function AssessmentsModule({
           }}
         >
           <Card padding="lg" style={{ maxWidth: "480px", width: "100%" }}>
-            <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, marginBottom: "var(--space-2)", color: "#FF3B30" }}>
+            <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, marginBottom: "var(--space-2)", color: "var(--color-danger)" }}>
               Revoke Issued Certificate?
             </h3>
             <p style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", lineHeight: 1.5, marginBottom: "var(--space-3)" }}>
@@ -3311,7 +3312,7 @@ export function AssessmentsModule({
                 type="text"
                 value={revokeReasonInput}
                 onChange={(e) => setRevokeReasonInput(e.target.value)}
-                style={{ width: "100%", padding: "6px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                style={{ width: "100%", padding: "6px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
               />
             </div>
 
@@ -3319,7 +3320,7 @@ export function AssessmentsModule({
               <Button variant="secondary" size="sm" onClick={() => setIsConfirmRevokeOpen(false)}>
                 Cancel
               </Button>
-              <Button variant="primary" size="sm" style={{ backgroundColor: "#FF3B30", border: "none" }} onClick={handleConfirmRevoke}>
+              <Button variant="primary" size="sm" style={{ backgroundColor: "var(--color-danger)", border: "none" }} onClick={handleConfirmRevoke}>
                 Confirm Revocation
               </Button>
             </div>
@@ -3337,7 +3338,7 @@ export function AssessmentsModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: "var(--color-overlay)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -3357,15 +3358,16 @@ export function AssessmentsModule({
               </div>
               <button
                 type="button"
+                aria-label="Close modal"
                 onClick={() => setIsAuthorModalOpen(false)}
                 style={{ background: "none", border: "none", fontSize: "18px", cursor: "pointer", color: "var(--color-neutral-dark)" }}
               >
-                
+                &times;
               </button>
             </div>
 
             {authorError && (
-              <div style={{ backgroundColor: "rgba(255, 59, 48, 0.1)", border: "1px solid rgba(255, 59, 48, 0.3)", borderRadius: "var(--radius-sm)", padding: "8px 12px", fontSize: "11px", color: "#FF3B30", marginBottom: "var(--space-3)" }}>
+              <div style={{ backgroundColor: "var(--color-danger-bg)", border: "1px solid var(--color-danger-border)", borderRadius: "var(--radius-sm)", padding: "8px 12px", fontSize: "11px", color: "var(--color-danger)", marginBottom: "var(--space-3)" }}>
                 {authorError}
               </div>
             )}
@@ -3380,7 +3382,7 @@ export function AssessmentsModule({
                     value={authorTitle}
                     onChange={(e) => setAuthorTitle(e.target.value)}
                     placeholder="e.g. Class X Mathematics Speed Mock Trial"
-                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                   />
                 </div>
 
@@ -3390,7 +3392,7 @@ export function AssessmentsModule({
                     aria-label="Subject"
                     value={authorSubject}
                     onChange={(e) => setAuthorSubject(e.target.value)}
-                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                   >
                     <option value="Mathematics">Mathematics</option>
                     <option value="Physics">Physics</option>
@@ -3407,7 +3409,7 @@ export function AssessmentsModule({
                     aria-label="Class Grade"
                     value={authorClassGrade}
                     onChange={(e) => setAuthorClassGrade(e.target.value)}
-                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                   >
                     <option value="Class X">Class X</option>
                     <option value="Class XII">Class XII</option>
@@ -3424,7 +3426,7 @@ export function AssessmentsModule({
                     required
                     value={authorDuration}
                     onChange={(e) => setAuthorDuration(parseInt(e.target.value) || 1)}
-                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                   />
                 </div>
 
@@ -3436,7 +3438,7 @@ export function AssessmentsModule({
                     value={authorPassingMarks}
                     onChange={(e) => setAuthorPassingMarks(e.target.value)}
                     placeholder="Leave blank if diagnostic"
-                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                    style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                   />
                 </div>
               </div>
@@ -3466,7 +3468,7 @@ export function AssessmentsModule({
                     fontWeight: 600,
                     color: "var(--color-accent)",
                     background: "none",
-                    border: "1px solid rgba(0, 122, 255, 0.3)",
+                    border: "1px solid var(--color-accent-border)",
                     padding: "4px 8px",
                     borderRadius: "var(--radius-sm)",
                     cursor: "pointer",
@@ -3504,7 +3506,7 @@ export function AssessmentsModule({
                               prev.map((item, idx) => (idx === qIndex ? { ...item, marks: val } : item))
                             );
                           }}
-                          style={{ width: "50px", padding: "2px 6px", fontSize: "11px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
+                          style={{ width: "50px", padding: "2px 6px", fontSize: "11px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)" }}
                         />
                         {authorQuestions.length > 1 && (
                           <button
@@ -3515,7 +3517,7 @@ export function AssessmentsModule({
                             style={{
                               background: "none",
                               border: "none",
-                              color: "#FF3B30",
+                              color: "var(--color-danger)",
                               fontSize: "11px",
                               cursor: "pointer",
                             }}
@@ -3541,7 +3543,7 @@ export function AssessmentsModule({
                         padding: "6px 8px",
                         fontSize: "var(--text-xs)",
                         borderRadius: "var(--radius-sm)",
-                        border: "1px solid var(--color-border)",
+                        border: "1px solid var(--color-input-border)",
                         marginBottom: "8px",
                         fontFamily: "inherit",
                       }}
@@ -3560,7 +3562,7 @@ export function AssessmentsModule({
                               );
                             }}
                             title="Mark as correct answer"
-                            style={{ accentColor: "#34C759" }}
+                            style={{ accentColor: "var(--brand-navy)" }}
                           />
                           <input
                             type="text"
@@ -3582,8 +3584,8 @@ export function AssessmentsModule({
                               padding: "4px 8px",
                               fontSize: "11px",
                               borderRadius: "var(--radius-sm)",
-                              border: q.correctOptionIndex === optIdx ? "1px solid #34C759" : "1px solid var(--color-border)",
-                              backgroundColor: q.correctOptionIndex === optIdx ? "rgba(52, 199, 89, 0.08)" : "#FFFFFF",
+                              border: q.correctOptionIndex === optIdx ? "1px solid var(--color-success)" : "1px solid var(--color-input-border)",
+                              backgroundColor: q.correctOptionIndex === optIdx ? "var(--color-success-bg)" : "var(--brand-white)",
                             }}
                           />
                         </div>
@@ -3605,7 +3607,7 @@ export function AssessmentsModule({
                         padding: "4px 8px",
                         fontSize: "11px",
                         borderRadius: "var(--radius-sm)",
-                        border: "1px solid var(--color-border)",
+                        border: "1px solid var(--color-input-border)",
                       }}
                     />
                   </div>

@@ -47,42 +47,42 @@ function extractToken(varName: string): string {
 
 const bgHex = extractToken("--color-page-bg");
 const textHex = extractToken("--color-text");
+const secondaryTextHex = extractToken("--color-text-secondary");
 const accentHex = extractToken("--color-accent-blue");
+const skyHex = extractToken("--brand-sky");
+const inputBorderHex = extractToken("--color-input-border");
 const btnBgHex = extractToken("--btn-primary-bg");
 const btnTextHex = extractToken("--btn-primary-text");
+const btnSecBgHex = extractToken("--btn-secondary-bg");
 const surfaceHex = extractToken("--color-surface");
 
 const cBg = parseHex(bgHex);
 const cText = parseHex(textHex);
+const cSecondaryText = parseHex(secondaryTextHex);
 const cAccent = parseHex(accentHex);
+const cSky = parseHex(skyHex);
+const cInputBorder = parseHex(inputBorderHex);
 const cBtnBg = parseHex(btnBgHex);
 const cBtnText = parseHex(btnTextHex);
+const cBtnSecBg = parseHex(btnSecBgHex);
 const cSurface = parseHex(surfaceHex);
 
-const alpha = 0.72;
-const cSecondaryOnBg: [number, number, number] = [
-  Math.round(cText[0] * alpha + cBg[0] * (1 - alpha)),
-  Math.round(cText[1] * alpha + cBg[1] * (1 - alpha)),
-  Math.round(cText[2] * alpha + cBg[2] * (1 - alpha)),
-];
-
-const cSecondaryOnSurface: [number, number, number] = [
-  Math.round(cText[0] * alpha + cSurface[0] * (1 - alpha)),
-  Math.round(cText[1] * alpha + cSurface[1] * (1 - alpha)),
-  Math.round(cText[2] * alpha + cSurface[2] * (1 - alpha)),
-];
-
 const textPairs = [
-  { name: `Primary text (${textHex}) on page background (${bgHex})`, fg: cText, bg: cBg, min: 4.5 },
-  { name: `Primary text (${textHex}) on surface (${surfaceHex})`, fg: cText, bg: cSurface, min: 4.5 },
-  { name: `Button text (${btnTextHex}) on primary button (${btnBgHex})`, fg: cBtnText, bg: cBtnBg, min: 4.5 },
-  { name: `Secondary text (72% ${textHex}) on page background (${bgHex})`, fg: cSecondaryOnBg, bg: cBg, min: 4.5 },
-  { name: `Secondary text (72% ${textHex}) on surface (${surfaceHex})`, fg: cSecondaryOnSurface, bg: cSurface, min: 4.5 },
+  { name: `Primary Navy text (${textHex}) on Beige background (${bgHex})`, fg: cText, bg: cBg, min: 4.5 },
+  { name: `Primary Navy text (${textHex}) on White surface (${surfaceHex})`, fg: cText, bg: cSurface, min: 4.5 },
+  { name: `Primary Navy text (${textHex}) on Sky Blue highlight (${skyHex})`, fg: cText, bg: cSky, min: 4.5 },
+  { name: `Button White text (${btnTextHex}) on Primary Navy button (${btnBgHex})`, fg: cBtnText, bg: cBtnBg, min: 4.5 },
+  { name: `Button White text (${btnTextHex}) on Secondary Teal button (${btnSecBgHex})`, fg: cBtnText, bg: cBtnSecBg, min: 4.5 },
+  { name: `Secondary text (${secondaryTextHex}) on Beige background (${bgHex})`, fg: cSecondaryText, bg: cBg, min: 4.5 },
+  { name: `Secondary text (${secondaryTextHex}) on White surface (${surfaceHex})`, fg: cSecondaryText, bg: cSurface, min: 4.5 },
+  { name: `Secondary text (${secondaryTextHex}) on Sky Blue highlight (${skyHex})`, fg: cSecondaryText, bg: cSky, min: 4.5 },
 ];
 
 const nonTextPairs = [
-  { name: `Accent (${accentHex}) on surface (${surfaceHex}) [non-text UI]`, fg: cAccent, bg: cSurface, min: 3.0 },
-  { name: `Accent (${accentHex}) on page background (${bgHex}) [non-text UI]`, fg: cAccent, bg: cBg, min: 3.0 },
+  { name: `Teal accent (${accentHex}) on White surface (${surfaceHex}) [non-text UI]`, fg: cAccent, bg: cSurface, min: 3.0 },
+  { name: `Teal accent (${accentHex}) on Beige background (${bgHex}) [non-text UI]`, fg: cAccent, bg: cBg, min: 3.0 },
+  { name: `Input border (${inputBorderHex}) on White surface (${surfaceHex}) [non-text UI]`, fg: cInputBorder, bg: cSurface, min: 3.0 },
+  { name: `Input border (${inputBorderHex}) on Beige background (${bgHex}) [non-text UI]`, fg: cInputBorder, bg: cBg, min: 3.0 },
 ];
 
 let failed = false;

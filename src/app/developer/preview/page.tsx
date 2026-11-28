@@ -15,7 +15,7 @@ async function Preview() {
   const editor = await readCmsEditor();
   if (!validateCmsContent(editor.draft)) return <main role="alert">The saved draft is invalid.</main>;
   return <>
-    <div style={{ background: "#1D1D1F", color: "#FFFFFF", padding: 12, textAlign: "center" }}>Unpublished preview, saved version {editor.version}</div>
+    <div style={{ background: "var(--brand-navy)", color: "var(--brand-white)", padding: 12, textAlign: "center", fontWeight: 600 }}>Unpublished preview, saved version {editor.version}</div>
     <WebsiteSections content={editor.draft} />
   </>;
 }

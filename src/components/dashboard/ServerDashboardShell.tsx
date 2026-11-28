@@ -91,7 +91,7 @@ export function ServerDashboardShell({ navigation }: { navigation: Record<UserRo
               id="workspace-child"
               value={child?.id ?? ""}
               onChange={(event) => setSelectedChildId(event.target.value)}
-              style={{ padding: "var(--space-3)", width: "100%", maxWidth: "400px", border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)", backgroundColor: "var(--color-surface)" }}
+              style={{ padding: "var(--space-3)", width: "100%", maxWidth: "400px", border: "1px solid var(--color-input-border)", borderRadius: "var(--radius-md)", backgroundColor: "var(--color-surface)" }}
             >
               {user.children.map((linkedChild) => <option key={linkedChild.id} value={linkedChild.id}>{linkedChild.name}</option>)}
             </select>

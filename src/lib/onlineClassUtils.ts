@@ -50,25 +50,25 @@ export function getProviderBadgeStyle(provider?: MeetingProvider): {
   switch (provider) {
     case "google-meet":
       return {
-        bg: "rgba(22, 101, 52, 0.08)",
-        color: "#166534",
-        border: "rgba(22, 101, 52, 0.25)",
+        bg: "var(--color-success-bg)",
+        color: "var(--color-success)",
+        border: "var(--color-success-border)",
         label: "Google Meet",
         icon: "Video",
       };
     case "zoom":
       return {
-        bg: "var(--color-surface-muted)",
-        color: "var(--color-primary)",
-        border: "var(--color-border)",
+        bg: "var(--brand-sky-subtle)",
+        color: "var(--brand-navy)",
+        border: "var(--color-accent-border)",
         label: "Zoom Meeting",
         icon: "Video",
       };
     case "other":
     default:
       return {
-        bg: "var(--color-surface-muted)",
-        color: "var(--color-primary)",
+        bg: "var(--brand-beige)",
+        color: "var(--brand-navy)",
         border: "var(--color-border)",
         label: "External Video Link",
         icon: "Link",

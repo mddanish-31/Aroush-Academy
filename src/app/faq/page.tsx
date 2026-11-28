@@ -120,9 +120,9 @@ export default function FaqPage() {
                   fontFamily: "var(--font-fraunces), serif",
                   fontSize: "var(--text-lg)",
                   fontWeight: 600,
-                  color: "#1D1D1F",
+                  color: "var(--brand-navy)",
                   paddingBottom: "var(--space-2)",
-                  borderBottom: "1px solid rgba(170, 170, 170, 0.35)",
+                  borderBottom: "1px solid var(--color-border)",
                   marginBottom: "var(--space-4)",
                 }}
               >
@@ -134,9 +134,9 @@ export default function FaqPage() {
                   <details
                     key={item.id}
                     style={{
-                      backgroundColor: "#FFFFFF",
-                      border: "1px solid rgba(170, 170, 170, 0.35)",
-                      borderRadius: "10px",
+                      backgroundColor: "var(--color-surface)",
+                      border: "1px solid var(--color-border)",
+                      borderRadius: "var(--radius-md)",
                       padding: "var(--space-4)",
                       cursor: "pointer",
                       transition: "box-shadow var(--transition-fast)",
@@ -146,7 +146,7 @@ export default function FaqPage() {
                       style={{
                         fontWeight: 600,
                         fontSize: "var(--text-base)",
-                        color: "#1D1D1F",
+                        color: "var(--brand-navy)",
                         listStyle: "none",
                         display: "flex",
                         justifyContent: "space-between",
@@ -154,10 +154,10 @@ export default function FaqPage() {
                       }}
                     >
                       <span>{item.question}</span>
-                      <ChevronDown size={16} style={{ color: "var(--color-text-secondary)", flexShrink: 0, marginLeft: "var(--space-2)" }} />
+                      <ChevronDown size={16} style={{ color: "var(--brand-teal)", flexShrink: 0, marginLeft: "var(--space-2)" }} />
                     </summary>
 
-                    <div style={{ marginTop: "var(--space-3)", paddingTop: "var(--space-3)", borderTop: "1px solid rgba(170, 170, 170, 0.2)", cursor: "default" }}>
+                    <div style={{ marginTop: "var(--space-3)", paddingTop: "var(--space-3)", borderTop: "1px solid var(--color-border-subtle)", cursor: "default" }}>
                       <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", lineHeight: 1.6, margin: 0 }}>
                         {item.answer}
                       </p>

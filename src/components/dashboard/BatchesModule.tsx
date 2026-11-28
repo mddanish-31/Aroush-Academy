@@ -113,8 +113,8 @@ export function BatchesModule() {
       {actionSuccessNotice && (
         <div
           style={{
-            backgroundColor: "rgba(52, 199, 89, 0.1)",
-            border: "1px solid rgba(52, 199, 89, 0.3)",
+            backgroundColor: "var(--color-success-bg)",
+            border: "1px solid var(--color-success-border)",
             borderRadius: "var(--radius-md)",
             padding: "var(--space-3)",
             fontSize: "var(--text-xs)",
@@ -208,7 +208,7 @@ export function BatchesModule() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(4px)",
             display: "flex",
             alignItems: "center",
@@ -219,7 +219,7 @@ export function BatchesModule() {
           role="dialog"
           aria-modal="true"
         >
-          <div style={{ backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-lg)", maxWidth: "480px", width: "100%", padding: "var(--space-6)", boxShadow: "var(--shadow-lg)" }}>
+          <div style={{ backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-lg)", maxWidth: "480px", width: "100%", padding: "var(--space-6)", boxShadow: "var(--shadow-lg)", border: "1px solid var(--color-border)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-4)" }}>
               <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700 }}>Provision New Academic Batch</h3>
               <button onClick={() => setIsCreateModalOpen(false)} style={{ fontSize: "18px", color: "var(--color-neutral-dark)", cursor: "pointer" }}><X size={14} /></button>
@@ -234,7 +234,7 @@ export function BatchesModule() {
                   value={nameInput}
                   onChange={(e) => setNameInput(e.target.value)}
                   placeholder="e.g. Batch Foundation (Class IX-X)"
-                  style={{ width: "100%", padding: "8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                  style={{ width: "100%", padding: "8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                 />
               </div>
 
@@ -245,7 +245,7 @@ export function BatchesModule() {
                     aria-label="Subject"
                     value={subjectInput}
                     onChange={(e) => setSubjectInput(e.target.value)}
-                    style={{ width: "100%", padding: "8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                    style={{ width: "100%", padding: "8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                   >
                     <option value="Mathematics">Mathematics</option>
                     <option value="Physics">Physics</option>
@@ -260,7 +260,7 @@ export function BatchesModule() {
                     aria-label="Target Grade"
                     value={gradeInput}
                     onChange={(e) => setGradeInput(e.target.value)}
-                    style={{ width: "100%", padding: "8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                    style={{ width: "100%", padding: "8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                   >
                     <option value="Class IX">Class IX</option>
                     <option value="Class X">Class X</option>
@@ -276,7 +276,7 @@ export function BatchesModule() {
                   aria-label="Assigned Faculty"
                   value={teacherIdInput}
                   onChange={(e) => setTeacherIdInput(e.target.value)}
-                  style={{ width: "100%", padding: "8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                  style={{ width: "100%", padding: "8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                 >
                   {faculty.map((t) => (
                     <option key={t.id} value={t.id}>{t.name} ({(t.assignedSubjects || []).join(", ")})</option>
@@ -294,7 +294,7 @@ export function BatchesModule() {
                     required
                     value={capacityInput}
                     onChange={(e) => setCapacityInput(e.target.value)}
-                    style={{ width: "100%", padding: "8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                    style={{ width: "100%", padding: "8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                   />
                 </div>
 
@@ -307,7 +307,7 @@ export function BatchesModule() {
                     required
                     value={feeInput}
                     onChange={(e) => setFeeInput(e.target.value)}
-                    style={{ width: "100%", padding: "8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                    style={{ width: "100%", padding: "8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                   />
                 </div>
               </div>
@@ -320,7 +320,7 @@ export function BatchesModule() {
                   value={scheduleInput}
                   onChange={(e) => setScheduleInput(e.target.value)}
                   placeholder="e.g. Mon, Wed, Fri (04:30 PM - 06:00 PM)"
-                  style={{ width: "100%", padding: "8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-xs)" }}
+                  style={{ width: "100%", padding: "8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-xs)" }}
                 />
               </div>
 

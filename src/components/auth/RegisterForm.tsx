@@ -183,7 +183,7 @@ function ServerRegisterForm() {
     width: "100%",
     padding: "10px 14px",
     borderRadius: "var(--radius-md)",
-    border: "1px solid var(--color-border)",
+    border: "1px solid var(--color-input-border)",
     backgroundColor: "var(--color-surface)",
     fontSize: "var(--text-sm)",
     color: "var(--color-primary)",
@@ -225,8 +225,8 @@ function ServerRegisterForm() {
                   width: "56px",
                   height: "56px",
                   borderRadius: "var(--radius-md)",
-                  backgroundColor: "var(--color-surface-muted)",
-                  border: "1px solid var(--color-border)",
+                  backgroundColor: "var(--brand-sky-subtle)",
+                  border: "1px solid var(--color-accent-border)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -234,7 +234,7 @@ function ServerRegisterForm() {
                 }}
                 aria-hidden="true"
               >
-                <Clock size={28} style={{ color: "#1D1D1F" }} />
+                <Clock size={28} style={{ color: "var(--brand-teal)" }} />
               </div>
 
               <h1
@@ -563,8 +563,8 @@ function ServerRegisterForm() {
                 {serverError && (
                   <div
                     style={{
-                      backgroundColor: "rgba(255, 59, 48, 0.08)",
-                      border: "1px solid rgba(255, 59, 48, 0.3)",
+                      backgroundColor: "var(--color-danger-bg)",
+                      border: "1px solid var(--color-danger-border)",
                       borderRadius: "var(--radius-md)",
                       padding: "var(--space-3)",
                       marginBottom: "var(--space-4)",
@@ -614,9 +614,9 @@ function ServerRegisterForm() {
                 href="/login"
                 style={{
                   fontWeight: 600,
-                  color: "#1D1D1F",
+                  color: "var(--brand-navy)",
                   textDecoration: "underline",
-                  textDecorationColor: "#007AFF",
+                  textDecorationColor: "var(--brand-teal)",
                   textUnderlineOffset: "3px",
                 }}
               >
@@ -734,7 +734,7 @@ function DemoRegisterForm() {
                   width: "56px",
                   height: "56px",
                   borderRadius: "50%",
-                  backgroundColor: "rgba(29, 29, 31, 0.06)",
+                  backgroundColor: "var(--brand-sky-subtle)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -742,7 +742,7 @@ function DemoRegisterForm() {
                 }}
                 aria-hidden="true"
               >
-                <Clock size={28} style={{ color: "#1D1D1F" }} />
+                <Clock size={28} style={{ color: "var(--brand-teal)" }} />
               </div>
 
               <h1
@@ -886,7 +886,7 @@ function DemoRegisterForm() {
                     backgroundColor: "var(--color-surface-muted)",
                   }}
                 >
-                  <span style={{ fontSize: "var(--text-xs)", color: "#1D1D1F" }}>
+                  <span style={{ fontSize: "var(--text-xs)", color: "var(--brand-navy)" }}>
                     Account Type: <strong data-testid="selected-reg-role">{selectedRole === "parent" ? "Parent / Guardian" : "Student"}</strong>
                   </span>
                   <button
@@ -895,9 +895,9 @@ function DemoRegisterForm() {
                     style={{
                       fontSize: "11px",
                       fontWeight: 600,
-                      color: "#1D1D1F",
+                      color: "var(--brand-navy)",
                       textDecoration: "underline",
-                      textDecorationColor: "#007AFF",
+                      textDecorationColor: "var(--brand-teal)",
                       textUnderlineOffset: "2px",
                       cursor: "pointer",
                     }}
@@ -936,19 +936,19 @@ function DemoRegisterForm() {
                           style={{
                             padding: "8px 10px",
                             borderRadius: "var(--radius-md)",
-                            border: `1px solid ${isSelected ? "#1D1D1F" : "var(--color-border)"}`,
-                            backgroundColor: isSelected ? "#1D1D1F" : "var(--color-surface-muted)",
-                            color: isSelected ? "#FFFFFF" : "var(--color-primary)",
+                            border: `1px solid ${isSelected ? "var(--brand-navy)" : "var(--color-border)"}`,
+                            backgroundColor: isSelected ? "var(--brand-navy)" : "var(--color-surface-muted)",
+                            color: isSelected ? "var(--brand-white)" : "var(--color-primary)",
                             fontSize: "var(--text-xs)",
                             textAlign: "left",
                             cursor: "pointer",
                           }}
                         >
                           <div style={{ fontWeight: 600, display: "flex", justifyContent: "space-between" }}>
-                            <span style={{ color: isSelected ? "#FFFFFF" : "#1D1D1F" }}>{item.label}</span>
-                            {isSelected && <Check size={14} aria-hidden="true" style={{ color: "#FFFFFF" }} />}
+                            <span style={{ color: isSelected ? "var(--brand-white)" : "var(--brand-navy)" }}>{item.label}</span>
+                            {isSelected && <Check size={14} aria-hidden="true" style={{ color: "var(--brand-white)" }} />}
                           </div>
-                          <div style={{ fontSize: "10px", color: isSelected ? "#E5E5EA" : "var(--color-neutral-dark)", marginTop: "2px" }}>
+                          <div style={{ fontSize: "10px", color: isSelected ? "var(--brand-sky)" : "var(--color-neutral-dark)", marginTop: "2px" }}>
                             {item.desc}
                           </div>
                         </button>
@@ -983,7 +983,7 @@ function DemoRegisterForm() {
                       width: "100%",
                       padding: "10px 14px",
                       borderRadius: "var(--radius-md)",
-                      border: "1px solid var(--color-border)",
+                      border: "1px solid var(--color-input-border)",
                       backgroundColor: "var(--color-surface)",
                       fontSize: "var(--text-sm)",
                       color: "var(--color-primary)",
@@ -1019,7 +1019,7 @@ function DemoRegisterForm() {
                       width: "100%",
                       padding: "10px 14px",
                       borderRadius: "var(--radius-md)",
-                      border: "1px solid var(--color-border)",
+                      border: "1px solid var(--color-input-border)",
                       backgroundColor: "var(--color-surface)",
                       fontSize: "var(--text-sm)",
                       color: "var(--color-primary)",
@@ -1051,7 +1051,7 @@ function DemoRegisterForm() {
                         width: "100%",
                         padding: "10px 14px",
                         borderRadius: "var(--radius-md)",
-                        border: "1px solid var(--color-border)",
+                        border: "1px solid var(--color-input-border)",
                         backgroundColor: "var(--color-surface)",
                         fontSize: "var(--text-sm)",
                         color: "var(--color-primary)",
@@ -1096,7 +1096,7 @@ function DemoRegisterForm() {
                         width: "100%",
                         padding: "10px 14px",
                         borderRadius: "var(--radius-md)",
-                        border: "1px solid var(--color-border)",
+                        border: "1px solid var(--color-input-border)",
                         backgroundColor: "var(--color-surface)",
                         fontSize: "var(--text-sm)",
                         color: "var(--color-primary)",
@@ -1133,7 +1133,7 @@ function DemoRegisterForm() {
                         width: "100%",
                         padding: "10px 38px 10px 14px",
                         borderRadius: "var(--radius-md)",
-                        border: "1px solid var(--color-border)",
+                        border: "1px solid var(--color-input-border)",
                         backgroundColor: "var(--color-surface)",
                         fontSize: "var(--text-sm)",
                         color: "var(--color-primary)",
@@ -1187,7 +1187,7 @@ function DemoRegisterForm() {
                       width: "100%",
                       padding: "10px 14px",
                       borderRadius: "var(--radius-md)",
-                      border: "1px solid var(--color-border)",
+                      border: "1px solid var(--color-input-border)",
                       backgroundColor: "var(--color-surface)",
                       fontSize: "var(--text-sm)",
                       color: "var(--color-primary)",
@@ -1199,8 +1199,8 @@ function DemoRegisterForm() {
                 {errorMessage && (
                   <div
                     style={{
-                      backgroundColor: "rgba(255, 59, 48, 0.08)",
-                      border: "1px solid rgba(255, 59, 48, 0.3)",
+                      backgroundColor: "var(--color-danger-bg)",
+                      border: "1px solid var(--color-danger-border)",
                       borderRadius: "var(--radius-md)",
                       padding: "var(--space-3)",
                       marginBottom: "var(--space-4)",
@@ -1250,9 +1250,9 @@ function DemoRegisterForm() {
                 href="/login"
                 style={{
                   fontWeight: 600,
-                  color: "#1D1D1F",
+                  color: "var(--brand-navy)",
                   textDecoration: "underline",
-                  textDecorationColor: "#007AFF",
+                  textDecorationColor: "var(--brand-teal)",
                   textUnderlineOffset: "3px",
                 }}
               >

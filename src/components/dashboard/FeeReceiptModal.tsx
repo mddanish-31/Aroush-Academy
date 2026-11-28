@@ -61,7 +61,7 @@ export function FeeReceiptModal({
       style={{
         position: "fixed",
         inset: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        backgroundColor: "var(--color-overlay)",
         backdropFilter: "blur(6px)",
         display: "flex",
         alignItems: "center",
@@ -73,12 +73,12 @@ export function FeeReceiptModal({
       <div
         className="printable-document fee-receipt-voucher"
         style={{
-          backgroundColor: "#FFFFFF",
+          backgroundColor: "var(--brand-white)",
           borderRadius: "var(--radius-xl)",
           maxWidth: "580px",
           width: "100%",
           boxShadow: "var(--shadow-lg)",
-          border: "1px solid rgba(0, 0, 0, 0.12)",
+          border: "1px solid var(--color-border)",
           overflow: "hidden",
           fontFamily: "var(--font-sans)",
           color: "var(--color-primary)",
@@ -86,8 +86,8 @@ export function FeeReceiptModal({
       >
         <div
           style={{
-            backgroundColor: "#1D1D1F",
-            color: "#FFFFFF",
+            backgroundColor: "var(--brand-navy)",
+            color: "var(--brand-white)",
             padding: "var(--space-5) var(--space-6)",
             display: "flex",
             justifyContent: "space-between",
@@ -108,16 +108,16 @@ export function FeeReceiptModal({
                   justifyContent: "center",
                   fontWeight: 800,
                   fontSize: "12px",
-                  color: "#FFFFFF",
+                  color: "var(--brand-white)",
                 }}
               >
                 A
               </div>
-              <h2 style={{ fontSize: "16px", fontWeight: 700, letterSpacing: "0.06em", color: "#FFFFFF", margin: 0, textTransform: "uppercase" }}>
+              <h2 style={{ fontSize: "16px", fontWeight: 700, letterSpacing: "0.06em", color: "var(--brand-white)", margin: 0, textTransform: "uppercase" }}>
                 ArousH Academy
               </h2>
             </div>
-            <p style={{ fontSize: "11px", color: "var(--color-text-secondary)", margin: "4px 0 0" }}>
+            <p style={{ fontSize: "11px", color: "var(--brand-sky)", margin: "4px 0 0" }}>
               Park Circus / CIT Road, Kolkata
             </p>
           </div>
@@ -127,19 +127,19 @@ export function FeeReceiptModal({
               style={{
                 display: "inline-block",
                 padding: "3px 8px",
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                backgroundColor: "rgba(200, 217, 230, 0.18)",
                 borderRadius: "var(--radius-sm)",
                 fontSize: "10px",
                 fontWeight: 600,
                 letterSpacing: "0.08em",
-                color: "#FFFFFF",
+                color: "var(--brand-white)",
                 textTransform: "uppercase",
               }}
             >
               Fee Receipt Voucher
             </span>
-            <div style={{ fontSize: "11px", color: "var(--color-text-secondary)", marginTop: "4px" }}>
-              Receipt No: <strong style={{ color: "#FFFFFF" }}>{receipt?.receiptNumber || transaction.referenceId}</strong>
+            <div style={{ fontSize: "11px", color: "var(--brand-sky)", marginTop: "4px" }}>
+              Receipt No: <strong style={{ color: "var(--brand-white)" }}>{receipt?.receiptNumber || transaction.referenceId}</strong>
             </div>
           </div>
         </div>
@@ -275,7 +275,7 @@ export function FeeReceiptModal({
             style={{
               borderLeft: "3px solid var(--color-accent)",
               padding: "6px 12px",
-              backgroundColor: "rgba(0, 122, 255, 0.04)",
+              backgroundColor: "var(--brand-sky-soft)",
               borderRadius: "0 var(--radius-sm) var(--radius-sm) 0",
               fontSize: "10px",
               color: "var(--color-neutral-dark)",

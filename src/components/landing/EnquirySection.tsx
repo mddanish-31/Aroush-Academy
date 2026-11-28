@@ -65,10 +65,10 @@ export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings })
     <section
       id="enquiry"
       style={{
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "var(--color-surface)",
         padding: "clamp(64px, 8vw, 112px) 0",
-        borderTop: "1px solid rgba(170, 170, 170, 0.3)",
-        borderBottom: "1px solid rgba(170, 170, 170, 0.3)",
+        borderTop: "1px solid var(--color-border)",
+        borderBottom: "1px solid var(--color-border)",
       }}
     >
       <span id="contact" style={{ display: "block", position: "relative", top: "-80px", visibility: "hidden" }} />
@@ -94,7 +94,7 @@ export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings })
                 fontFamily: "var(--font-display)",
                 fontSize: "clamp(2rem, 4.5vw, 3.25rem)",
                 lineHeight: 1.08,
-                color: "#1D1D1F",
+                color: "var(--brand-navy)",
                 fontWeight: 700,
                 maxWidth: "24ch",
                 margin: 0,
@@ -129,18 +129,18 @@ export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings })
               <div
                 style={{
                   padding: "24px",
-                  borderRadius: "16px",
-                  backgroundColor: "#F5F5F7",
-                  border: "1px solid rgba(170, 170, 170, 0.3)",
+                  borderRadius: "var(--radius-lg)",
+                  backgroundColor: "var(--brand-sky-soft)",
+                  border: "1px solid var(--color-border)",
                   display: "flex",
                   flexDirection: "column",
                   gap: "16px",
                 }}
               >
                 <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
-                  <MapPin size={18} style={{ color: "#007AFF", flexShrink: 0, marginTop: "2px" }} />
+                  <MapPin size={18} style={{ color: "var(--brand-teal)", flexShrink: 0, marginTop: "2px" }} />
                   <div>
-                    <span style={{ fontSize: "12px", fontWeight: 600, color: "#1D1D1F", display: "block", marginBottom: "2px" }}>
+                    <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--brand-navy)", display: "block", marginBottom: "2px" }}>
                       Campus Location
                     </span>
                     <span style={{ fontSize: "14px", color: "var(--color-text-secondary)", lineHeight: 1.5, display: "block" }}>
@@ -150,22 +150,22 @@ export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings })
                 </div>
 
                 <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
-                  <Phone size={18} style={{ color: "#007AFF", flexShrink: 0, marginTop: "2px" }} />
+                  <Phone size={18} style={{ color: "var(--brand-teal)", flexShrink: 0, marginTop: "2px" }} />
                   <div>
-                    <span style={{ fontSize: "12px", fontWeight: 600, color: "#1D1D1F", display: "block", marginBottom: "2px" }}>
+                    <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--brand-navy)", display: "block", marginBottom: "2px" }}>
                       Direct Contact Numbers
                     </span>
                     <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "2px" }}>
                       <a
                         href={`tel:${siteSettings.phone.replace(/\s/g, "")}`}
-                        style={{ fontSize: "14px", color: "#1D1D1F", fontWeight: 600, textDecoration: "underline" }}
+                        style={{ fontSize: "14px", color: "var(--brand-navy)", fontWeight: 600, textDecoration: "underline", textDecorationColor: "var(--brand-teal)" }}
                       >
                         {siteSettings.phone}
                       </a>
                       {siteSettings.phoneSecondary && (
                         <a
                           href={`tel:${siteSettings.phoneSecondary.replace(/\s/g, "")}`}
-                          style={{ fontSize: "14px", color: "#1D1D1F", fontWeight: 600, textDecoration: "underline" }}
+                          style={{ fontSize: "14px", color: "var(--brand-navy)", fontWeight: 600, textDecoration: "underline", textDecorationColor: "var(--brand-teal)" }}
                         >
                           {siteSettings.phoneSecondary}
                         </a>
@@ -175,14 +175,14 @@ export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings })
                 </div>
 
                 <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
-                  <Mail size={18} style={{ color: "#007AFF", flexShrink: 0, marginTop: "2px" }} />
+                  <Mail size={18} style={{ color: "var(--brand-teal)", flexShrink: 0, marginTop: "2px" }} />
                   <div>
-                    <span style={{ fontSize: "12px", fontWeight: 600, color: "#1D1D1F", display: "block", marginBottom: "2px" }}>
+                    <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--brand-navy)", display: "block", marginBottom: "2px" }}>
                       Email Admissions Desk
                     </span>
                     <a
                       href={`mailto:${siteSettings.email}`}
-                      style={{ fontSize: "14px", color: "#1D1D1F", fontWeight: 600, textDecoration: "underline", display: "block", marginTop: "2px" }}
+                      style={{ fontSize: "14px", color: "var(--brand-navy)", fontWeight: 600, textDecoration: "underline", textDecorationColor: "var(--brand-teal)", display: "block", marginTop: "2px" }}
                     >
                       {siteSettings.email}
                     </a>
@@ -195,9 +195,9 @@ export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings })
           <Reveal delay={120}>
             <div
               style={{
-                backgroundColor: "#F5F5F7",
-                borderRadius: "16px",
-                border: "1px solid rgba(170, 170, 170, 0.3)",
+                backgroundColor: "var(--brand-beige)",
+                borderRadius: "var(--radius-lg)",
+                border: "1px solid var(--color-border)",
                 padding: "clamp(24px, 4vw, 36px)",
               }}
             >
@@ -216,15 +216,15 @@ export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings })
                       display: "flex",
                       alignItems: "center",
                       gap: "10px",
-                      color: submitResult.success ? "#1D1D1F" : "#1D1D1F",
+                      color: "var(--brand-navy)",
                       fontWeight: 600,
                       fontSize: "16px",
                     }}
                   >
                     {submitResult.success ? (
-                      <CheckCircle2 size={20} style={{ color: "#007AFF" }} />
+                      <CheckCircle2 size={20} style={{ color: "var(--brand-teal)" }} />
                     ) : (
-                      <AlertCircle size={20} style={{ color: "#007AFF" }} />
+                      <AlertCircle size={20} style={{ color: "var(--brand-teal)" }} />
                     )}
                     <span>{submitResult.success ? "Enquiry Received" : "Notice"}</span>
                   </div>
@@ -257,11 +257,12 @@ export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings })
                       alignSelf: "flex-start",
                       fontSize: "14px",
                       fontWeight: 600,
-                      color: "#1D1D1F",
+                      color: "var(--brand-navy)",
                       background: "none",
                       border: "none",
                       padding: 0,
                       textDecoration: "underline",
+                      textDecorationColor: "var(--brand-teal)",
                       cursor: "pointer",
                       marginTop: "8px",
                     }}
@@ -290,7 +291,7 @@ export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings })
                         display: "block",
                         fontSize: "13px",
                         fontWeight: 600,
-                        color: "#1D1D1F",
+                        color: "var(--brand-navy)",
                         marginBottom: "6px",
                       }}
                     >
@@ -315,9 +316,9 @@ export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings })
                         height: "42px",
                         padding: "0 14px",
                         borderRadius: "8px",
-                        border: errors.studentName ? "1.5px solid #1D1D1F" : "1px solid rgba(170, 170, 170, 0.5)",
-                        backgroundColor: "#FFFFFF",
-                        color: "#1D1D1F",
+                        border: errors.studentName ? "1.5px solid var(--color-danger)" : "1px solid var(--color-input-border)",
+                        backgroundColor: "var(--color-surface)",
+                        color: "var(--brand-navy)",
                         fontSize: "14px",
                         boxSizing: "border-box",
                       }}
@@ -328,7 +329,7 @@ export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings })
                         role="alert"
                         style={{
                           fontSize: "12px",
-                          color: "#1D1D1F",
+                          color: "var(--color-danger)",
                           fontWeight: 500,
                           marginTop: "4px",
                           display: "block",
@@ -346,7 +347,7 @@ export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings })
                         display: "block",
                         fontSize: "13px",
                         fontWeight: 600,
-                        color: "#1D1D1F",
+                        color: "var(--brand-navy)",
                         marginBottom: "6px",
                       }}
                     >
@@ -371,9 +372,9 @@ export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings })
                         height: "42px",
                         padding: "0 14px",
                         borderRadius: "8px",
-                        border: errors.contactNumber ? "1.5px solid #1D1D1F" : "1px solid rgba(170, 170, 170, 0.5)",
-                        backgroundColor: "#FFFFFF",
-                        color: "#1D1D1F",
+                        border: errors.contactNumber ? "1.5px solid var(--color-danger)" : "1px solid var(--color-input-border)",
+                        backgroundColor: "var(--color-surface)",
+                        color: "var(--brand-navy)",
                         fontSize: "14px",
                         boxSizing: "border-box",
                       }}
@@ -384,7 +385,7 @@ export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings })
                         role="alert"
                         style={{
                           fontSize: "12px",
-                          color: "#1D1D1F",
+                          color: "var(--color-danger)",
                           fontWeight: 500,
                           marginTop: "4px",
                           display: "block",
@@ -403,7 +404,7 @@ export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings })
                           display: "block",
                           fontSize: "13px",
                           fontWeight: 600,
-                          color: "#1D1D1F",
+                          color: "var(--brand-navy)",
                           marginBottom: "6px",
                         }}
                       >
@@ -418,9 +419,9 @@ export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings })
                           height: "42px",
                           padding: "0 10px",
                           borderRadius: "8px",
-                          border: "1px solid rgba(170, 170, 170, 0.5)",
-                          backgroundColor: "#FFFFFF",
-                          color: "#1D1D1F",
+                          border: "1px solid var(--color-input-border)",
+                          backgroundColor: "var(--color-surface)",
+                          color: "var(--brand-navy)",
                           fontSize: "14px",
                           boxSizing: "border-box",
                         }}
@@ -443,7 +444,7 @@ export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings })
                           display: "block",
                           fontSize: "13px",
                           fontWeight: 600,
-                          color: "#1D1D1F",
+                          color: "var(--brand-navy)",
                           marginBottom: "6px",
                         }}
                       >
@@ -458,9 +459,9 @@ export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings })
                           height: "42px",
                           padding: "0 10px",
                           borderRadius: "8px",
-                          border: "1px solid rgba(170, 170, 170, 0.5)",
-                          backgroundColor: "#FFFFFF",
-                          color: "#1D1D1F",
+                          border: "1px solid var(--color-input-border)",
+                          backgroundColor: "var(--color-surface)",
+                          color: "var(--brand-navy)",
                           fontSize: "14px",
                           boxSizing: "border-box",
                         }}
@@ -479,7 +480,7 @@ export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings })
                         display: "block",
                         fontSize: "13px",
                         fontWeight: 600,
-                        color: "#1D1D1F",
+                        color: "var(--brand-navy)",
                         marginBottom: "6px",
                       }}
                     >
@@ -495,9 +496,9 @@ export function EnquirySection({ siteSettings }: { siteSettings: SiteSettings })
                         width: "100%",
                         padding: "10px 14px",
                         borderRadius: "8px",
-                        border: "1px solid rgba(170, 170, 170, 0.5)",
-                        backgroundColor: "#FFFFFF",
-                        color: "#1D1D1F",
+                        border: "1px solid var(--color-input-border)",
+                        backgroundColor: "var(--color-surface)",
+                        color: "var(--brand-navy)",
                         fontSize: "14px",
                         resize: "vertical",
                         boxSizing: "border-box",

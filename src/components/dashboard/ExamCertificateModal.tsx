@@ -51,7 +51,7 @@ export function ExamCertificateModal({
       style={{
         position: "fixed",
         inset: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.6)",
+        backgroundColor: "var(--color-overlay)",
         backdropFilter: "blur(6px)",
         display: "flex",
         alignItems: "center",
@@ -63,7 +63,7 @@ export function ExamCertificateModal({
       <div
         className="printable-document exam-certificate-document"
         style={{
-          backgroundColor: "#FFFFFF",
+          backgroundColor: "var(--brand-white)",
           borderRadius: "var(--radius-lg)",
           maxWidth: "760px",
           width: "100%",
@@ -72,15 +72,15 @@ export function ExamCertificateModal({
           padding: "var(--space-8)",
           boxShadow: "var(--shadow-lg)",
           position: "relative",
-          border: "8px solid #F5F5F7",
-          outline: isIssued ? "2px solid #34C759" : "2px solid #007AFF",
+          border: "8px solid var(--brand-beige)",
+          outline: isIssued ? "2px solid var(--color-success)" : "2px solid var(--brand-teal)",
           outlineOffset: "-4px",
         }}
       >
         <div
           style={{
-            backgroundColor: isIssued ? "#34C759" : "#FF9500",
-            color: "#FFFFFF",
+            backgroundColor: isIssued ? "var(--color-success)" : "var(--color-warning)",
+            color: "var(--brand-white)",
             textAlign: "center",
             padding: "4px 12px",
             fontSize: "11px",
@@ -99,16 +99,16 @@ export function ExamCertificateModal({
             style={{
               width: "56px",
               height: "56px",
-              borderRadius: "var(--radius-full)",
-              backgroundColor: "rgba(0, 122, 255, 0.1)",
-              color: "#007AFF",
+              borderRadius: "50%",
+              backgroundColor: "var(--brand-sky-subtle)",
+              color: "var(--brand-navy)",
               fontSize: "22px",
               fontWeight: 800,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               margin: "0 auto var(--space-2)",
-              border: "2px solid #007AFF",
+              border: "2px solid var(--brand-teal)",
             }}
           >
             AA
@@ -142,7 +142,7 @@ export function ExamCertificateModal({
           >
             {certificate.title}
           </h1>
-          <div style={{ width: "80px", height: "3px", backgroundColor: "#007AFF", margin: "8px auto 0" }} />
+          <div style={{ width: "80px", height: "3px", backgroundColor: "var(--brand-teal)", margin: "8px auto 0" }} />
         </div>
 
         <div style={{ textAlign: "center", marginBottom: "var(--space-6)", lineHeight: 1.8 }}>
@@ -154,7 +154,7 @@ export function ExamCertificateModal({
             style={{
               fontSize: "var(--text-xl)",
               fontWeight: 800,
-              color: "#007AFF",
+              color: "var(--brand-teal)",
               margin: "var(--space-2) 0",
               fontFamily: "var(--font-sans)",
             }}
@@ -195,8 +195,8 @@ export function ExamCertificateModal({
             justifyContent: "space-between",
             alignItems: "center",
             padding: "10px 14px",
-            backgroundColor: "rgba(52, 199, 89, 0.08)",
-            border: "1px solid rgba(52, 199, 89, 0.25)",
+            backgroundColor: "var(--color-success-bg)",
+            border: "1px solid var(--color-success-border)",
             borderRadius: "var(--radius-sm)",
             fontSize: "11px",
             color: "var(--color-primary)",

@@ -15,7 +15,7 @@ Read docs/CONTEXT.md first.
 - Stay on the current branch. Never run git add, commit, push, checkout, branch, stash or worktree commands unless the user says so.
 - Before changing Next.js related code, read the relevant guides in node_modules/next/dist/docs/. This is Next.js 16: middleware is now proxy.ts, cache components are enabled.
 - No em dash or en dash anywhere (use a hyphen). No emojis (use lucide-react icons). No capsule or pill tags. No code comments. Small files. No unused code. No new dependencies unless asked.
-- Palette is locked: #F5F5F7 background, #1D1D1F text and primary button, #AAAAAA borders only, #007AFF accent for icons, underlines and focus only (never small text), #FFFFFF surface. Fonts: Fraunces (display), Manrope (body).
+- Palette is locked: #2F4156 Navy (primary brand, headings, text, primary button, navigation), #567B8D Teal (secondary brand, accents, icons, underlines, focus), #C8D9E6 Sky Blue (soft backgrounds, highlights, selected states, subtle borders), #F5F0EB Beige (main page background and warm neutral sections), #FFFFFF White (cards, content surfaces, forms). Fonts: Fraunces (display), Manrope (body).
 - Public content comes from src/content. Never state business facts (subjects, fees, phone numbers, faculty, ratings) as true; only quote what is in the repo and name the file.
 - Never use regex or Python to replace text across many files. Edit one file at a time with exact edits, then run typecheck.
 - Never write "verified", "confirmed" or "all passed" unless you ran the command in this session and saw the output. Paste raw output, never "...".

@@ -267,7 +267,7 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
         backgroundColor: "rgba(255, 255, 255, 0.94)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(170, 170, 170, 0.35)",
+        borderBottom: "1px solid var(--color-border)",
       }}
     >
       <div
@@ -286,7 +286,7 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
             alignItems: "center",
             gap: "12px",
             textDecoration: "none",
-            color: "#1D1D1F",
+            color: "var(--brand-navy)",
           }}
           onClick={closeDropdown}
         >
@@ -296,8 +296,8 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
               width: "36px",
               height: "36px",
               borderRadius: "8px",
-              backgroundColor: "#1D1D1F",
-              color: "#FFFFFF",
+              backgroundColor: "var(--brand-navy)",
+              color: "var(--brand-white)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -355,9 +355,9 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                     padding: "8px 14px",
                     borderRadius: "8px",
                     border: "none",
-                    borderBottom: isOpen ? "2px solid #007AFF" : "2px solid transparent",
-                    backgroundColor: isOpen ? "rgba(29, 29, 31, 0.04)" : "transparent",
-                    color: "#1D1D1F",
+                    borderBottom: isOpen ? "2px solid var(--brand-teal)" : "2px solid transparent",
+                    backgroundColor: isOpen ? "var(--brand-sky-soft)" : "transparent",
+                    color: "var(--brand-navy)",
                     fontSize: "var(--text-sm)",
                     fontWeight: 500,
                     cursor: "pointer",
@@ -388,10 +388,10 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                     left: groupIndex > 1 ? "auto" : "0",
                     right: groupIndex > 1 ? "0" : "auto",
                     width: "320px",
-                    backgroundColor: "#FFFFFF",
-                    borderRadius: "16px",
-                    border: "1px solid rgba(170, 170, 170, 0.35)",
-                    boxShadow: "0 12px 32px rgba(0, 0, 0, 0.08)",
+                    backgroundColor: "var(--color-surface)",
+                    borderRadius: "var(--radius-lg)",
+                    border: "1px solid var(--color-border)",
+                    boxShadow: "var(--shadow-lg)",
                     padding: "10px",
                     zIndex: 60,
                     display: "flex",
@@ -414,11 +414,11 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                           padding: "10px 12px",
                           borderRadius: "10px",
                           textDecoration: "none",
-                          color: "#1D1D1F",
+                          color: "var(--brand-navy)",
                           transition: "background-color 150ms ease-out",
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = "#F5F5F7";
+                          e.currentTarget.style.backgroundColor = "var(--brand-beige)";
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = "transparent";
@@ -429,8 +429,8 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                             width: "32px",
                             height: "32px",
                             borderRadius: "8px",
-                            backgroundColor: "rgba(0, 122, 255, 0.08)",
-                            color: "#007AFF",
+                            backgroundColor: "var(--brand-sky-subtle)",
+                            color: "var(--brand-teal)",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -441,7 +441,7 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                           <IconComponent size={16} strokeWidth={2} />
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                          <span style={{ fontSize: "14px", fontWeight: 600, color: "#1D1D1F" }}>
+                          <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--brand-navy)" }}>
                             {item.title}
                           </span>
                           <span style={{ fontSize: "12px", color: "var(--color-text-secondary)", lineHeight: 1.4 }}>
@@ -467,13 +467,13 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                   alignItems: "center",
                   gap: "6px",
                   padding: "6px 12px",
-                  backgroundColor: "#F5F5F7",
+                  backgroundColor: "var(--brand-beige)",
                   borderRadius: "8px",
-                  border: "1px solid rgba(170, 170, 170, 0.35)",
+                  border: "1px solid var(--color-border)",
                   fontSize: "var(--text-xs)",
                 }}
               >
-                <span style={{ fontWeight: 600, color: "#1D1D1F" }}>{user.name.split(" ")[0]}</span>
+                <span style={{ fontWeight: 600, color: "var(--brand-navy)" }}>{user.name.split(" ")[0]}</span>
                 <span style={{ color: "var(--color-text-secondary)" }}>
                   ({ROLE_DISPLAY_NAMES[user.role]})
                 </span>
@@ -543,10 +543,10 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                     top: "calc(100% + 8px)",
                     right: 0,
                     width: "280px",
-                    backgroundColor: "#FFFFFF",
-                    borderRadius: "16px",
-                    border: "1px solid rgba(170, 170, 170, 0.35)",
-                    boxShadow: "0 12px 32px rgba(0, 0, 0, 0.08)",
+                    backgroundColor: "var(--color-surface)",
+                    borderRadius: "var(--radius-lg)",
+                    border: "1px solid var(--color-border)",
+                    boxShadow: "var(--shadow-lg)",
                     padding: "8px",
                     zIndex: 60,
                     display: "flex",
@@ -581,11 +581,11 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                           padding: "8px 10px",
                           borderRadius: "8px",
                           textDecoration: "none",
-                          color: "#1D1D1F",
+                          color: "var(--brand-navy)",
                           transition: "background-color 150ms ease-out",
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = "#F5F5F7";
+                          e.currentTarget.style.backgroundColor = "var(--brand-beige)";
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = "transparent";
@@ -596,8 +596,8 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                             width: "28px",
                             height: "28px",
                             borderRadius: "6px",
-                            backgroundColor: "rgba(0, 122, 255, 0.08)",
-                            color: "#007AFF",
+                            backgroundColor: "var(--brand-sky-subtle)",
+                            color: "var(--brand-teal)",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -608,7 +608,7 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                           <IconComponent size={15} strokeWidth={2} />
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                          <span style={{ fontSize: "13px", fontWeight: 600, color: "#1D1D1F" }}>
+                          <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--brand-navy)" }}>
                             {item.label}
                           </span>
                           <span style={{ fontSize: "11px", color: "var(--color-text-secondary)", lineHeight: 1.4 }}>
@@ -665,10 +665,10 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                     top: "calc(100% + 8px)",
                     right: 0,
                     width: "280px",
-                    backgroundColor: "#FFFFFF",
-                    borderRadius: "16px",
-                    border: "1px solid rgba(170, 170, 170, 0.35)",
-                    boxShadow: "0 12px 32px rgba(0, 0, 0, 0.08)",
+                    backgroundColor: "var(--color-surface)",
+                    borderRadius: "var(--radius-lg)",
+                    border: "1px solid var(--color-border)",
+                    boxShadow: "var(--shadow-lg)",
                     padding: "8px",
                     zIndex: 60,
                     display: "flex",
@@ -703,11 +703,11 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                           padding: "8px 10px",
                           borderRadius: "8px",
                           textDecoration: "none",
-                          color: "#1D1D1F",
+                          color: "var(--brand-navy)",
                           transition: "background-color 150ms ease-out",
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = "#F5F5F7";
+                          e.currentTarget.style.backgroundColor = "var(--brand-beige)";
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = "transparent";
@@ -718,8 +718,8 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                             width: "28px",
                             height: "28px",
                             borderRadius: "6px",
-                            backgroundColor: "rgba(0, 122, 255, 0.08)",
-                            color: "#007AFF",
+                            backgroundColor: "var(--brand-sky-subtle)",
+                            color: "var(--brand-teal)",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -730,7 +730,7 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                           <IconComponent size={15} strokeWidth={2} />
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                          <span style={{ fontSize: "13px", fontWeight: 600, color: "#1D1D1F" }}>
+                          <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--brand-navy)" }}>
                             {item.label}
                           </span>
                           <span style={{ fontSize: "11px", color: "var(--color-text-secondary)", lineHeight: 1.4 }}>
@@ -760,9 +760,9 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
             width: "40px",
             height: "40px",
             borderRadius: "8px",
-            border: "1px solid rgba(170, 170, 170, 0.4)",
-            backgroundColor: "#FFFFFF",
-            color: "#1D1D1F",
+            border: "1px solid var(--color-input-border)",
+            backgroundColor: "var(--color-surface)",
+            color: "var(--brand-navy)",
             cursor: "pointer",
           }}
         >
@@ -786,8 +786,8 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
           right: 0,
           bottom: 0,
           height: "calc(100vh - 72px)",
-          backgroundColor: "#FFFFFF",
-          borderTop: "1px solid rgba(170, 170, 170, 0.35)",
+          backgroundColor: "var(--color-surface)",
+          borderTop: "1px solid var(--color-border)",
           padding: "var(--space-6)",
           overflowY: "auto",
           display: "flex",
@@ -804,7 +804,7 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                 <div
                   key={group.id}
                   style={{
-                    borderBottom: "1px solid rgba(170, 170, 170, 0.25)",
+                    borderBottom: "1px solid var(--color-border-subtle)",
                     paddingBottom: "var(--space-3)",
                   }}
                 >
@@ -820,7 +820,7 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                       padding: "8px 0",
                       background: "none",
                       border: "none",
-                      color: "#1D1D1F",
+                      color: "var(--brand-navy)",
                       fontSize: "var(--text-base)",
                       fontWeight: 600,
                       cursor: "pointer",
@@ -864,7 +864,7 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                             padding: "8px",
                             borderRadius: "8px",
                             textDecoration: "none",
-                            color: "#1D1D1F",
+                            color: "var(--brand-navy)",
                           }}
                         >
                           <div
@@ -872,8 +872,8 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                               width: "28px",
                               height: "28px",
                               borderRadius: "6px",
-                              backgroundColor: "rgba(0, 122, 255, 0.08)",
-                              color: "#007AFF",
+                              backgroundColor: "var(--brand-sky-subtle)",
+                              color: "var(--brand-teal)",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
@@ -904,7 +904,7 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
               flexDirection: "column",
               gap: "var(--space-3)",
               paddingTop: "var(--space-4)",
-              borderTop: "1px solid rgba(170, 170, 170, 0.35)",
+              borderTop: "1px solid var(--color-border)",
             }}
           >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -920,12 +920,12 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                   style={{
                     padding: "8px 12px",
                     borderRadius: "8px",
-                    backgroundColor: "#F5F5F7",
+                    backgroundColor: "var(--brand-beige)",
                     fontSize: "var(--text-xs)",
                     color: "var(--color-text-secondary)",
                   }}
                 >
-                  Signed in as <strong style={{ color: "#1D1D1F" }}>{user.name}</strong> ({ROLE_DISPLAY_NAMES[user.role]})
+                  Signed in as <strong style={{ color: "var(--brand-navy)" }}>{user.name}</strong> ({ROLE_DISPLAY_NAMES[user.role]})
                 </div>
                 <Link
                   href={ROLE_DEFAULT_ROUTES[user.role]}
@@ -964,9 +964,9 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                       justifyContent: "space-between",
                       padding: "10px 14px",
                       borderRadius: "8px",
-                      border: "1px solid rgba(170, 170, 170, 0.35)",
+                      border: "1px solid var(--brand-teal)",
                       backgroundColor: "transparent",
-                      color: "#1D1D1F",
+                      color: "var(--brand-navy)",
                       fontSize: "14px",
                       fontWeight: 600,
                       cursor: "pointer",
@@ -1001,7 +1001,7 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                             padding: "8px 10px",
                             borderRadius: "8px",
                             textDecoration: "none",
-                            color: "#1D1D1F",
+                            color: "var(--brand-navy)",
                           }}
                         >
                           <div
@@ -1009,8 +1009,8 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                               width: "28px",
                               height: "28px",
                               borderRadius: "6px",
-                              backgroundColor: "rgba(0, 122, 255, 0.08)",
-                              color: "#007AFF",
+                              backgroundColor: "var(--brand-sky-subtle)",
+                              color: "var(--brand-teal)",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
@@ -1047,8 +1047,8 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                       justifyContent: "space-between",
                       padding: "10px 14px",
                       borderRadius: "8px",
-                      backgroundColor: "#1D1D1F",
-                      color: "#FFFFFF",
+                      backgroundColor: "var(--brand-navy)",
+                      color: "var(--brand-white)",
                       fontSize: "14px",
                       fontWeight: 600,
                       cursor: "pointer",
@@ -1060,7 +1060,7 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                       style={{
                         transform: mobileAccordion.register ? "rotate(180deg)" : "rotate(0deg)",
                         transition: "transform 200ms ease-out",
-                        color: "#FFFFFF",
+                        color: "var(--brand-white)",
                       }}
                     />
                   </button>
@@ -1084,7 +1084,7 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                             padding: "8px 10px",
                             borderRadius: "8px",
                             textDecoration: "none",
-                            color: "#1D1D1F",
+                            color: "var(--brand-navy)",
                           }}
                         >
                           <div
@@ -1092,8 +1092,8 @@ export function Header({ settings = siteSettings }: { settings?: SiteSettings })
                               width: "28px",
                               height: "28px",
                               borderRadius: "6px",
-                              backgroundColor: "rgba(0, 122, 255, 0.08)",
-                              color: "#007AFF",
+                              backgroundColor: "var(--brand-sky-subtle)",
+                              color: "var(--brand-teal)",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",

@@ -25,11 +25,11 @@ export default function ActivatePage() {
         } catch (error) { setMessage(error instanceof Error ? error.message : "Could not set password."); }
         finally { setBusy(false); }
       }} style={{ display: "grid", gap: "var(--space-4)", marginTop: "var(--space-5)" }}>
-        <label>Code type<br /><select name="purpose" required style={{ width: "100%", padding: "var(--space-3)" }}>
+        <label>Code type<br /><select name="purpose" required style={{ width: "100%", padding: "var(--space-3)", border: "1px solid var(--color-input-border)", backgroundColor: "var(--color-surface)", color: "var(--color-primary)", borderRadius: "var(--radius-md)" }}>
           <option value="activation">New account activation</option><option value="recovery">Password recovery</option>
         </select></label>
-        <label>One-time code<br /><input name="token" required autoComplete="off" style={{ width: "100%", padding: "var(--space-3)", border: "1px solid var(--color-border)" }} /></label>
-        <label>New password (at least 12 characters)<br /><input name="password" type="password" required minLength={12} autoComplete="new-password" style={{ width: "100%", padding: "var(--space-3)", border: "1px solid var(--color-border)" }} /></label>
+        <label>One-time code<br /><input name="token" required autoComplete="off" style={{ width: "100%", padding: "var(--space-3)", border: "1px solid var(--color-input-border)", backgroundColor: "var(--color-surface)", color: "var(--color-primary)", borderRadius: "var(--radius-md)" }} /></label>
+        <label>New password (at least 12 characters)<br /><input name="password" type="password" required minLength={12} autoComplete="new-password" style={{ width: "100%", padding: "var(--space-3)", border: "1px solid var(--color-input-border)", backgroundColor: "var(--color-surface)", color: "var(--color-primary)", borderRadius: "var(--radius-md)" }} /></label>
         <Button type="submit" disabled={busy}>Set password</Button>
       </form>
       {message && <p role="status" style={{ marginTop: "var(--space-4)" }}>{message}</p>}

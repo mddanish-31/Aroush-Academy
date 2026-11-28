@@ -11,10 +11,10 @@ export function AcademyIntro({ landing, media }: { landing: LandingContent; medi
     <section
       id="about"
       style={{
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "var(--color-surface)",
         padding: "clamp(64px, 8vw, 112px) 0",
-        borderTop: "1px solid rgba(170, 170, 170, 0.3)",
-        borderBottom: "1px solid rgba(170, 170, 170, 0.3)",
+        borderTop: "1px solid var(--color-border)",
+        borderBottom: "1px solid var(--color-border)",
       }}
     >
       <span id="campus" style={{ display: "block", position: "relative", top: "-80px", visibility: "hidden" }} />
@@ -39,7 +39,7 @@ export function AcademyIntro({ landing, media }: { landing: LandingContent; medi
                 fontFamily: "var(--font-display)",
                 fontSize: "clamp(2rem, 4.5vw, 3.25rem)",
                 lineHeight: 1.08,
-                color: "#1D1D1F",
+                color: "var(--brand-navy)",
                 fontWeight: 700,
                 maxWidth: "24ch",
                 margin: 0,
@@ -62,9 +62,10 @@ export function AcademyIntro({ landing, media }: { landing: LandingContent; medi
             <div style={{ position: "sticky", top: "100px" }}>
               <div
                 style={{
-                  borderRadius: "16px",
+                  borderRadius: "var(--radius-lg)",
                   overflow: "hidden",
-                  backgroundColor: "#E5E5EA",
+                  backgroundColor: "var(--brand-sky)",
+                  border: "1px solid var(--color-border)",
                   aspectRatio: "4 / 3",
                   position: "relative",
                 }}
@@ -103,8 +104,8 @@ export function AcademyIntro({ landing, media }: { landing: LandingContent; medi
                   key={pillar.id}
                   style={{
                     padding: "24px 0",
-                    borderTop: idx === 0 ? "1px solid rgba(170, 170, 170, 0.3)" : "none",
-                    borderBottom: "1px solid rgba(170, 170, 170, 0.3)",
+                    borderTop: idx === 0 ? "1px solid var(--color-border)" : "none",
+                    borderBottom: "1px solid var(--color-border)",
                     display: "grid",
                     gridTemplateColumns: "40px 1fr",
                     gap: "16px",
@@ -114,7 +115,7 @@ export function AcademyIntro({ landing, media }: { landing: LandingContent; medi
                     style={{
                       fontFamily: "var(--font-display)",
                       fontSize: "18px",
-                      color: "var(--color-text-secondary)",
+                      color: "var(--brand-teal)",
                       fontWeight: 600,
                       lineHeight: 1.4,
                     }}
@@ -127,7 +128,7 @@ export function AcademyIntro({ landing, media }: { landing: LandingContent; medi
                         fontFamily: "var(--font-display)",
                         fontSize: "18px",
                         fontWeight: 600,
-                        color: "#1D1D1F",
+                        color: "var(--brand-navy)",
                         margin: "0 0 6px 0",
                         lineHeight: 1.3,
                       }}

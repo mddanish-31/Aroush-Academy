@@ -262,7 +262,7 @@ export function RegistrationApprovalsModule() {
             style={{
               padding: "var(--space-3)",
               borderRadius: "var(--radius-md)",
-              backgroundColor: activeTab === "pending" ? "rgba(255, 149, 0, 0.12)" : "var(--color-surface-muted)",
+              backgroundColor: activeTab === "pending" ? "var(--color-warning-bg)" : "var(--color-surface-muted)",
               border: `1px solid ${activeTab === "pending" ? "var(--color-warning)" : "var(--color-border)"}`,
               cursor: "pointer",
               transition: "all var(--transition-fast)",
@@ -281,7 +281,7 @@ export function RegistrationApprovalsModule() {
             style={{
               padding: "var(--space-3)",
               borderRadius: "var(--radius-md)",
-              backgroundColor: activeTab === "approved" ? "rgba(52, 199, 89, 0.12)" : "var(--color-surface-muted)",
+              backgroundColor: activeTab === "approved" ? "var(--color-success-bg)" : "var(--color-surface-muted)",
               border: `1px solid ${activeTab === "approved" ? "var(--color-positive)" : "var(--color-border)"}`,
               cursor: "pointer",
               transition: "all var(--transition-fast)",
@@ -300,8 +300,8 @@ export function RegistrationApprovalsModule() {
             style={{
               padding: "var(--space-3)",
               borderRadius: "var(--radius-md)",
-              backgroundColor: activeTab === "rejected" ? "rgba(255, 59, 48, 0.1)" : "var(--color-surface-muted)",
-              border: `1px solid ${activeTab === "rejected" ? "#D32F2F" : "var(--color-border)"}`,
+              backgroundColor: activeTab === "rejected" ? "var(--color-danger-bg)" : "var(--color-surface-muted)",
+              border: `1px solid ${activeTab === "rejected" ? "var(--color-danger)" : "var(--color-border)"}`,
               cursor: "pointer",
               transition: "all var(--transition-fast)",
             }}
@@ -309,7 +309,7 @@ export function RegistrationApprovalsModule() {
             <div style={{ fontSize: "11px", color: "var(--color-neutral-dark)", fontWeight: 500 }}>
               Rejected Submissions
             </div>
-            <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "#D32F2F", marginTop: "2px" }}>
+            <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--color-danger)", marginTop: "2px" }}>
               {counts.rejected}
             </div>
           </div>
@@ -321,12 +321,12 @@ export function RegistrationApprovalsModule() {
               borderRadius: "var(--radius-md)",
               backgroundColor: activeTab === "all" ? "var(--color-primary)" : "var(--color-surface-muted)",
               border: "1px solid var(--color-border)",
-              color: activeTab === "all" ? "#fff" : "inherit",
+              color: activeTab === "all" ? "var(--brand-white)" : "inherit",
               cursor: "pointer",
               transition: "all var(--transition-fast)",
             }}
           >
-            <div style={{ fontSize: "11px", color: activeTab === "all" ? "rgba(255,255,255,0.8)" : "var(--color-neutral-dark)", fontWeight: 500 }}>
+            <div style={{ fontSize: "11px", color: activeTab === "all" ? "var(--brand-sky)" : "var(--color-neutral-dark)", fontWeight: 500 }}>
               Total Applications
             </div>
             <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, marginTop: "2px" }}>
@@ -339,8 +339,8 @@ export function RegistrationApprovalsModule() {
       {actionNotice && (
         <div
           style={{
-            backgroundColor: actionNotice.type === "success" ? "rgba(52, 199, 89, 0.1)" : "rgba(255, 59, 48, 0.1)",
-            border: `1px solid ${actionNotice.type === "success" ? "rgba(52, 199, 89, 0.3)" : "rgba(255, 59, 48, 0.3)"}`,
+            backgroundColor: actionNotice.type === "success" ? "var(--color-success-bg)" : "var(--color-danger-bg)",
+            border: `1px solid ${actionNotice.type === "success" ? "var(--color-success-border)" : "var(--color-danger-border)"}`,
             borderRadius: "var(--radius-md)",
             padding: "var(--space-3) var(--space-4)",
             display: "flex",
@@ -348,7 +348,7 @@ export function RegistrationApprovalsModule() {
             justifyContent: "space-between",
             fontSize: "var(--text-xs)",
             fontWeight: 500,
-            color: actionNotice.type === "success" ? "var(--color-positive)" : "#D32F2F",
+            color: actionNotice.type === "success" ? "var(--color-positive)" : "var(--color-danger)",
           }}
           role="status"
         >
@@ -356,9 +356,10 @@ export function RegistrationApprovalsModule() {
           <button
             type="button"
             onClick={() => setActionNotice(null)}
+            aria-label="Dismiss notice"
             style={{ border: "none", background: "none", cursor: "pointer", fontSize: "14px", color: "inherit" }}
           >
-            
+            &times;
           </button>
         </div>
       )}
@@ -417,7 +418,7 @@ export function RegistrationApprovalsModule() {
             maxWidth: "360px",
             padding: "7px 12px",
             borderRadius: "var(--radius-md)",
-            border: "1px solid var(--color-border)",
+            border: "1px solid var(--color-input-border)",
             backgroundColor: "var(--color-surface)",
             fontSize: "var(--text-xs)",
             outline: "none",
@@ -565,9 +566,9 @@ export function RegistrationApprovalsModule() {
                                 borderRadius: "var(--radius-sm)",
                                 fontSize: "11px",
                                 fontWeight: 600,
-                                backgroundColor: "rgba(255, 59, 48, 0.12)",
-                                color: "#D32F2F",
-                                border: "1px solid rgba(255, 59, 48, 0.25)",
+                                backgroundColor: "var(--color-danger-bg)",
+                                color: "var(--color-danger)",
+                                border: "1px solid var(--color-danger-border)",
                               }}
                             >
                               Rejected
@@ -607,15 +608,15 @@ export function RegistrationApprovalsModule() {
                             </Button>
                             <Button
                               type="button"
-                              variant="secondary"
+                              variant="outline"
                               size="sm"
                               disabled={isProcessing}
                               onClick={() => openRejectModal(req)}
                               style={{
                                 padding: "4px 10px",
                                 fontSize: "11px",
-                                color: "#D32F2F",
-                                borderColor: "rgba(255, 59, 48, 0.3)",
+                                color: "var(--color-danger)",
+                                borderColor: "var(--color-danger-border)",
                               }}
                             >
                               Reject
@@ -632,7 +633,7 @@ export function RegistrationApprovalsModule() {
                             Edit Link
                           </Button>
                         ) : (
-                          <span style={{ fontSize: "11px", color: "#D32F2F", fontWeight: 500 }}>
+                          <span style={{ fontSize: "11px", color: "var(--color-danger)", fontWeight: 500 }}>
                             Sign-In Blocked
                           </span>
                         )}
@@ -653,7 +654,7 @@ export function RegistrationApprovalsModule() {
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.55)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(4px)",
             display: "flex",
             alignItems: "center",
@@ -670,7 +671,7 @@ export function RegistrationApprovalsModule() {
               width: "100%",
               padding: "var(--space-6)",
               border: "1px solid var(--color-border)",
-              boxShadow: "var(--shadow-xl)",
+              boxShadow: "var(--shadow-lg)",
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-4)" }}>
@@ -685,9 +686,10 @@ export function RegistrationApprovalsModule() {
               <button
                 type="button"
                 onClick={() => setReviewModalReq(null)}
+                aria-label="Close modal"
                 style={{ border: "none", background: "none", cursor: "pointer", fontSize: "18px" }}
               >
-                
+                &times;
               </button>
             </div>
 
@@ -723,7 +725,7 @@ export function RegistrationApprovalsModule() {
                   width: "100%",
                   padding: "8px 10px",
                   borderRadius: "var(--radius-sm)",
-                  border: "1px solid var(--color-border)",
+                  border: "1px solid var(--color-input-border)",
                   fontSize: "var(--text-xs)",
                   backgroundColor: "var(--color-surface)",
                   color: "var(--color-primary)",
@@ -739,11 +741,11 @@ export function RegistrationApprovalsModule() {
               </select>
 
               {matchedStudentId ? (
-                <div style={{ marginTop: "8px", padding: "8px 12px", backgroundColor: "rgba(52, 199, 89, 0.08)", border: "1px solid rgba(52, 199, 89, 0.25)", borderRadius: "var(--radius-sm)", fontSize: "11px", color: "var(--color-positive)" }}>
+                <div style={{ marginTop: "8px", padding: "8px 12px", backgroundColor: "var(--color-success-bg)", border: "1px solid var(--color-success-border)", borderRadius: "var(--radius-sm)", fontSize: "11px", color: "var(--color-positive)" }}>
                   This account will be securely bound to <strong>{students.find((s) => s.id === matchedStudentId)?.name} ({matchedStudentId.toUpperCase()})</strong>. Portal sign-in will exclusively resolve this student&apos;s records.
                 </div>
               ) : (
-                <div style={{ marginTop: "8px", padding: "8px 12px", backgroundColor: "rgba(255, 149, 0, 0.08)", border: "1px solid rgba(255, 149, 0, 0.3)", borderRadius: "var(--radius-sm)", fontSize: "11px", color: "var(--color-warning)" }}>
+                <div style={{ marginTop: "8px", padding: "8px 12px", backgroundColor: "var(--color-warning-bg)", border: "1px solid var(--color-warning-border)", borderRadius: "var(--radius-sm)", fontSize: "11px", color: "var(--color-warning)" }}>
                   Notice: If approved without an academic student link, this account cannot access personal student modules. It will remain in &quot;Requires Review&quot; state until linked.
                 </div>
               )}
@@ -774,7 +776,7 @@ export function RegistrationApprovalsModule() {
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.55)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(4px)",
             display: "flex",
             alignItems: "center",
@@ -791,10 +793,10 @@ export function RegistrationApprovalsModule() {
               width: "100%",
               padding: "var(--space-6)",
               border: "1px solid var(--color-border)",
-              boxShadow: "var(--shadow-xl)",
+              boxShadow: "var(--shadow-lg)",
             }}
           >
-            <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: "0 0 var(--space-2) 0", color: "#D32F2F" }}>
+            <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: "0 0 var(--space-2) 0", color: "var(--color-danger)" }}>
               Reject Registration Application
             </h3>
             <p style={{ fontSize: "var(--text-xs)", color: "var(--color-neutral-dark)", margin: "0 0 var(--space-4) 0" }}>
@@ -813,7 +815,7 @@ export function RegistrationApprovalsModule() {
                   padding: "8px 10px",
                   fontSize: "var(--text-xs)",
                   borderRadius: "var(--radius-sm)",
-                  border: "1px solid var(--color-border)",
+                  border: "1px solid var(--color-input-border)",
                   boxSizing: "border-box",
                 }}
               />
@@ -827,7 +829,7 @@ export function RegistrationApprovalsModule() {
                 variant="primary"
                 size="sm"
                 onClick={handleConfirmReject}
-                style={{ backgroundColor: "#D32F2F", borderColor: "#D32F2F" }}
+                style={{ backgroundColor: "var(--color-danger)", borderColor: "var(--color-danger)" }}
               >
                 Confirm Rejection
               </Button>

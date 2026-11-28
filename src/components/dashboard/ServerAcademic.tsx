@@ -19,7 +19,7 @@ type AcademicData = {
   date: string;
 };
 
-const field = { width: "100%", padding: "var(--space-3)", border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)", background: "var(--color-surface)", color: "var(--color-primary)" };
+const field = { width: "100%", padding: "var(--space-3)", border: "1px solid var(--color-input-border)", borderRadius: "var(--radius-md)", background: "var(--color-surface)", color: "var(--color-primary)" };
 const group = { display: "grid", gap: "var(--space-3)", marginBottom: "var(--space-6)" };
 
 export function ServerAcademic({ role, studentId, view = "posts" }: { role: Role; studentId?: string; view?: View }) {

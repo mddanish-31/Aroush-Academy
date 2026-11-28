@@ -265,7 +265,7 @@ export function LoginForm() {
                     width: "100%",
                     padding: "10px 14px",
                     borderRadius: "var(--radius-md)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                     backgroundColor: "var(--color-surface)",
                     fontSize: "var(--text-sm)",
                     color: "var(--color-primary)",
@@ -277,13 +277,13 @@ export function LoginForm() {
               {resetMessage && (
                 <div
                   style={{
-                    backgroundColor: "rgba(0, 122, 255, 0.08)",
-                    border: "1px solid rgba(0, 122, 255, 0.25)",
+                    backgroundColor: "var(--brand-sky-subtle)",
+                    border: "1px solid var(--color-accent-border)",
                     borderRadius: "var(--radius-md)",
                     padding: "var(--space-3)",
                     marginBottom: "var(--space-4)",
                     fontSize: "var(--text-xs)",
-                    color: "var(--color-primary)",
+                    color: "var(--brand-navy)",
                     lineHeight: 1.5,
                   }}
                   role="status"
@@ -331,10 +331,11 @@ export function LoginForm() {
                   marginBottom: "var(--space-3)",
                   padding: "6px 10px",
                   borderRadius: "var(--radius-md)",
-                  backgroundColor: "var(--color-surface-muted)",
+                  backgroundColor: "var(--brand-beige)",
+                  border: "1px solid var(--color-border)",
                 }}
               >
-                <span style={{ fontSize: "var(--text-xs)", color: "#1D1D1F" }}>
+                <span style={{ fontSize: "var(--text-xs)", color: "var(--brand-navy)" }}>
                   Role: <strong data-testid="selected-role-name">{ROLE_DISPLAY_NAMES[selectedRole]}</strong>
                 </span>
                 <button
@@ -343,9 +344,9 @@ export function LoginForm() {
                   style={{
                     fontSize: "11px",
                     fontWeight: 600,
-                    color: "#1D1D1F",
+                    color: "var(--brand-navy)",
                     textDecoration: "underline",
-                    textDecorationColor: "#007AFF",
+                    textDecorationColor: "var(--brand-teal)",
                     textUnderlineOffset: "2px",
                     cursor: "pointer",
                   }}
@@ -380,9 +381,9 @@ export function LoginForm() {
                         style={{
                           padding: "8px 10px",
                           borderRadius: "var(--radius-md)",
-                          border: `1px solid ${isSelected ? "#1D1D1F" : "var(--color-border)"}`,
-                          backgroundColor: isSelected ? "#1D1D1F" : "var(--color-surface-muted)",
-                          color: isSelected ? "#FFFFFF" : "var(--color-primary)",
+                          border: `1px solid ${isSelected ? "var(--brand-navy)" : "var(--color-border)"}`,
+                          backgroundColor: isSelected ? "var(--brand-navy)" : "var(--brand-beige)",
+                          color: isSelected ? "var(--brand-white)" : "var(--brand-navy)",
                           fontSize: "var(--text-xs)",
                           fontWeight: isSelected ? 600 : 500,
                           textAlign: "left",
@@ -392,10 +393,10 @@ export function LoginForm() {
                           justifyContent: "space-between",
                         }}
                       >
-                        <span style={{ color: isSelected ? "#FFFFFF" : "#1D1D1F" }}>
+                        <span style={{ color: isSelected ? "var(--brand-white)" : "var(--brand-navy)" }}>
                           {ROLE_DISPLAY_NAMES[r]}
                         </span>
-                        {isSelected && <Check size={14} aria-hidden="true" style={{ color: "#FFFFFF" }} />}
+                        {isSelected && <Check size={14} aria-hidden="true" style={{ color: "var(--brand-white)" }} />}
                       </button>
                     );
                   })}
@@ -429,7 +430,7 @@ export function LoginForm() {
                     width: "100%",
                     padding: "10px 14px",
                     borderRadius: "var(--radius-md)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                     backgroundColor: "var(--color-surface)",
                     fontSize: "var(--text-sm)",
                     color: "var(--color-primary)",
@@ -462,9 +463,9 @@ export function LoginForm() {
                     onClick={() => setIsForgotPasswordView(true)}
                     style={{
                       fontSize: "11px",
-                      color: "#1D1D1F",
+                      color: "var(--brand-navy)",
                       textDecoration: "underline",
-                      textDecorationColor: "#007AFF",
+                      textDecorationColor: "var(--brand-teal)",
                       background: "none",
                       border: "none",
                       cursor: "pointer",
@@ -488,7 +489,7 @@ export function LoginForm() {
                       width: "100%",
                       padding: "10px 38px 10px 14px",
                       borderRadius: "var(--radius-md)",
-                      border: "1px solid var(--color-border)",
+                      border: "1px solid var(--color-input-border)",
                       backgroundColor: "var(--color-surface)",
                       fontSize: "var(--text-sm)",
                       color: "var(--color-primary)",
@@ -519,8 +520,8 @@ export function LoginForm() {
               {errorMessage && (
                 <div
                   style={{
-                    backgroundColor: "rgba(255, 59, 48, 0.08)",
-                    border: "1px solid rgba(255, 59, 48, 0.3)",
+                    backgroundColor: "var(--color-danger-bg)",
+                    border: "1px solid var(--color-danger-border)",
                     borderRadius: "var(--radius-md)",
                     padding: "var(--space-3)",
                     marginBottom: "var(--space-4)",
@@ -552,8 +553,8 @@ export function LoginForm() {
                     marginBottom: "var(--space-4)",
                     padding: "10px 12px",
                     borderRadius: "var(--radius-md)",
-                    backgroundColor: "rgba(29, 29, 31, 0.03)",
-                    border: "1px solid rgba(170, 170, 170, 0.35)",
+                    backgroundColor: "var(--brand-beige)",
+                    border: "1px solid var(--color-border)",
                   }}
                 >
                   <summary
@@ -561,7 +562,7 @@ export function LoginForm() {
                       cursor: "pointer",
                       fontSize: "12px",
                       fontWeight: 600,
-                      color: "#1D1D1F",
+                      color: "var(--brand-navy)",
                     }}
                   >
                     Demo Accounts & Quick Sign In
@@ -606,13 +607,13 @@ export function LoginForm() {
                               gap: "2px",
                             }}
                           >
-                            <span style={{ fontSize: "11px", fontWeight: 600, color: "#1D1D1F" }}>
+                            <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--brand-navy)" }}>
                               {demo.user.name}
                             </span>
-                            <span style={{ fontSize: "10px", color: "#48484A", overflowWrap: "anywhere" }}>
+                            <span style={{ fontSize: "10px", color: "var(--color-text-secondary)", overflowWrap: "anywhere" }}>
                               {demo.user.identifier}
                             </span>
-                            <span style={{ fontSize: "10px", color: "#48484A" }}>
+                            <span style={{ fontSize: "10px", color: "var(--color-text-secondary)" }}>
                               {ROLE_DISPLAY_NAMES[r]} &bull; {demo.demoPassword}
                             </span>
                           </button>
@@ -646,9 +647,9 @@ export function LoginForm() {
                 href="/register"
                 style={{
                   fontWeight: 600,
-                  color: "#1D1D1F",
+                  color: "var(--brand-navy)",
                   textDecoration: "underline",
-                  textDecorationColor: "#007AFF",
+                  textDecorationColor: "var(--brand-teal)",
                   textUnderlineOffset: "3px",
                 }}
               >

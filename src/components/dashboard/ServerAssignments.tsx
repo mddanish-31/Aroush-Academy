@@ -27,7 +27,7 @@ export function ServerAssignments({ role, studentId }: { role: "teacher" | "stud
 
   return <Card>
     <h2 style={{ fontSize: "var(--text-xl)", marginBottom: "var(--space-3)" }}>{role === "teacher" ? "Assigned batches and students" : "Enrolled subjects and batches"}</h2>
-    {role === "teacher" && <label>Batch<br /><select value={selectedBatch} onChange={(event) => setSelectedBatch(event.target.value)} style={{ padding: "var(--space-3)", border: "1px solid var(--color-border)", background: "var(--color-surface)", maxWidth: "100%" }}>
+    {role === "teacher" && <label>Batch<br /><select value={selectedBatch} onChange={(event) => setSelectedBatch(event.target.value)} style={{ padding: "var(--space-3)", border: "1px solid var(--color-input-border)", borderRadius: "var(--radius-sm)", background: "var(--color-surface)", maxWidth: "100%" }}>
       <option value="">All assigned batches</option>{state?.batches.map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}
     </select></label>}
     {!state && !error && <p role="status">Loading assignments...</p>}

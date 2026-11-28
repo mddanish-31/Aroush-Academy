@@ -304,9 +304,9 @@ export function AttendanceModule({
         <div
           style={{
             padding: "10px 16px",
-            backgroundColor: "rgba(52, 199, 89, 0.12)",
+            backgroundColor: "var(--color-success-bg)",
             color: "var(--color-success)",
-            border: "1px solid rgba(52, 199, 89, 0.3)",
+            border: "1px solid var(--color-success-border)",
             borderRadius: "var(--radius-md)",
             fontSize: "var(--text-xs)",
             fontWeight: 600,
@@ -319,6 +319,7 @@ export function AttendanceModule({
           <button
             type="button"
             onClick={() => setActionSuccessNotice(null)}
+            aria-label="Dismiss notice"
             style={{
               background: "none",
               border: "none",
@@ -328,7 +329,7 @@ export function AttendanceModule({
               padding: "0 4px",
             }}
           >
-            
+            &times;
           </button>
         </div>
       )}
@@ -513,8 +514,8 @@ export function AttendanceModule({
       {actionSuccessNotice && (
         <div
           style={{
-            backgroundColor: "rgba(52, 199, 89, 0.1)",
-            border: "1px solid rgba(52, 199, 89, 0.3)",
+            backgroundColor: "var(--color-success-bg)",
+            border: "1px solid var(--color-success-border)",
             borderRadius: "var(--radius-md)",
             padding: "var(--space-3)",
             fontSize: "var(--text-xs)",
@@ -768,7 +769,7 @@ export function AttendanceModule({
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(4px)",
             display: "flex",
             alignItems: "center",
@@ -787,6 +788,7 @@ export function AttendanceModule({
               width: "100%",
               padding: "var(--space-6)",
               boxShadow: "var(--shadow-lg)",
+              border: "1px solid var(--color-border)",
             }}
           >
             <div
@@ -802,13 +804,14 @@ export function AttendanceModule({
               </h3>
               <button
                 onClick={() => setIsMarkModalOpen(false)}
+                aria-label="Close modal"
                 style={{
                   fontSize: "18px",
                   color: "var(--color-neutral-dark)",
                   cursor: "pointer",
                 }}
               >
-                
+                &times;
               </button>
             </div>
 
@@ -824,7 +827,7 @@ export function AttendanceModule({
                   }}
                 >
                   Session Date:{" "}
-                  <span style={{ color: "var(--color-danger, #FF3B30)" }}>*</span>
+                  <span style={{ color: "var(--color-danger)" }}>*</span>
                 </label>
                 <input
                   id="mark-session-date"
@@ -839,7 +842,7 @@ export function AttendanceModule({
                     width: "100%",
                     padding: "8px",
                     borderRadius: "var(--radius-sm)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                     fontSize: "var(--text-xs)",
                     backgroundColor: "var(--color-surface)",
                     color: "var(--color-primary)",
@@ -866,7 +869,7 @@ export function AttendanceModule({
                     width: "100%",
                     padding: "8px",
                     borderRadius: "var(--radius-sm)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                     fontSize: "var(--text-xs)",
                   }}
                 >
@@ -901,7 +904,7 @@ export function AttendanceModule({
                     width: "100%",
                     padding: "8px",
                     borderRadius: "var(--radius-sm)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                     fontSize: "var(--text-xs)",
                   }}
                 >
@@ -941,7 +944,7 @@ export function AttendanceModule({
                             : "var(--color-surface)",
                         color:
                           markStatus === st
-                            ? "#FFFFFF"
+                            ? "var(--brand-white)"
                             : "var(--color-primary)",
                         textTransform: "capitalize",
                         fontSize: "var(--text-xs)",
@@ -975,7 +978,7 @@ export function AttendanceModule({
                     width: "100%",
                     padding: "8px",
                     borderRadius: "var(--radius-sm)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                     fontSize: "var(--text-xs)",
                   }}
                 />
@@ -986,9 +989,9 @@ export function AttendanceModule({
                   style={{
                     marginBottom: "var(--space-3)",
                     padding: "8px 12px",
-                    backgroundColor: "rgba(255, 59, 48, 0.1)",
-                    color: "var(--color-danger, #FF3B30)",
-                    border: "1px solid rgba(255, 59, 48, 0.25)",
+                    backgroundColor: "var(--color-danger-bg)",
+                    color: "var(--color-danger)",
+                    border: "1px solid var(--color-danger-border)",
                     borderRadius: "var(--radius-sm)",
                     fontSize: "var(--text-xs)",
                     fontWeight: 500,
@@ -1037,7 +1040,7 @@ export function AttendanceModule({
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(4px)",
             display: "flex",
             alignItems: "center",
@@ -1079,6 +1082,7 @@ export function AttendanceModule({
               <button
                 type="button"
                 onClick={() => setEditRecord(null)}
+                aria-label="Close modal"
                 style={{
                   background: "none",
                   border: "none",
@@ -1088,7 +1092,7 @@ export function AttendanceModule({
                   padding: "0 4px",
                 }}
               >
-                
+                &times;
               </button>
             </div>
 
@@ -1150,7 +1154,7 @@ export function AttendanceModule({
                     width: "100%",
                     padding: "8px",
                     borderRadius: "var(--radius-sm)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                     fontSize: "var(--text-xs)",
                     backgroundColor: "var(--color-surface)",
                     color: "var(--color-primary)",
@@ -1182,22 +1186,22 @@ export function AttendanceModule({
                       borderRadius: "var(--radius-sm)",
                       border:
                         editStatus === "present"
-                          ? "2px solid var(--color-success, #34C759)"
-                          : "1px solid var(--color-border, #E5E5EA)",
+                          ? "2px solid var(--color-success)"
+                          : "1px solid var(--color-border)",
                       backgroundColor:
                         editStatus === "present"
-                          ? "var(--color-success, #34C759)"
-                          : "var(--color-surface, #FFFFFF)",
+                          ? "var(--color-success)"
+                          : "var(--color-surface)",
                       color:
                         editStatus === "present"
-                          ? "#FFFFFF"
-                          : "var(--color-primary, #1D1D1F)",
+                          ? "var(--brand-white)"
+                          : "var(--color-primary)",
                       fontSize: "var(--text-xs)",
                       fontWeight: editStatus === "present" ? 700 : 500,
                       cursor: "pointer",
                       boxShadow:
                         editStatus === "present"
-                          ? "0 2px 8px rgba(52, 199, 89, 0.35)"
+                          ? "var(--shadow-sm)"
                           : "none",
                       display: "flex",
                       alignItems: "center",
@@ -1221,22 +1225,22 @@ export function AttendanceModule({
                       borderRadius: "var(--radius-sm)",
                       border:
                         editStatus === "absent"
-                          ? "2px solid var(--color-danger, #FF3B30)"
-                          : "1px solid var(--color-border, #E5E5EA)",
+                          ? "2px solid var(--color-danger)"
+                          : "1px solid var(--color-border)",
                       backgroundColor:
                         editStatus === "absent"
-                          ? "var(--color-danger, #FF3B30)"
-                          : "var(--color-surface, #FFFFFF)",
+                          ? "var(--color-danger)"
+                          : "var(--color-surface)",
                       color:
                         editStatus === "absent"
-                          ? "#FFFFFF"
-                          : "var(--color-primary, #1D1D1F)",
+                          ? "var(--brand-white)"
+                          : "var(--color-primary)",
                       fontSize: "var(--text-xs)",
                       fontWeight: editStatus === "absent" ? 700 : 500,
                       cursor: "pointer",
                       boxShadow:
                         editStatus === "absent"
-                          ? "0 2px 8px rgba(255, 59, 48, 0.35)"
+                          ? "var(--shadow-sm)"
                           : "none",
                       display: "flex",
                       alignItems: "center",
@@ -1256,9 +1260,9 @@ export function AttendanceModule({
                   style={{
                     marginBottom: "var(--space-3)",
                     padding: "8px 12px",
-                    backgroundColor: "rgba(255, 59, 48, 0.1)",
-                    color: "var(--color-danger, #FF3B30)",
-                    border: "1px solid rgba(255, 59, 48, 0.25)",
+                    backgroundColor: "var(--color-danger-bg)",
+                    color: "var(--color-danger)",
+                    border: "1px solid var(--color-danger-border)",
                     borderRadius: "var(--radius-sm)",
                     fontSize: "var(--text-xs)",
                     fontWeight: 500,

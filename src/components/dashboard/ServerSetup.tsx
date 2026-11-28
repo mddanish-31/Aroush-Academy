@@ -9,7 +9,7 @@ type Batch = Named & { class_id: string; board_id: string | null; subject_id: st
 type Student = Named & { admission_number: string; class_id: string; board_id: string; updated_at: string };
 type Enrollment = { id: string; student_id: string; batch_id: string; status: string; updated_at: string };
 type Setup = { classes: Named[]; boards: Named[]; subjects: Named[]; teachers: Named[]; students: Student[]; teacherSubjects: { teacher_id: string; subject_id: string }[]; batches: Batch[]; enrollments: Enrollment[] };
-const inputStyle = { padding: "var(--space-3)", border: "1px solid var(--color-border)", background: "var(--color-surface)", width: "100%", maxWidth: 420 };
+const inputStyle = { padding: "var(--space-3)", border: "1px solid var(--color-input-border)", borderRadius: "var(--radius-sm)", background: "var(--color-surface)", width: "100%", maxWidth: 420 };
 
 export function ServerSetup() {
   const [data, setData] = useState<Setup | null>(null);

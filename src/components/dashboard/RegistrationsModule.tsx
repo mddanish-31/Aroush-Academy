@@ -615,7 +615,7 @@ export function RegistrationsModule() {
               marginBottom: sortedRows.length > 0 ? "var(--space-4)" : 0,
             }}
           >
-            <Clock size={18} aria-hidden="true" style={{ color: "#1D1D1F" }} />
+            <Clock size={18} aria-hidden="true" style={{ color: "var(--brand-teal)" }} />
             <span
               style={{
                 fontSize: "var(--text-sm)",

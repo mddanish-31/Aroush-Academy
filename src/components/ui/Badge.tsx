@@ -17,34 +17,34 @@ export function Badge({
 }: BadgeProps) {
   const variantStyles: Record<string, React.CSSProperties> = {
     default: {
-      backgroundColor: "var(--color-surface-muted)",
-      color: "var(--color-primary)",
+      backgroundColor: "var(--brand-beige)",
+      color: "var(--brand-navy)",
       borderColor: "var(--color-border)",
     },
     accent: {
-      backgroundColor: "var(--color-surface-muted)",
-      color: "var(--color-primary)",
-      borderColor: "var(--color-border)",
+      backgroundColor: "var(--brand-sky-subtle)",
+      color: "var(--brand-navy)",
+      borderColor: "var(--color-accent-border)",
     },
     neutral: {
       backgroundColor: "var(--color-surface)",
-      color: "var(--color-primary)",
-      borderColor: "var(--color-neutral-light)",
+      color: "var(--color-text-secondary)",
+      borderColor: "var(--color-border)",
     },
     success: {
-      backgroundColor: "rgba(22, 101, 52, 0.08)",
-      color: "#166534",
-      borderColor: "rgba(22, 101, 52, 0.2)",
+      backgroundColor: "var(--color-success-bg)",
+      color: "var(--color-success)",
+      borderColor: "var(--color-success-border)",
     },
     warning: {
-      backgroundColor: "rgba(133, 77, 14, 0.08)",
-      color: "#78350F",
-      borderColor: "rgba(133, 77, 14, 0.2)",
+      backgroundColor: "var(--color-warning-bg)",
+      color: "var(--color-warning)",
+      borderColor: "var(--color-warning-border)",
     },
     danger: {
-      backgroundColor: "rgba(185, 28, 28, 0.08)",
-      color: "#991B1B",
-      borderColor: "rgba(185, 28, 28, 0.2)",
+      backgroundColor: "var(--color-danger-bg)",
+      color: "var(--color-danger)",
+      borderColor: "var(--color-danger-border)",
     },
   };
 
@@ -53,10 +53,10 @@ export function Badge({
     alignItems: "center",
     gap: "var(--space-1)",
     fontSize: size === "sm" ? "var(--text-xs)" : "var(--text-sm)",
-    fontWeight: 500,
+    fontWeight: 600,
     letterSpacing: "-0.01em",
-    padding: size === "sm" ? "2px 8px" : "4px 12px",
-    borderRadius: "var(--radius-full)",
+    padding: size === "sm" ? "2px 8px" : "4px 10px",
+    borderRadius: "var(--radius-sm)",
     border: "1px solid",
     whiteSpace: "nowrap",
     ...variantStyles[variant],
@@ -64,7 +64,7 @@ export function Badge({
   };
 
   return (
-    <span style={badgeStyle} className={`badge-${variant} ${className}`}>
+    <span style={badgeStyle} className={`badge-${variant} ${className}`.trim()}>
       {children}
     </span>
   );

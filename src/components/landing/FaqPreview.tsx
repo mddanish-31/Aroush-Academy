@@ -8,7 +8,7 @@ export function FaqPreview({ landing }: { landing: LandingContent }) {
   return (
     <section
       style={{
-        backgroundColor: "#F5F5F7",
+        backgroundColor: "var(--brand-beige)",
         padding: "clamp(64px, 8vw, 112px) 0",
       }}
     >
@@ -33,7 +33,7 @@ export function FaqPreview({ landing }: { landing: LandingContent }) {
                 fontFamily: "var(--font-display)",
                 fontSize: "clamp(2rem, 4.5vw, 3.25rem)",
                 lineHeight: 1.08,
-                color: "#1D1D1F",
+                color: "var(--brand-navy)",
                 fontWeight: 700,
                 margin: "0 0 16px 0",
               }}
@@ -61,8 +61,8 @@ export function FaqPreview({ landing }: { landing: LandingContent }) {
                 key={faq.id}
                 className="faq-item"
                 style={{
-                  backgroundColor: "#FFFFFF",
-                  border: "1px solid rgba(170, 170, 170, 0.3)",
+                  backgroundColor: "var(--color-surface)",
+                  border: "1px solid var(--color-border)",
                   borderRadius: "12px",
                   padding: "18px 20px",
                 }}
@@ -71,7 +71,7 @@ export function FaqPreview({ landing }: { landing: LandingContent }) {
                   style={{
                     fontWeight: 600,
                     fontSize: "16px",
-                    color: "#1D1D1F",
+                    color: "var(--brand-navy)",
                     cursor: "pointer",
                     display: "flex",
                     justifyContent: "space-between",
@@ -81,14 +81,14 @@ export function FaqPreview({ landing }: { landing: LandingContent }) {
                   }}
                 >
                   <span>{faq.question}</span>
-                  <ChevronDown size={18} style={{ color: "var(--color-text-secondary)", flexShrink: 0 }} />
+                  <ChevronDown size={18} style={{ color: "var(--brand-teal)", flexShrink: 0 }} />
                 </summary>
                 <div
                   className="faq-answer"
                   style={{
                     marginTop: "12px",
                     paddingTop: "12px",
-                    borderTop: "1px solid rgba(170, 170, 170, 0.2)",
+                    borderTop: "1px solid var(--color-border-subtle)",
                   }}
                 >
                   <p
@@ -116,16 +116,16 @@ export function FaqPreview({ landing }: { landing: LandingContent }) {
                 gap: "8px",
                 fontSize: "15px",
                 fontWeight: 600,
-                color: "#1D1D1F",
+                color: "var(--brand-navy)",
                 textDecoration: "none",
                 padding: "10px 18px",
-                borderRadius: "8px",
-                border: "1px solid rgba(170, 170, 170, 0.4)",
-                backgroundColor: "#FFFFFF",
+                borderRadius: "var(--radius-md)",
+                border: "1px solid var(--brand-teal)",
+                backgroundColor: "var(--color-surface)",
               }}
             >
               <span>View full knowledge base and FAQ</span>
-              <ArrowRight size={16} style={{ color: "#007AFF" }} />
+              <ArrowRight size={16} style={{ color: "var(--brand-teal)" }} />
             </Link>
           </div>
         </Reveal>

@@ -22,7 +22,7 @@ export function Hero({ hero, landing }: HeroProps) {
         position: "relative",
         paddingTop: "clamp(24px, 3.5vw, 36px)",
         paddingBottom: "clamp(24px, 3vw, 36px)",
-        backgroundColor: "#F5F5F7",
+        backgroundColor: "var(--brand-beige)",
         overflow: "hidden",
       }}
     >
@@ -36,9 +36,9 @@ export function Hero({ hero, landing }: HeroProps) {
           bottom: 0,
           pointerEvents: "none",
           backgroundImage: `
-            radial-gradient(circle, rgba(29, 29, 31, 0.08) 1.5px, transparent 1.5px),
-            linear-gradient(to right, rgba(29, 29, 31, 0.045) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(29, 29, 31, 0.045) 1px, transparent 1px)
+            radial-gradient(circle, rgba(47, 65, 86, 0.10) 1.5px, transparent 1.5px),
+            linear-gradient(to right, rgba(86, 123, 141, 0.08) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(86, 123, 141, 0.08) 1px, transparent 1px)
           `,
           backgroundSize: "48px 48px, 48px 48px, 48px 48px",
           backgroundPosition: "-0.5px -0.5px, 0 0, 0 0",
@@ -65,7 +65,7 @@ export function Hero({ hero, landing }: HeroProps) {
             lineHeight: 1.06,
             letterSpacing: "-0.015em",
             maxWidth: "24ch",
-            color: "#1D1D1F",
+            color: "var(--brand-navy)",
             margin: "0 auto 14px",
           }}
         >
@@ -76,7 +76,7 @@ export function Hero({ hero, landing }: HeroProps) {
           className="hero-enter-subheadline"
           style={{
             maxWidth: "60ch",
-            color: "rgba(29, 29, 31, 0.72)",
+            color: "var(--color-text-secondary)",
             fontSize: "clamp(0.95rem, 1.5vw, 1.125rem)",
             lineHeight: 1.45,
             margin: "0 auto 20px",
@@ -111,7 +111,7 @@ export function Hero({ hero, landing }: HeroProps) {
           <a
             href={hero.secondaryCta.href}
             style={{
-              color: "#1D1D1F",
+              color: "var(--brand-navy)",
               display: "inline-flex",
               alignItems: "center",
               gap: "6px",
@@ -122,7 +122,7 @@ export function Hero({ hero, landing }: HeroProps) {
             }}
           >
             <span>{hero.secondaryCta.label}</span>
-            <ArrowRight size={18} style={{ color: "#007AFF" }} />
+            <ArrowRight size={18} style={{ color: "var(--brand-teal)" }} />
           </a>
         </div>
 

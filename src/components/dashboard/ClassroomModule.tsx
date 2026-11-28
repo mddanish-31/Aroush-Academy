@@ -464,16 +464,16 @@ export function ClassroomModule({
             padding: "10px 16px",
             backgroundColor:
               notification.type === "error"
-                ? "rgba(255, 59, 48, 0.12)"
-                : "rgba(52, 199, 89, 0.12)",
+                ? "var(--color-danger-bg)"
+                : "var(--color-success-bg)",
             color:
               notification.type === "error"
-                ? "var(--color-danger, #FF3B30)"
-                : "var(--color-success, #34C759)",
+                ? "var(--color-danger)"
+                : "var(--color-success)",
             border: `1px solid ${
               notification.type === "error"
-                ? "rgba(255, 59, 48, 0.3)"
-                : "rgba(52, 199, 89, 0.3)"
+                ? "var(--color-danger-border)"
+                : "var(--color-success-border)"
             }`,
             borderRadius: "var(--radius-md)",
             fontSize: "var(--text-xs)",
@@ -488,6 +488,7 @@ export function ClassroomModule({
           <button
             type="button"
             onClick={() => setNotification(null)}
+            aria-label="Dismiss notice"
             style={{
               background: "none",
               border: "none",
@@ -497,7 +498,7 @@ export function ClassroomModule({
               padding: "0 4px",
             }}
           >
-            
+            &times;
           </button>
         </div>
       )}
@@ -616,7 +617,7 @@ export function ClassroomModule({
             <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>
               Completed
             </span>
-            <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--color-success, #34C759)", marginTop: "2px" }}>
+            <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--color-success)", marginTop: "2px" }}>
               {completedCount}
             </div>
             <span style={{ fontSize: "10px", color: "var(--color-neutral-dark)" }}>Archived sessions</span>
@@ -633,7 +634,7 @@ export function ClassroomModule({
             <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>
               Cancelled
             </span>
-            <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: cancelledCount > 0 ? "var(--color-danger, #FF3B30)" : "var(--color-neutral-dark)", marginTop: "2px" }}>
+            <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: cancelledCount > 0 ? "var(--color-danger)" : "var(--color-neutral-dark)", marginTop: "2px" }}>
               {cancelledCount}
             </div>
             <span style={{ fontSize: "10px", color: "var(--color-neutral-dark)" }}>Link disabled</span>
@@ -891,10 +892,10 @@ export function ClassroomModule({
                   backgroundColor: "var(--color-surface)",
                   borderRadius: "var(--radius-lg)",
                   border: `1px solid ${
-                    isCancelled ? "rgba(255, 59, 48, 0.25)" : "var(--color-border)"
+                    isCancelled ? "var(--color-danger-border)" : "var(--color-border)"
                   }`,
                   borderLeft: `5px solid ${
-                    isCancelled ? "var(--color-danger, #FF3B30)" : theme.primary
+                    isCancelled ? "var(--color-danger)" : theme.primary
                   }`,
                   padding: "var(--space-4)",
                   boxShadow: "var(--shadow-sm)",
@@ -1043,7 +1044,7 @@ export function ClassroomModule({
                         <span
                           style={{
                             fontSize: "var(--text-xs)",
-                            color: "var(--color-danger, #FF3B30)",
+                            color: "var(--color-danger)",
                             fontWeight: 600,
                           }}
                         >
@@ -1129,7 +1130,7 @@ export function ClassroomModule({
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(4px)",
             display: "flex",
             alignItems: "center",
@@ -1182,6 +1183,7 @@ export function ClassroomModule({
               <button
                 type="button"
                 onClick={() => setDetailsSession(null)}
+                aria-label="Close details"
                 style={{
                   background: "none",
                   border: "none",
@@ -1191,7 +1193,7 @@ export function ClassroomModule({
                   padding: "0 4px",
                 }}
               >
-                
+                &times;
               </button>
             </div>
 
@@ -1303,7 +1305,7 @@ export function ClassroomModule({
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(4px)",
             display: "flex",
             alignItems: "center",
@@ -1339,6 +1341,7 @@ export function ClassroomModule({
               <button
                 type="button"
                 onClick={() => setIsFormModalOpen(false)}
+                aria-label="Close modal"
                 style={{
                   background: "none",
                   border: "none",
@@ -1348,7 +1351,7 @@ export function ClassroomModule({
                   padding: "0 4px",
                 }}
               >
-                
+                &times;
               </button>
             </div>
 
@@ -1358,9 +1361,9 @@ export function ClassroomModule({
                   style={{
                     marginBottom: "var(--space-4)",
                     padding: "10px 12px",
-                    backgroundColor: "rgba(255, 59, 48, 0.1)",
-                    color: "var(--color-danger, #FF3B30)",
-                    border: "1px solid rgba(255, 59, 48, 0.3)",
+                    backgroundColor: "var(--color-danger-bg)",
+                    color: "var(--color-danger)",
+                    border: "1px solid var(--color-danger-border)",
                     borderRadius: "var(--radius-sm)",
                     fontSize: "var(--text-xs)",
                     fontWeight: 600,
@@ -1388,7 +1391,7 @@ export function ClassroomModule({
                     width: "100%",
                     padding: "8px",
                     borderRadius: "var(--radius-sm)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                     fontSize: "var(--text-xs)",
                     backgroundColor: "var(--color-surface)",
                   }}
@@ -1418,7 +1421,7 @@ export function ClassroomModule({
                       width: "100%",
                       padding: "8px",
                       borderRadius: "var(--radius-sm)",
-                      border: "1px solid var(--color-border)",
+                      border: "1px solid var(--color-input-border)",
                       fontSize: "var(--text-xs)",
                       backgroundColor: "var(--color-surface)",
                     }}
@@ -1446,7 +1449,7 @@ export function ClassroomModule({
                       width: "100%",
                       padding: "8px",
                       borderRadius: "var(--radius-sm)",
-                      border: "1px solid var(--color-border)",
+                      border: "1px solid var(--color-input-border)",
                       fontSize: "var(--text-xs)",
                       backgroundColor: "var(--color-surface)",
                     }}
@@ -1480,7 +1483,7 @@ export function ClassroomModule({
                         fontSize: "11px",
                         padding: "2px 6px",
                         borderRadius: "var(--radius-sm)",
-                        border: "1px solid var(--color-border)",
+                        border: "1px solid var(--color-input-border)",
                         backgroundColor: "var(--color-surface-muted)",
                         color: "var(--color-accent)",
                         cursor: "pointer",
@@ -1510,7 +1513,7 @@ export function ClassroomModule({
                         formProvider === "google-meet" ? "var(--color-accent)" : "var(--color-border)"
                       }`,
                       backgroundColor:
-                        formProvider === "google-meet" ? "rgba(0, 122, 255, 0.08)" : "var(--color-surface)",
+                        formProvider === "google-meet" ? "var(--brand-sky-subtle)" : "var(--color-surface)",
                       fontSize: "var(--text-xs)",
                       cursor: "pointer",
                     }}
@@ -1540,7 +1543,7 @@ export function ClassroomModule({
                         formProvider === "zoom" ? "var(--color-accent)" : "var(--color-border)"
                       }`,
                       backgroundColor:
-                        formProvider === "zoom" ? "rgba(0, 122, 255, 0.08)" : "var(--color-surface)",
+                        formProvider === "zoom" ? "var(--brand-sky-subtle)" : "var(--color-surface)",
                       fontSize: "var(--text-xs)",
                       cursor: "pointer",
                     }}
@@ -1570,7 +1573,7 @@ export function ClassroomModule({
                         formProvider === "other" ? "var(--color-accent)" : "var(--color-border)"
                       }`,
                       backgroundColor:
-                        formProvider === "other" ? "rgba(0, 122, 255, 0.08)" : "var(--color-surface)",
+                        formProvider === "other" ? "var(--brand-sky-subtle)" : "var(--color-surface)",
                       fontSize: "var(--text-xs)",
                       cursor: "pointer",
                     }}

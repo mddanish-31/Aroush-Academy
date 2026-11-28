@@ -80,7 +80,7 @@ export function DigitalIdCard({
         padding: 0,
         width: 68,
         height: 68,
-        color: "#0B0C0E",
+        color: "#2F4156",
         background: "#FFFFFF",
         ecl: "M",
       });
@@ -130,18 +130,18 @@ export function DigitalIdCard({
   
   const SmartChipIcon = () => (
     <svg width="24" height="20" viewBox="0 0 24 20" fill="none" style={{ flexShrink: 0 }}>
-      <rect x="0.5" y="0.5" width="23" height="19" rx="3.5" fill="url(#chipGoldGrad)" stroke="#B38728" strokeWidth="0.8" />
-      <line x1="1" y1="7" x2="8" y2="7" stroke="#7A5813" strokeWidth="0.8" />
-      <line x1="1" y1="13" x2="8" y2="13" stroke="#7A5813" strokeWidth="0.8" />
-      <line x1="16" y1="7" x2="23" y2="7" stroke="#7A5813" strokeWidth="0.8" />
-      <line x1="16" y1="13" x2="23" y2="13" stroke="#7A5813" strokeWidth="0.8" />
-      <rect x="8" y="4" width="8" height="12" rx="2" fill="none" stroke="#7A5813" strokeWidth="0.8" />
-      <line x1="12" y1="4" x2="12" y2="16" stroke="#7A5813" strokeWidth="0.8" />
+      <rect x="0.5" y="0.5" width="23" height="19" rx="3.5" fill="url(#chipGoldGrad)" stroke="#567B8D" strokeWidth="0.8" />
+      <line x1="1" y1="7" x2="8" y2="7" stroke="#2F4156" strokeWidth="0.8" />
+      <line x1="1" y1="13" x2="8" y2="13" stroke="#2F4156" strokeWidth="0.8" />
+      <line x1="16" y1="7" x2="23" y2="7" stroke="#2F4156" strokeWidth="0.8" />
+      <line x1="16" y1="13" x2="23" y2="13" stroke="#2F4156" strokeWidth="0.8" />
+      <rect x="8" y="4" width="8" height="12" rx="2" fill="none" stroke="#2F4156" strokeWidth="0.8" />
+      <line x1="12" y1="4" x2="12" y2="16" stroke="#2F4156" strokeWidth="0.8" />
       <defs>
         <linearGradient id="chipGoldGrad" x1="0" y1="0" x2="24" y2="20" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#F9E29B" />
-          <stop offset="0.5" stopColor="#D4AF37" />
-          <stop offset="1" stopColor="#AA771C" />
+          <stop stopColor="#F5F0EB" />
+          <stop offset="0.5" stopColor="#C8D9E6" />
+          <stop offset="1" stopColor="#8FA6B8" />
         </linearGradient>
       </defs>
     </svg>
@@ -155,15 +155,15 @@ export function DigitalIdCard({
         gap: "4px",
         padding: "2px 6px",
         borderRadius: "4px",
-        background: "rgba(0, 122, 255, 0.12)",
-        border: "1px solid rgba(0, 122, 255, 0.3)",
+        background: "var(--brand-sky-subtle)",
+        border: "1px solid var(--brand-sky)",
         backdropFilter: "blur(4px)",
       }}
     >
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--brand-sky)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
       </svg>
-      <span style={{ fontSize: "8px", fontWeight: 700, letterSpacing: "0.08em", color: "#E0F2FE", textTransform: "uppercase" }}>
+      <span style={{ fontSize: "8px", fontWeight: 700, letterSpacing: "0.08em", color: "var(--brand-white)", textTransform: "uppercase" }}>
         SECURE ID
       </span>
     </div>
@@ -191,14 +191,14 @@ export function DigitalIdCard({
                 y="2"
                 width={w * 1.6}
                 height="30"
-                fill="#D1D5DB"
+                fill="var(--brand-navy)"
               />
             );
           }
           return null;
         })}
       </svg>
-      <div style={{ fontSize: "8.5px", letterSpacing: "0.15em", color: "#9CA3AF", fontFamily: "monospace", marginTop: "2px" }}>
+      <div style={{ fontSize: "8.5px", letterSpacing: "0.15em", color: "var(--color-text-secondary)", fontFamily: "monospace", marginTop: "2px" }}>
         *{studentFormattedId}*
       </div>
     </div>
@@ -214,14 +214,14 @@ export function DigitalIdCard({
         width: "100%",
         maxWidth: "340px",
         minHeight: "530px",
-        borderRadius: "18px",
+        borderRadius: "16px",
         background: isPrintVersion
-          ? "#FFFFFF"
-          : "#1D1D1F",
-        border: isPrintVersion ? "1.5px solid #111827" : "1px solid rgba(255, 255, 255, 0.14)",
+          ? "var(--brand-white)"
+          : "var(--brand-navy)",
+        border: isPrintVersion ? "1.5px solid var(--brand-navy)" : "1px solid var(--brand-teal)",
         boxShadow: isPrintVersion
-          ? "none"
-          : "0 22px 45px -10px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.16), inset 0 -1px 0 rgba(0, 0, 0, 0.6)",
+          ? "var(--shadow-lg)"
+          : "var(--shadow-lg)",
         position: "relative",
         padding: "16px 20px 18px",
         display: "flex",
@@ -229,7 +229,7 @@ export function DigitalIdCard({
         justifyContent: "space-between",
         boxSizing: "border-box",
         overflow: "hidden",
-        color: isPrintVersion ? "#111827" : "#F3F4F6",
+        color: isPrintVersion ? "var(--brand-navy)" : "var(--brand-white)",
       }}
     >
       {!isPrintVersion && (
@@ -255,9 +255,9 @@ export function DigitalIdCard({
           width: "42px",
           height: "9px",
           borderRadius: "5px",
-          backgroundColor: isPrintVersion ? "#E5E7EB" : "#050607",
-          border: isPrintVersion ? "1px solid #9CA3AF" : "1px solid rgba(255, 255, 255, 0.16)",
-          boxShadow: isPrintVersion ? "none" : "inset 0 2px 4px rgba(0, 0, 0, 0.9)",
+          backgroundColor: isPrintVersion ? "var(--brand-beige)" : "var(--brand-navy-active)",
+          border: isPrintVersion ? "1px solid var(--brand-teal)" : "1px solid var(--brand-sky)",
+          boxShadow: "none",
           margin: "0 auto 12px",
           flexShrink: 0,
         }}
@@ -270,8 +270,8 @@ export function DigitalIdCard({
           justifyContent: "space-between",
           paddingBottom: "10px",
           borderBottom: isPrintVersion
-            ? "2px solid #007AFF"
-            : "1px solid rgba(255, 255, 255, 0.1)",
+            ? "2px solid var(--brand-teal)"
+            : "1px solid var(--brand-teal)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -280,14 +280,14 @@ export function DigitalIdCard({
               width: "32px",
               height: "32px",
               borderRadius: "8px",
-              background: "var(--color-primary)",
+              background: "var(--brand-navy)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontWeight: 800,
               fontSize: "17px",
-              color: "#FFFFFF",
-              boxShadow: "0 2px 6px rgba(0, 122, 255, 0.35)",
+              color: "var(--brand-white)",
+              boxShadow: "var(--shadow-sm)",
               flexShrink: 0,
             }}
           >
@@ -299,7 +299,7 @@ export function DigitalIdCard({
                 fontSize: "13px",
                 fontWeight: 800,
                 letterSpacing: "0.12em",
-                color: isPrintVersion ? "#111827" : "#FFFFFF",
+                color: isPrintVersion ? "var(--brand-navy)" : "var(--brand-white)",
                 margin: 0,
                 textTransform: "uppercase",
                 lineHeight: 1.2,
@@ -310,7 +310,7 @@ export function DigitalIdCard({
             <p
               style={{
                 fontSize: "8px",
-                color: isPrintVersion ? "#4B5563" : "#9CA3AF",
+                color: isPrintVersion ? "var(--color-text-secondary)" : "var(--brand-sky)",
                 margin: "1px 0 0",
                 letterSpacing: "0.06em",
                 fontWeight: 500,
@@ -329,8 +329,9 @@ export function DigitalIdCard({
             style={{
               fontSize: "8.5px",
               fontWeight: 700,
-              color: "var(--color-primary)",
-              border: "1px solid var(--color-primary)",
+              color: "var(--brand-navy)",
+              border: "1px solid var(--brand-teal)",
+              backgroundColor: "var(--brand-sky-subtle)",
               padding: "2px 6px",
               borderRadius: "4px",
             }}
@@ -347,10 +348,10 @@ export function DigitalIdCard({
             height: "98px",
             borderRadius: "10px",
             background: isPrintVersion
-              ? "#F3F4F6"
-              : "#22252E",
-            border: isPrintVersion ? "1.5px solid #007AFF" : "1.5px solid rgba(0, 122, 255, 0.45)",
-            boxShadow: isPrintVersion ? "none" : "0 4px 12px rgba(0, 0, 0, 0.4)",
+              ? "var(--brand-beige)"
+              : "var(--brand-navy-hover)",
+            border: isPrintVersion ? "1.5px solid var(--brand-teal)" : "1.5px solid var(--brand-sky)",
+            boxShadow: "none",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -378,17 +379,17 @@ export function DigitalIdCard({
                 height: "44px",
                 borderRadius: "50%",
                 background: isPrintVersion
-                  ? "var(--color-surface-muted)"
-                  : "#1D1D1F",
+                  ? "var(--brand-white)"
+                  : "var(--brand-navy)",
                 border: isPrintVersion
                   ? "1px solid var(--color-border)"
-                  : "1px solid rgba(0, 122, 255, 0.4)",
+                  : "1px solid var(--brand-sky)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontWeight: 800,
                 fontSize: "17px",
-                color: isPrintVersion ? "var(--color-primary)" : "#60A5FA",
+                color: isPrintVersion ? "var(--brand-navy)" : "var(--brand-sky)",
                 letterSpacing: "0.05em",
               }}
             >
@@ -402,8 +403,8 @@ export function DigitalIdCard({
               bottom: 0,
               left: 0,
               right: 0,
-              backgroundColor: isPrintVersion ? "#111827" : "#007AFF",
-              color: "#FFFFFF",
+              backgroundColor: isPrintVersion ? "var(--brand-navy)" : "var(--brand-teal)",
+              color: "var(--brand-white)",
               fontSize: "7.5px",
               fontWeight: 700,
               letterSpacing: "0.1em",
@@ -425,14 +426,13 @@ export function DigitalIdCard({
                 borderRadius: "50%",
                 backgroundColor:
                   cardStatus === "approved"
-                    ? "#10B981"
+                    ? "var(--color-success)"
                     : cardStatus === "pending-approval"
-                    ? "#F59E0B"
+                    ? "var(--color-warning)"
                     : cardStatus === "draft"
-                    ? "#3B82F6"
-                    : "#EF4444",
+                    ? "var(--brand-teal)"
+                    : "var(--color-danger)",
                 display: "inline-block",
-                boxShadow: cardStatus === "approved" ? "0 0 6px #10B981" : "none",
               }}
             />
             <span
@@ -441,14 +441,14 @@ export function DigitalIdCard({
                 fontWeight: 700,
                 color:
                   isPrintVersion
-                    ? "var(--color-primary)"
+                    ? "var(--brand-navy)"
                     : cardStatus === "approved"
-                    ? "#34D399"
+                    ? "var(--brand-sky)"
                     : cardStatus === "pending-approval"
-                    ? "#F59E0B"
+                    ? "var(--brand-beige)"
                     : cardStatus === "draft"
-                    ? "#60A5FA"
-                    : "#F87171",
+                    ? "var(--brand-sky)"
+                    : "var(--brand-beige)",
                 letterSpacing: "0.06em",
                 textTransform: "uppercase",
               }}
@@ -469,7 +469,7 @@ export function DigitalIdCard({
             style={{
               fontSize: "16px",
               fontWeight: 700,
-              color: isPrintVersion ? "#111827" : "#FFFFFF",
+              color: isPrintVersion ? "var(--brand-navy)" : "var(--brand-white)",
               margin: "0 0 3px",
               letterSpacing: "-0.01em",
               lineHeight: 1.25,
@@ -484,7 +484,7 @@ export function DigitalIdCard({
               display: "inline-block",
               fontSize: "11px",
               fontWeight: 700,
-              color: isPrintVersion ? "var(--color-primary)" : "#60A5FA",
+              color: isPrintVersion ? "var(--brand-teal)" : "var(--brand-sky)",
               letterSpacing: "0.04em",
               fontFamily: "monospace",
             }}
@@ -495,33 +495,33 @@ export function DigitalIdCard({
           <div
             style={{
               fontSize: "11px",
-              color: isPrintVersion ? "#374151" : "#D1D5DB",
+              color: isPrintVersion ? "var(--color-text-secondary)" : "var(--brand-sky)",
               marginTop: "4px",
               fontWeight: 500,
             }}
           >
-            <strong style={{ color: isPrintVersion ? "#111827" : "#FFFFFF" }}>{student.classGrade}</strong> ·{" "}
-            <span style={{ color: isPrintVersion ? "#4B5563" : "#9CA3AF" }}>{student.board}</span>
+            <strong style={{ color: isPrintVersion ? "var(--brand-navy)" : "var(--brand-white)" }}>{student.classGrade}</strong> ·{" "}
+            <span style={{ color: isPrintVersion ? "var(--color-text-secondary)" : "var(--brand-sky)" }}>{student.board}</span>
           </div>
 
           <div
             style={{
               fontSize: "9.5px",
-              color: isPrintVersion ? "#4B5563" : "#9CA3AF",
+              color: isPrintVersion ? "var(--color-text-secondary)" : "var(--brand-sky)",
               marginTop: "2px",
             }}
           >
-            Session: <span style={{ fontWeight: 600, color: isPrintVersion ? "#111827" : "#D1D5DB" }}>{academicSession}</span>
+            Session: <span style={{ fontWeight: 600, color: isPrintVersion ? "var(--brand-navy)" : "var(--brand-white)" }}>{academicSession}</span>
           </div>
         </div>
       </div>
 
       <div
         style={{
-          background: isPrintVersion ? "#F9FAFB" : "rgba(255, 255, 255, 0.04)",
+          background: isPrintVersion ? "var(--brand-beige)" : "var(--brand-navy-hover)",
           borderRadius: "8px",
           padding: "7px 10px",
-          border: isPrintVersion ? "1px solid #E5E7EB" : "1px solid rgba(255, 255, 255, 0.07)",
+          border: isPrintVersion ? "1px solid var(--color-border)" : "1px solid var(--brand-teal)",
           margin: "4px 0 12px",
         }}
       >
@@ -530,7 +530,7 @@ export function DigitalIdCard({
             fontSize: "8px",
             textTransform: "uppercase",
             letterSpacing: "0.08em",
-            color: isPrintVersion ? "#4B5563" : "#9CA3AF",
+            color: isPrintVersion ? "var(--color-text-secondary)" : "var(--brand-sky)",
             fontWeight: 700,
             marginBottom: "3px",
           }}
@@ -540,7 +540,7 @@ export function DigitalIdCard({
         <div
           style={{
             fontSize: "10px",
-            color: isPrintVersion ? "#1F2937" : "#E5E7EB",
+            color: isPrintVersion ? "var(--brand-navy)" : "var(--brand-white)",
             lineHeight: 1.35,
             whiteSpace: "normal",
             overflow: "hidden",
@@ -559,23 +559,23 @@ export function DigitalIdCard({
           gap: "12px",
           padding: "8px 10px",
           borderRadius: "10px",
-          background: isPrintVersion ? "#F3F4F6" : "rgba(255, 255, 255, 0.03)",
-          border: isPrintVersion ? "1px solid #D1D5DB" : "1px solid rgba(255, 255, 255, 0.08)",
+          background: isPrintVersion ? "var(--brand-sky-soft)" : "var(--brand-navy-hover)",
+          border: isPrintVersion ? "1px solid var(--color-border)" : "1px solid var(--brand-teal)",
         }}
       >
         <div
           style={{
             width: "68px",
             height: "68px",
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "var(--brand-white)",
             borderRadius: "6px",
             padding: "2px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             flexShrink: 0,
-            boxShadow: isPrintVersion ? "none" : "0 2px 8px rgba(0, 0, 0, 0.35)",
-            border: "1px solid #111827",
+            boxShadow: "none",
+            border: "1px solid var(--brand-navy)",
             overflow: "hidden",
           }}
           dangerouslySetInnerHTML={{ __html: qrSvgMarkup }}
@@ -587,7 +587,7 @@ export function DigitalIdCard({
               style={{
                 fontSize: "8.5px",
                 fontWeight: 700,
-                color: isPrintVersion ? "#111827" : "#FFFFFF",
+                color: isPrintVersion ? "var(--brand-navy)" : "var(--brand-white)",
                 letterSpacing: "0.06em",
                 textTransform: "uppercase",
               }}
@@ -600,7 +600,7 @@ export function DigitalIdCard({
           <div
             style={{
               fontSize: "8px",
-              color: isPrintVersion ? "#4B5563" : "#9CA3AF",
+              color: isPrintVersion ? "var(--color-text-secondary)" : "var(--brand-sky)",
               lineHeight: 1.3,
             }}
           >
@@ -611,7 +611,7 @@ export function DigitalIdCard({
             style={{
               fontSize: "8.5px",
               fontWeight: 600,
-              color: isPrintVersion ? "var(--color-primary)" : "#60A5FA",
+              color: isPrintVersion ? "var(--brand-teal)" : "var(--brand-sky)",
               marginTop: "4px",
               letterSpacing: "0.02em",
             }}
@@ -625,7 +625,7 @@ export function DigitalIdCard({
         style={{
           marginTop: "10px",
           paddingTop: "6px",
-          borderTop: isPrintVersion ? "1px solid #E5E7EB" : "1px solid rgba(255, 255, 255, 0.06)",
+          borderTop: isPrintVersion ? "1px solid var(--color-border)" : "1px solid var(--brand-teal)",
           textAlign: "center",
         }}
       >
@@ -633,7 +633,7 @@ export function DigitalIdCard({
           style={{
             fontSize: "7.5px",
             letterSpacing: "0.08em",
-            color: isPrintVersion ? "#4B5563" : "#6B7280",
+            color: isPrintVersion ? "var(--color-text-secondary)" : "var(--brand-sky)",
             textTransform: "uppercase",
             fontWeight: 600,
           }}
@@ -654,14 +654,12 @@ export function DigitalIdCard({
         width: "100%",
         maxWidth: "340px",
         minHeight: "530px",
-        borderRadius: "18px",
+        borderRadius: "16px",
         background: isPrintVersion
-          ? "#FFFFFF"
-          : "#1D1D1F",
-        border: isPrintVersion ? "1.5px solid #111827" : "1px solid rgba(255, 255, 255, 0.14)",
-        boxShadow: isPrintVersion
-          ? "none"
-          : "0 22px 45px -10px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.16), inset 0 -1px 0 rgba(0, 0, 0, 0.6)",
+          ? "var(--brand-white)"
+          : "var(--brand-navy)",
+        border: isPrintVersion ? "1.5px solid var(--brand-navy)" : "1px solid var(--brand-teal)",
+        boxShadow: "var(--shadow-lg)",
         position: "relative",
         padding: "16px 20px 18px",
         display: "flex",
@@ -669,7 +667,7 @@ export function DigitalIdCard({
         justifyContent: "space-between",
         boxSizing: "border-box",
         overflow: "hidden",
-        color: isPrintVersion ? "#111827" : "#F3F4F6",
+        color: isPrintVersion ? "var(--brand-navy)" : "var(--brand-white)",
       }}
     >
       <div
@@ -679,9 +677,9 @@ export function DigitalIdCard({
           width: "42px",
           height: "9px",
           borderRadius: "5px",
-          backgroundColor: isPrintVersion ? "#E5E7EB" : "#050607",
-          border: isPrintVersion ? "1px solid #9CA3AF" : "1px solid rgba(255, 255, 255, 0.16)",
-          boxShadow: isPrintVersion ? "none" : "inset 0 2px 4px rgba(0, 0, 0, 0.9)",
+          backgroundColor: isPrintVersion ? "var(--brand-beige)" : "var(--brand-navy-active)",
+          border: isPrintVersion ? "1px solid var(--brand-teal)" : "1px solid var(--brand-sky)",
+          boxShadow: "none",
           margin: "0 auto 8px",
           flexShrink: 0,
         }}
@@ -690,27 +688,27 @@ export function DigitalIdCard({
       <div
         style={{
           height: "32px",
-          backgroundColor: isPrintVersion ? "#111827" : "#08090B",
+          backgroundColor: "var(--brand-navy)",
           margin: "0 -20px 12px",
-          borderTop: isPrintVersion ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
-          borderBottom: isPrintVersion ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
+          borderTop: "1px solid var(--brand-teal)",
+          borderBottom: "1px solid var(--brand-teal)",
           display: "flex",
           alignItems: "center",
           justifyContent: "flex-end",
           padding: "0 16px",
         }}
       >
-        <span style={{ fontSize: "7px", letterSpacing: "0.15em", color: "#6B7280", fontFamily: "monospace" }}>
+        <span style={{ fontSize: "7px", letterSpacing: "0.15em", color: "var(--brand-sky)", fontFamily: "monospace" }}>
           ISO/IEC 7810 ID-1 COMPATIBLE
         </span>
       </div>
 
       <div
         style={{
-          background: isPrintVersion ? "#F9FAFB" : "rgba(255, 255, 255, 0.03)",
+          background: isPrintVersion ? "var(--brand-beige)" : "var(--brand-navy-hover)",
           borderRadius: "8px",
           padding: "10px 12px",
-          border: isPrintVersion ? "1px solid #E5E7EB" : "1px solid rgba(255, 255, 255, 0.06)",
+          border: isPrintVersion ? "1px solid var(--color-border)" : "1px solid var(--brand-teal)",
           marginBottom: "10px",
         }}
       >
@@ -719,25 +717,25 @@ export function DigitalIdCard({
             fontSize: "8.5px",
             fontWeight: 700,
             letterSpacing: "0.08em",
-            color: isPrintVersion ? "var(--color-primary)" : "#60A5FA",
+            color: isPrintVersion ? "var(--brand-teal)" : "var(--brand-sky)",
             textTransform: "uppercase",
             marginBottom: "6px",
           }}
         >
           Guardian &amp; Emergency Contact
         </div>
-        <div style={{ fontSize: "11px", color: isPrintVersion ? "#111827" : "#FFFFFF", fontWeight: 600 }}>
+        <div style={{ fontSize: "11px", color: isPrintVersion ? "var(--brand-navy)" : "var(--brand-white)", fontWeight: 600 }}>
           {cardRecord?.guardianName || student.guardianName}
         </div>
-        <div style={{ fontSize: "10px", color: isPrintVersion ? "#4B5563" : "#9CA3AF", marginTop: "2px" }}>
-          Phone: <strong style={{ color: isPrintVersion ? "#111827" : "#D1D5DB" }}>{cardRecord?.guardianPhone || student.guardianPhone}</strong>
+        <div style={{ fontSize: "10px", color: isPrintVersion ? "var(--color-text-secondary)" : "var(--brand-sky)", marginTop: "2px" }}>
+          Phone: <strong style={{ color: isPrintVersion ? "var(--brand-navy)" : "var(--brand-white)" }}>{cardRecord?.guardianPhone || student.guardianPhone}</strong>
         </div>
         {cardRecord?.emergencyContact && cardRecord.emergencyContact !== (cardRecord.guardianPhone || student.guardianPhone) && (
-          <div style={{ fontSize: "9.5px", color: isPrintVersion ? "#4B5563" : "#9CA3AF", marginTop: "2px" }}>
-            Emergency: <strong style={{ color: isPrintVersion ? "#111827" : "#D1D5DB" }}>{cardRecord.emergencyContact}</strong>
+          <div style={{ fontSize: "9.5px", color: isPrintVersion ? "var(--color-text-secondary)" : "var(--brand-sky)", marginTop: "2px" }}>
+            Emergency: <strong style={{ color: isPrintVersion ? "var(--brand-navy)" : "var(--brand-white)" }}>{cardRecord.emergencyContact}</strong>
           </div>
         )}
-        <div style={{ fontSize: "9px", color: isPrintVersion ? "#4B5563" : "#6B7280", marginTop: "4px" }}>
+        <div style={{ fontSize: "9px", color: isPrintVersion ? "var(--color-text-secondary)" : "var(--brand-sky)", marginTop: "4px" }}>
           Admitted: {student.joiningDate} · ID: {studentFormattedId}
         </div>
       </div>
@@ -748,14 +746,14 @@ export function DigitalIdCard({
             fontSize: "8.5px",
             fontWeight: 700,
             letterSpacing: "0.08em",
-            color: isPrintVersion ? "#111827" : "#FFFFFF",
+            color: isPrintVersion ? "var(--brand-navy)" : "var(--brand-white)",
             textTransform: "uppercase",
             marginBottom: "3px",
           }}
         >
           Campus &amp; Registry Office
         </div>
-        <div style={{ fontSize: "9px", color: isPrintVersion ? "#4B5563" : "#9CA3AF", lineHeight: 1.4 }}>
+        <div style={{ fontSize: "9px", color: isPrintVersion ? "var(--color-text-secondary)" : "var(--brand-sky)", lineHeight: 1.4 }}>
           {cardRecord?.campusName || "AROUSH Academy"} · Park Circus Center<br />
           {cardRecord?.campusAddress || "48/2 Circus Avenue, Park Circus, Kolkata, West Bengal 700017"}<br />
           Helpline: {cardRecord?.campusPhone || "+91 98830 11221"} · {cardRecord?.campusEmail || "contact@aroush.academy"}
@@ -765,9 +763,9 @@ export function DigitalIdCard({
       <div
         style={{
           fontSize: "7.8px",
-          color: isPrintVersion ? "#4B5563" : "#6B7280",
+          color: isPrintVersion ? "var(--color-text-secondary)" : "var(--brand-sky)",
           lineHeight: 1.35,
-          borderTop: isPrintVersion ? "1px solid #E5E7EB" : "1px solid rgba(255, 255, 255, 0.06)",
+          borderTop: isPrintVersion ? "1px solid var(--color-border)" : "1px solid var(--brand-teal)",
           paddingTop: "6px",
         }}
       >
@@ -792,10 +790,10 @@ export function DigitalIdCard({
         }}
       >
         <div>
-          <div style={{ fontSize: "7px", color: isPrintVersion ? "#6B7280" : "#6B7280", textTransform: "uppercase" }}>
+          <div style={{ fontSize: "7px", color: "var(--color-text-secondary)", textTransform: "uppercase" }}>
             Security Seal
           </div>
-          <div style={{ fontSize: "8px", fontWeight: 700, color: "var(--color-primary)" }}>
+          <div style={{ fontSize: "8px", fontWeight: 700, color: "var(--brand-navy)" }}>
             VERIFIED CREDENTIAL
           </div>
         </div>
@@ -805,7 +803,7 @@ export function DigitalIdCard({
             style={{
               fontFamily: "cursive, sans-serif",
               fontSize: "12px",
-              color: isPrintVersion ? "#1E3A8A" : "#93C5FD",
+              color: isPrintVersion ? "var(--brand-teal)" : "var(--brand-sky)",
               lineHeight: 1,
               letterSpacing: "0.05em",
             }}
@@ -815,8 +813,8 @@ export function DigitalIdCard({
           <div
             style={{
               fontSize: "7.5px",
-              color: isPrintVersion ? "#4B5563" : "#9CA3AF",
-              borderTop: isPrintVersion ? "1px solid #9CA3AF" : "1px solid rgba(255, 255, 255, 0.2)",
+              color: isPrintVersion ? "var(--color-text-secondary)" : "var(--brand-sky)",
+              borderTop: isPrintVersion ? "1px solid var(--color-input-border)" : "1px solid var(--brand-teal)",
               paddingTop: "2px",
               marginTop: "2px",
               textTransform: "uppercase",
@@ -861,10 +859,10 @@ export function DigitalIdCard({
           style={{
             width: "32px",
             height: "54px",
-            background: "#1D1D1F",
-            borderLeft: "1px dashed rgba(255, 255, 255, 0.16)",
-            borderRight: "1px dashed rgba(255, 255, 255, 0.16)",
-            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.6)",
+            background: "var(--brand-navy)",
+            borderLeft: "1px dashed var(--brand-sky)",
+            borderRight: "1px dashed var(--brand-sky)",
+            boxShadow: "var(--shadow-md)",
             position: "relative",
             display: "flex",
             alignItems: "center",
@@ -877,9 +875,9 @@ export function DigitalIdCard({
             width: "36px",
             height: "10px",
             borderRadius: "2px",
-            background: "#AAAAAA",
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.5)",
-            border: "0.5px solid #52525B",
+            background: "var(--brand-sky)",
+            boxShadow: "var(--shadow-sm)",
+            border: "0.5px solid var(--brand-teal)",
             position: "relative",
             display: "flex",
             alignItems: "center",
@@ -891,8 +889,7 @@ export function DigitalIdCard({
               width: "4px",
               height: "4px",
               borderRadius: "50%",
-              backgroundColor: "#3F3F46",
-              boxShadow: "inset 0 1px 1px rgba(0,0,0,0.8)",
+              backgroundColor: "var(--brand-navy)",
             }}
           />
         </div>
@@ -901,11 +898,11 @@ export function DigitalIdCard({
           style={{
             width: "14px",
             height: "18px",
-            border: "3px solid #D4D4D8",
+            border: "3px solid var(--brand-teal)",
             borderTop: "none",
             borderRadius: "0 0 7px 7px",
             background: "transparent",
-            boxShadow: "0 2px 6px rgba(0, 0, 0, 0.5)",
+            boxShadow: "var(--shadow-sm)",
             marginTop: "-1px",
           }}
         />
@@ -917,26 +914,26 @@ export function DigitalIdCard({
           style={{
             marginBottom: "14px",
             padding: "6px 14px",
-            borderRadius: "999px",
+            borderRadius: "var(--radius-md)",
             backgroundColor:
               cardStatus === "pending-approval"
-                ? "#FEF3C7"
+                ? "var(--color-warning-bg)"
                 : cardStatus === "draft"
-                ? "#EFF6FF"
-                : "#FEE2E2",
+                ? "var(--brand-sky-subtle)"
+                : "var(--color-danger-bg)",
             border: `1px solid ${
               cardStatus === "pending-approval"
-                ? "#F59E0B"
+                ? "var(--color-warning-border)"
                 : cardStatus === "draft"
-                ? "#3B82F6"
-                : "#EF4444"
+                ? "var(--color-border)"
+                : "var(--color-danger-border)"
             }`,
             color:
               cardStatus === "pending-approval"
-                ? "#92400E"
+                ? "var(--color-warning)"
                 : cardStatus === "draft"
-                ? "#1E40AF"
-                : "#991B1B",
+                ? "var(--brand-navy)"
+                : "var(--color-danger)",
             fontSize: "11px",
             fontWeight: 700,
             letterSpacing: "0.05em",
@@ -944,7 +941,7 @@ export function DigitalIdCard({
             display: "flex",
             alignItems: "center",
             gap: "6px",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.06)",
+            boxShadow: "var(--shadow-sm)",
           }}
         >
           <Info size={14} aria-hidden="true" />
@@ -979,10 +976,10 @@ export function DigitalIdCard({
         <div
           style={{
             display: "inline-flex",
-            backgroundColor: "var(--color-surface-muted, #F3F4F6)",
-            borderRadius: "999px",
+            backgroundColor: "var(--color-surface-muted)",
+            borderRadius: "var(--radius-md)",
             padding: "3px",
-            border: "1px solid var(--color-border, #E5E7EB)",
+            border: "1px solid var(--color-border)",
           }}
         >
           <button
@@ -990,11 +987,11 @@ export function DigitalIdCard({
             onClick={() => setActiveSide("front")}
             style={{
               padding: "6px 16px",
-              borderRadius: "999px",
+              borderRadius: "var(--radius-sm)",
               fontSize: "12px",
               fontWeight: activeSide === "front" ? 700 : 500,
               backgroundColor: activeSide === "front" ? "var(--color-primary)" : "transparent",
-              color: activeSide === "front" ? "#FFFFFF" : "var(--color-primary)",
+              color: activeSide === "front" ? "var(--brand-white)" : "var(--color-primary)",
               border: "none",
               cursor: "pointer",
               transition: "all 0.15s ease",
@@ -1007,11 +1004,11 @@ export function DigitalIdCard({
             onClick={() => setActiveSide("back")}
             style={{
               padding: "6px 16px",
-              borderRadius: "999px",
+              borderRadius: "var(--radius-sm)",
               fontSize: "12px",
               fontWeight: activeSide === "back" ? 700 : 500,
               backgroundColor: activeSide === "back" ? "var(--color-primary)" : "transparent",
-              color: activeSide === "back" ? "#FFFFFF" : "var(--color-primary)",
+              color: activeSide === "back" ? "var(--brand-white)" : "var(--color-primary)",
               border: "none",
               cursor: "pointer",
               transition: "all 0.15s ease",
@@ -1043,7 +1040,7 @@ export function DigitalIdCard({
         <div
           style={{
             fontSize: "11px",
-            color: "var(--color-neutral-dark, #6B7280)",
+            color: "var(--color-neutral-dark)",
             textAlign: "center",
             lineHeight: 1.4,
             maxWidth: "340px",
@@ -1087,7 +1084,7 @@ export function DigitalIdCard({
         style={{
           position: "fixed",
           inset: 0,
-          backgroundColor: "rgba(0, 0, 0, 0.65)",
+          backgroundColor: "var(--color-overlay)",
           backdropFilter: "blur(8px)",
           display: "flex",
           alignItems: "center",

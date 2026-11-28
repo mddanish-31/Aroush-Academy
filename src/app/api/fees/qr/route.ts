@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const obligation = data.obligations.find((item) => item.id === id);
     if (!obligation || !data.payee?.upiId || amount > obligation.balancePaise) return NextResponse.json({ ok: false }, { status: 404, headers });
     const params = new URLSearchParams({ pa: data.payee.upiId, pn: data.payee.name, am: (amount / 100).toFixed(2), cu: "INR" });
-    const svg = new QRCode({ content: `upi://pay?${params}`, padding: 12, width: 256, height: 256, color: "#1D1D1F", background: "#FFFFFF", ecl: "M" }).svg();
+    const svg = new QRCode({ content: `upi://pay?${params}`, padding: 12, width: 256, height: 256, color: "#2F4156", background: "#FFFFFF", ecl: "M" }).svg();
     return new NextResponse(svg, { headers: { ...headers, "Content-Type": "image/svg+xml; charset=utf-8", "Content-Disposition": request.nextUrl.searchParams.has("download") ? 'attachment; filename="aroush-fee-qr.svg"' : 'inline; filename="aroush-fee-qr.svg"', "X-Content-Type-Options": "nosniff" } });
   } catch {
     return NextResponse.json({ ok: false, reason: "server_error" }, { status: 503, headers });

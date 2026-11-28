@@ -491,13 +491,13 @@ export function TimetableModule({
             padding: "10px 16px",
             backgroundColor:
               notification.type === "error"
-                ? "rgba(255, 59, 48, 0.12)"
-                : "rgba(52, 199, 89, 0.12)",
+                ? "var(--color-danger-bg)"
+                : "var(--color-success-bg)",
             color:
               notification.type === "error"
-                ? "var(--color-danger, #FF3B30)"
-                : "var(--color-success, #34C759)",
-            border: `1px solid ${notification.type === "error" ? "rgba(255, 59, 48, 0.3)" : "rgba(52, 199, 89, 0.3)"}`,
+                ? "var(--color-danger)"
+                : "var(--color-success)",
+            border: `1px solid ${notification.type === "error" ? "var(--color-danger-border)" : "var(--color-success-border)"}`,
             borderRadius: "var(--radius-md)",
             fontSize: "var(--text-xs)",
             fontWeight: 600,
@@ -511,6 +511,7 @@ export function TimetableModule({
           <button
             type="button"
             onClick={() => setNotification(null)}
+            aria-label="Dismiss notice"
             style={{
               background: "none",
               border: "none",
@@ -520,7 +521,7 @@ export function TimetableModule({
               padding: "0 4px",
             }}
           >
-            
+            &times;
           </button>
         </div>
       )}
@@ -674,7 +675,7 @@ export function TimetableModule({
               style={{
                 fontSize: "11px",
                 padding: "2px 8px",
-                borderRadius: "var(--radius-full)",
+                borderRadius: "var(--radius-sm)",
                 backgroundColor: "var(--color-surface)",
                 color: "var(--color-neutral-dark)",
                 border: "1px solid var(--color-border)",
@@ -722,7 +723,7 @@ export function TimetableModule({
             <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>
               Active Sessions
             </span>
-            <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--color-success, #34C759)", marginTop: "2px" }}>
+            <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--color-success)", marginTop: "2px" }}>
               {activeClasses} Active
             </div>
             <span style={{ fontSize: "10px", color: "var(--color-neutral-dark)" }}>Confirmed slots</span>
@@ -739,7 +740,7 @@ export function TimetableModule({
             <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", textTransform: "uppercase" }}>
               Cancelled
             </span>
-            <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: cancelledClasses > 0 ? "var(--color-danger, #FF3B30)" : "var(--color-neutral-dark)", marginTop: "2px" }}>
+            <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: cancelledClasses > 0 ? "var(--color-danger)" : "var(--color-neutral-dark)", marginTop: "2px" }}>
               {cancelledClasses} Cancelled
             </div>
             <span style={{ fontSize: "10px", color: "var(--color-neutral-dark)" }}>Suspended slots</span>
@@ -948,7 +949,7 @@ export function TimetableModule({
                       style={{
                         padding: "10px 8px",
                         textAlign: "center",
-                        backgroundColor: dayInfo.isToday ? "rgba(0, 122, 255, 0.05)" : "var(--color-surface-muted)",
+                        backgroundColor: dayInfo.isToday ? "var(--brand-sky-subtle)" : "var(--color-surface-muted)",
                         borderBottom: "1px solid var(--color-border)",
                         borderRight: dayInfo.dayOfWeek === "Sunday" ? "none" : "1px solid var(--color-border)",
                       }}
@@ -970,7 +971,7 @@ export function TimetableModule({
                             style={{
                               fontSize: "9px",
                               backgroundColor: "var(--color-primary)",
-                              color: "#FFFFFF",
+                              color: "var(--brand-white)",
                               padding: "1px 5px",
                               borderRadius: "4px",
                               fontWeight: 700,
@@ -1020,7 +1021,7 @@ export function TimetableModule({
                         key={hour}
                         style={{
                           height: "60px",
-                          borderBottom: "1px dashed var(--color-border-subtle, rgba(0,0,0,0.06))",
+                          borderBottom: "1px dashed var(--color-border-subtle)",
                           fontSize: "10px",
                           fontWeight: 500,
                           color: "var(--color-neutral-dark)",
@@ -1050,9 +1051,9 @@ export function TimetableModule({
                         height: `${totalGridHeightPx}px`,
                         borderRight: dayInfo.dayOfWeek === "Sunday" ? "none" : "1px solid var(--color-border)",
                         backgroundColor: dayInfo.isToday
-                          ? "rgba(0, 122, 255, 0.02)"
+                          ? "var(--brand-sky-soft)"
                           : dayInfo.dayOfWeek === "Sunday"
-                          ? "rgba(0,0,0,0.01)"
+                          ? "var(--color-surface-muted)"
                           : "var(--color-surface)",
                       }}
                     >
@@ -1067,7 +1068,7 @@ export function TimetableModule({
                               left: 0,
                               right: 0,
                               height: "60px",
-                              borderBottom: "1px dashed var(--color-border-subtle, rgba(0,0,0,0.06))",
+                              borderBottom: "1px dashed var(--color-border-subtle)",
                               pointerEvents: "none",
                             }}
                           />
@@ -1149,14 +1150,14 @@ export function TimetableModule({
                   style={{
                     backgroundColor: "var(--color-surface)",
                     borderRadius: "var(--radius-lg)",
-                    border: `1px solid ${isCancelled ? "rgba(255, 59, 48, 0.3)" : "var(--color-border)"}`,
+                    border: `1px solid ${isCancelled ? "var(--color-danger-border)" : "var(--color-border)"}`,
                     padding: "var(--space-4)",
                     boxShadow: "var(--shadow-sm)",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "space-between",
                     gap: "var(--space-3)",
-                    borderLeft: `5px solid ${isCancelled ? "var(--color-danger, #FF3B30)" : theme.primary}`,
+                    borderLeft: `5px solid ${isCancelled ? "var(--color-danger)" : theme.primary}`,
                   }}
                 >
                   <div>
@@ -1270,13 +1271,13 @@ export function TimetableModule({
                       >
                         {role === "academy-admin" && (
                           <Button
-                            variant="secondary"
+                            variant="outline"
                             size="sm"
                             onClick={() => setDeletingSlot(slot)}
                             style={{
-                              backgroundColor: "rgba(255, 59, 48, 0.08)",
-                              color: "var(--color-danger, #FF3B30)",
-                              borderColor: "rgba(255, 59, 48, 0.25)",
+                              backgroundColor: "var(--color-danger-bg)",
+                              color: "var(--color-danger)",
+                              borderColor: "var(--color-danger-border)",
                             }}
                           >
                             Delete
@@ -1317,7 +1318,7 @@ export function TimetableModule({
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(4px)",
             display: "flex",
             alignItems: "center",
@@ -1364,6 +1365,7 @@ export function TimetableModule({
               <button
                 type="button"
                 onClick={() => setDetailsSlot(null)}
+                aria-label="Close modal"
                 style={{
                   background: "none",
                   border: "none",
@@ -1373,7 +1375,7 @@ export function TimetableModule({
                   padding: "0 4px",
                 }}
               >
-                
+                &times;
               </button>
             </div>
 
@@ -1432,13 +1434,13 @@ export function TimetableModule({
             >
               {role === "academy-admin" && (
                 <Button
-                  variant="secondary"
+                  variant="outline"
                   size="sm"
                   onClick={() => setDeletingSlot(detailsSlot)}
                   style={{
-                    backgroundColor: "rgba(255, 59, 48, 0.08)",
-                    color: "var(--color-danger, #FF3B30)",
-                    borderColor: "rgba(255, 59, 48, 0.25)",
+                    backgroundColor: "var(--color-danger-bg)",
+                    color: "var(--color-danger)",
+                    borderColor: "var(--color-danger-border)",
                     marginRight: "auto",
                   }}
                 >
@@ -1486,7 +1488,7 @@ export function TimetableModule({
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(4px)",
             display: "flex",
             alignItems: "center",
@@ -1522,6 +1524,7 @@ export function TimetableModule({
               <button
                 type="button"
                 onClick={() => setIsFormModalOpen(false)}
+                aria-label="Close modal"
                 style={{
                   background: "none",
                   border: "none",
@@ -1531,7 +1534,7 @@ export function TimetableModule({
                   padding: "0 4px",
                 }}
               >
-                
+                &times;
               </button>
             </div>
 
@@ -1541,9 +1544,9 @@ export function TimetableModule({
                   style={{
                     marginBottom: "var(--space-4)",
                     padding: "10px 12px",
-                    backgroundColor: "rgba(255, 59, 48, 0.1)",
-                    color: "var(--color-danger, #FF3B30)",
-                    border: "1px solid rgba(255, 59, 48, 0.3)",
+                    backgroundColor: "var(--color-danger-bg)",
+                    color: "var(--color-danger)",
+                    border: "1px solid var(--color-danger-border)",
                     borderRadius: "var(--radius-sm)",
                     fontSize: "var(--text-xs)",
                     fontWeight: 600,
@@ -1626,7 +1629,7 @@ export function TimetableModule({
                         width: "100%",
                         padding: "8px",
                         borderRadius: "var(--radius-sm)",
-                        border: "1px solid var(--color-border)",
+                        border: "1px solid var(--color-input-border)",
                         fontSize: "var(--text-xs)",
                         backgroundColor: "var(--color-surface)",
                       }}
@@ -1655,7 +1658,7 @@ export function TimetableModule({
                         width: "100%",
                         padding: "8px",
                         borderRadius: "var(--radius-sm)",
-                        border: "1px solid var(--color-border)",
+                        border: "1px solid var(--color-input-border)",
                         fontSize: "var(--text-xs)",
                         backgroundColor: "var(--color-surface)",
                       }}
@@ -1679,7 +1682,7 @@ export function TimetableModule({
                       width: "100%",
                       padding: "8px",
                       borderRadius: "var(--radius-sm)",
-                      border: "1px solid var(--color-border)",
+                      border: "1px solid var(--color-input-border)",
                       fontSize: "var(--text-xs)",
                       backgroundColor: "var(--color-surface)",
                     }}
@@ -1702,7 +1705,7 @@ export function TimetableModule({
                       width: "100%",
                       padding: "8px",
                       borderRadius: "var(--radius-sm)",
-                      border: "1px solid var(--color-border)",
+                      border: "1px solid var(--color-input-border)",
                       fontSize: "var(--text-xs)",
                       backgroundColor: "var(--color-surface)",
                     }}
@@ -1726,7 +1729,7 @@ export function TimetableModule({
                       width: "100%",
                       padding: "8px",
                       borderRadius: "var(--radius-sm)",
-                      border: "1px solid var(--color-border)",
+                      border: "1px solid var(--color-input-border)",
                       fontSize: "var(--text-xs)",
                       backgroundColor: "var(--color-surface)",
                     }}
@@ -1778,7 +1781,7 @@ export function TimetableModule({
                       width: "100%",
                       padding: "8px",
                       borderRadius: "var(--radius-sm)",
-                      border: "1px solid var(--color-border)",
+                      border: "1px solid var(--color-input-border)",
                       fontSize: "var(--text-xs)",
                       backgroundColor: "var(--color-surface)",
                     }}
@@ -1806,7 +1809,7 @@ export function TimetableModule({
                       width: "100%",
                       padding: "8px",
                       borderRadius: "var(--radius-sm)",
-                      border: "1px solid var(--color-border)",
+                      border: "1px solid var(--color-input-border)",
                       fontSize: "var(--text-xs)",
                       backgroundColor: "var(--color-surface)",
                     }}
@@ -1832,7 +1835,7 @@ export function TimetableModule({
                     width: "100%",
                     padding: "8px",
                     borderRadius: "var(--radius-sm)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                     fontSize: "var(--text-xs)",
                     backgroundColor: "var(--color-surface)",
                   }}
@@ -1852,16 +1855,16 @@ export function TimetableModule({
                 {editingSlotId && role === "academy-admin" && (
                   <Button
                     type="button"
-                    variant="secondary"
+                    variant="outline"
                     size="sm"
                     onClick={() => {
                       const target = slots.find((s) => s.id === editingSlotId);
                       if (target) setDeletingSlot(target);
                     }}
                     style={{
-                      backgroundColor: "rgba(255, 59, 48, 0.08)",
-                      color: "var(--color-danger, #FF3B30)",
-                      borderColor: "rgba(255, 59, 48, 0.25)",
+                      backgroundColor: "var(--color-danger-bg)",
+                      color: "var(--color-danger)",
+                      borderColor: "var(--color-danger-border)",
                       marginRight: "auto",
                     }}
                   >
@@ -1896,7 +1899,7 @@ export function TimetableModule({
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(4px)",
             display: "flex",
             alignItems: "center",
@@ -1915,7 +1918,7 @@ export function TimetableModule({
               maxWidth: "480px",
               width: "100%",
               padding: "var(--space-6)",
-              boxShadow: "var(--shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04))",
+              boxShadow: "var(--shadow-lg)",
               border: "1px solid var(--color-border)",
             }}
           >
@@ -1933,7 +1936,7 @@ export function TimetableModule({
                   style={{
                     fontSize: "var(--text-lg)",
                     fontWeight: 700,
-                    color: "var(--color-danger, #FF3B30)",
+                    color: "var(--color-danger)",
                     marginBottom: "4px",
                   }}
                 >
@@ -1961,7 +1964,7 @@ export function TimetableModule({
                   lineHeight: 1,
                 }}
               >
-                
+                &times;
               </button>
             </div>
 
@@ -2020,8 +2023,8 @@ export function TimetableModule({
               style={{
                 padding: "10px 12px",
                 borderRadius: "var(--radius-sm)",
-                backgroundColor: "rgba(255, 59, 48, 0.08)",
-                border: "1px solid rgba(255, 59, 48, 0.2)",
+                backgroundColor: "var(--color-danger-bg)",
+                border: "1px solid var(--color-danger-border)",
                 fontSize: "11px",
                 lineHeight: "1.4",
                 color: "var(--color-primary)",
@@ -2061,9 +2064,9 @@ export function TimetableModule({
                 size="sm"
                 onClick={handleConfirmDelete}
                 style={{
-                  backgroundColor: "var(--color-danger, #FF3B30)",
-                  borderColor: "var(--color-danger, #FF3B30)",
-                  color: "#FFFFFF",
+                  backgroundColor: "var(--color-danger)",
+                  borderColor: "var(--color-danger)",
+                  color: "var(--brand-white)",
                 }}
               >
                 {deletingSlot.scheduleType === "specific_date" || Boolean(deletingSlot.specificDate)

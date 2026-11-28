@@ -5,9 +5,9 @@ export function FinalCta() {
   return (
     <section
       style={{
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "var(--brand-sky-subtle)",
         padding: "clamp(64px, 8vw, 104px) 0",
-        borderTop: "1px solid rgba(170, 170, 170, 0.3)",
+        borderTop: "1px solid var(--color-border)",
       }}
     >
       <div style={{ maxWidth: "800px", margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
@@ -17,7 +17,7 @@ export function FinalCta() {
               fontFamily: "var(--font-display)",
               fontSize: "clamp(2rem, 4vw, 3rem)",
               lineHeight: 1.1,
-              color: "#1D1D1F",
+              color: "var(--brand-navy)",
               fontWeight: 700,
               margin: "0 0 16px 0",
             }}

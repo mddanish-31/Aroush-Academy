@@ -1113,8 +1113,8 @@ export function FeesModule({
             style={{
               marginTop: "var(--space-3)",
               padding: "8px 12px",
-              backgroundColor: "rgba(52, 199, 89, 0.12)",
-              border: "1px solid rgba(52, 199, 89, 0.3)",
+              backgroundColor: "var(--color-success-bg)",
+              border: "1px solid var(--color-success-border)",
               borderRadius: "var(--radius-sm)",
               color: "var(--color-success)",
               fontSize: "12px",
@@ -1177,7 +1177,7 @@ export function FeesModule({
               </span>
             </Card>
 
-            <Card padding="md" style={{ backgroundColor: adminKPIs.pendingCount > 0 ? "rgba(255, 149, 0, 0.08)" : undefined }}>
+            <Card padding="md" style={{ backgroundColor: adminKPIs.pendingCount > 0 ? "var(--color-warning-bg)" : undefined }}>
               <span style={{ fontSize: "11px", color: "var(--color-neutral-dark)", textTransform: "uppercase", fontWeight: 600 }}>
                 Pending Verification
               </span>
@@ -1333,7 +1333,7 @@ export function FeesModule({
                   borderRadius: "var(--radius-md)",
                   border: "none",
                   backgroundColor: adminTab === t.id ? "var(--color-primary)" : "transparent",
-                  color: adminTab === t.id ? "#FFFFFF" : "var(--color-neutral-dark)",
+                  color: adminTab === t.id ? "var(--brand-white)" : "var(--color-neutral-dark)",
                   cursor: "pointer",
                   transition: "all var(--transition-fast)",
                 }}
@@ -1623,13 +1623,8 @@ export function FeesModule({
                           </td>
                           <td style={{ padding: "10px" }}>
                             <Badge
-                              variant={subm.status === "verified" ? "success" : subm.status === "rejected" ? "neutral" : "warning"}
+                              variant={subm.status === "verified" ? "success" : subm.status === "rejected" ? "danger" : "warning"}
                               size="sm"
-                              style={
-                                subm.status === "rejected"
-                                  ? { color: "#FF3B30", borderColor: "rgba(255, 59, 48, 0.3)", backgroundColor: "rgba(255, 59, 48, 0.08)" }
-                                  : undefined
-                              }
                             >
                               {subm.status.toUpperCase()}
                             </Badge>
@@ -1801,7 +1796,7 @@ export function FeesModule({
               </div>
 
               {generationFeedback && (
-                <div style={{ padding: "8px 12px", backgroundColor: "rgba(0, 122, 255, 0.08)", borderRadius: "var(--radius-sm)", fontSize: "11px", color: "var(--color-primary)" }}>
+                <div style={{ padding: "8px 12px", backgroundColor: "var(--brand-sky-subtle)", borderRadius: "var(--radius-sm)", fontSize: "11px", color: "var(--color-primary)" }}>
                   {generationFeedback}
                 </div>
               )}
@@ -1858,7 +1853,7 @@ export function FeesModule({
               <div
                 style={{
                   borderLeft: "4px solid var(--color-accent)",
-                  backgroundColor: "rgba(0, 122, 255, 0.04)",
+                  backgroundColor: "var(--brand-sky-soft)",
                   padding: "var(--space-3) var(--space-4)",
                   borderRadius: "0 var(--radius-sm) var(--radius-sm) 0",
                   fontSize: "11px",
@@ -1880,8 +1875,8 @@ export function FeesModule({
             <div>
               <div
                 style={{
-                  backgroundColor: "rgba(255, 149, 0, 0.08)",
-                  border: "1px solid rgba(255, 149, 0, 0.3)",
+                  backgroundColor: "var(--color-warning-bg)",
+                  border: "1px solid var(--color-warning-border)",
                   borderRadius: "var(--radius-md)",
                   padding: "var(--space-3) var(--space-4)",
                   marginBottom: "var(--space-4)",
@@ -2145,13 +2140,13 @@ export function FeesModule({
                       </div>
 
                       {pendingSubm && (
-                        <div style={{ padding: "6px 8px", backgroundColor: "rgba(255, 149, 0, 0.1)", border: "1px solid rgba(255, 149, 0, 0.3)", borderRadius: "var(--radius-sm)", fontSize: "10px", color: "#D97706", marginBottom: "var(--space-2)" }}>
+                        <div style={{ padding: "6px 8px", backgroundColor: "var(--color-warning-bg)", border: "1px solid var(--color-warning-border)", borderRadius: "var(--radius-sm)", fontSize: "10px", color: "var(--color-warning)", marginBottom: "var(--space-2)" }}>
                           <strong><Clock size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> Payment Submitted:</strong> ₹{pendingSubm.amount.toLocaleString("en-IN")} (Ref: {pendingSubm.referenceId}) is awaiting Admin reconciliation. Balance will update upon verification.
                         </div>
                       )}
 
                       {!pendingSubm && rejectedSubm && (
-                        <div style={{ padding: "6px 8px", backgroundColor: "rgba(255, 59, 48, 0.08)", border: "1px solid rgba(255, 59, 48, 0.25)", borderRadius: "var(--radius-sm)", fontSize: "10px", color: "#DC2626", marginBottom: "var(--space-2)" }}>
+                        <div style={{ padding: "6px 8px", backgroundColor: "var(--color-danger-bg)", border: "1px solid var(--color-danger-border)", borderRadius: "var(--radius-sm)", fontSize: "10px", color: "var(--color-danger)", marginBottom: "var(--space-2)" }}>
                           <strong><AlertCircle size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> Last Transfer Rejected:</strong> {rejectedSubm.rejectionReason}
                         </div>
                       )}
@@ -2257,11 +2252,11 @@ export function FeesModule({
                             </div>
                           ) : subm.status === "rejected" ? (
                             <div>
-                              <Badge variant="neutral" size="sm" style={{ color: "#FF3B30", borderColor: "rgba(255, 59, 48, 0.3)" }}>
+                              <Badge variant="danger" size="sm">
                                 REJECTED
                               </Badge>
                               {subm.rejectionReason && (
-                                <div style={{ fontSize: "10px", color: "#FF3B30", marginTop: "2px" }}>
+                                <div style={{ fontSize: "10px", color: "var(--color-danger)", marginTop: "2px" }}>
                                   Reason: {subm.rejectionReason}
                                 </div>
                               )}
@@ -2328,7 +2323,7 @@ export function FeesModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            backgroundColor: "var(--color-overlay)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -2361,12 +2356,12 @@ export function FeesModule({
               <div>Transfer Date: {submissionDetailModal.transferDate} &bull; Submitted At: {submissionDetailModal.submittedAt}</div>
               <div>Submitted By: {submissionDetailModal.submittedByName} ({submissionDetailModal.submittedByRole})</div>
               {submissionDetailModal.rejectionReason && (
-                <div style={{ color: "#FF3B30", fontWeight: 600 }}>Rejection Reason: {submissionDetailModal.rejectionReason}</div>
+                <div style={{ color: "var(--color-danger)", fontWeight: 600 }}>Rejection Reason: {submissionDetailModal.rejectionReason}</div>
               )}
             </div>
 
             {submissionDetailModal.proofFileData ? (
-              <div style={{ margin: "var(--space-3) 0", padding: "10px", border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)", backgroundColor: "#FFFFFF" }}>
+              <div style={{ margin: "var(--space-3) 0", padding: "10px", border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)", backgroundColor: "var(--brand-white)" }}>
                 <div style={{ fontSize: "11px", fontWeight: 600, color: "var(--color-primary)", marginBottom: "6px", display: "flex", justifyContent: "space-between" }}>
                   <span><Camera size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "4px" }} /> Attached Payment Screenshot Proof:</span>
                   <span style={{ color: "var(--color-neutral-dark)", fontWeight: 400 }}>{submissionDetailModal.proofFileName}</span>
@@ -2385,7 +2380,7 @@ export function FeesModule({
 
             {isRejecting ? (
               <div style={{ margin: "var(--space-3) 0" }}>
-                <label style={{ fontSize: "11px", fontWeight: 600, display: "block", marginBottom: "4px", color: "#FF3B30" }}>
+                <label style={{ fontSize: "11px", fontWeight: 600, display: "block", marginBottom: "4px", color: "var(--color-danger)" }}>
                   Provide Rejection Reason (Required):
                 </label>
                 <textarea
@@ -2393,7 +2388,7 @@ export function FeesModule({
                   onChange={(e) => setRejectReasonInput(e.target.value)}
                   placeholder="e.g. Transaction UTR not reflected in institute bank statement; please verify and resubmit."
                   rows={3}
-                  style={{ width: "100%", padding: "8px", fontSize: "11px", borderRadius: "var(--radius-sm)", border: "1px solid #FF3B30" }}
+                  style={{ width: "100%", padding: "8px", fontSize: "11px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-danger)" }}
                 />
               </div>
             ) : null}
@@ -2412,7 +2407,7 @@ export function FeesModule({
 
               {submissionDetailModal.status === "pending" && !isRejecting && (
                 <>
-                  <Button variant="secondary" size="sm" onClick={() => setIsRejecting(true)} style={{ color: "#FF3B30", borderColor: "rgba(255, 59, 48, 0.3)" }}>
+                  <Button variant="outline" size="sm" onClick={() => setIsRejecting(true)} style={{ color: "var(--color-danger)", borderColor: "var(--color-danger-border)" }}>
                     Reject Submission...
                   </Button>
                   <Button variant="primary" size="sm" onClick={() => handleApproveSubmission(submissionDetailModal)}>
@@ -2423,11 +2418,11 @@ export function FeesModule({
 
               {isRejecting && (
                 <Button
-                  variant="secondary"
+                  variant="primary"
                   size="sm"
                   onClick={handleRejectSubmission}
                   disabled={!rejectReasonInput.trim()}
-                  style={{ backgroundColor: "#FF3B30", color: "#FFFFFF", borderColor: "#FF3B30" }}
+                  style={{ backgroundColor: "var(--color-danger)", color: "var(--brand-white)", borderColor: "var(--color-danger)" }}
                 >
                   Confirm Rejection
                 </Button>
@@ -2444,7 +2439,7 @@ export function FeesModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            backgroundColor: "var(--color-overlay)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -2452,7 +2447,7 @@ export function FeesModule({
             zIndex: 100,
           }}
         >
-          <Card padding="lg" style={{ maxWidth: "520px", width: "100%", maxHeight: "92vh", overflowY: "auto", borderRadius: "var(--radius-lg)", boxShadow: "0 20px 40px rgba(0,0,0,0.2)" }}>
+          <Card padding="lg" style={{ maxWidth: "520px", width: "100%", maxHeight: "92vh", overflowY: "auto", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-lg)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "var(--space-3)" }}>
               <div>
                 <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 700, margin: 0, color: "var(--color-primary)" }}>
@@ -2517,7 +2512,7 @@ export function FeesModule({
               if (!dest) {
                 return (
                   <div>
-                    <div style={{ padding: "14px", backgroundColor: "rgba(255, 59, 48, 0.08)", border: "1px solid rgba(255, 59, 48, 0.3)", borderRadius: "var(--radius-md)", color: "#FF3B30", fontSize: "12px", lineHeight: 1.5, margin: "var(--space-3) 0" }}>
+                    <div style={{ padding: "14px", backgroundColor: "var(--color-danger-bg)", border: "1px solid var(--color-danger-border)", borderRadius: "var(--radius-md)", color: "var(--color-danger)", fontSize: "12px", lineHeight: 1.5, margin: "var(--space-3) 0" }}>
                       <strong>Payment details are not configured. Please contact the Academy Office.</strong>
                       <p style={{ margin: "4px 0 0", fontSize: "11px", color: "var(--color-neutral-dark)" }}>
                         No verified institutional payment destination has been published by Academy Admin for {payModal.enrollment.subjectName}. Online submission is disabled until authorized account details are published.
@@ -2559,7 +2554,7 @@ export function FeesModule({
                         fontSize: "12px",
                         fontWeight: 500,
                         borderRadius: "var(--radius-sm)",
-                        border: "1px solid var(--color-border)",
+                        border: "1px solid var(--color-input-border)",
                         backgroundColor: "var(--color-surface)",
                         color: "var(--color-primary)",
                         cursor: "pointer",
@@ -2582,13 +2577,13 @@ export function FeesModule({
                           padding: "10px 12px",
                           borderRadius: "var(--radius-md)",
                           border: payMethodInput === "upi" ? "2px solid var(--color-accent)" : "1px solid var(--color-border)",
-                          backgroundColor: payMethodInput === "upi" ? "rgba(0, 122, 255, 0.06)" : "var(--color-surface)",
+                          backgroundColor: payMethodInput === "upi" ? "var(--brand-sky-subtle)" : "var(--color-surface)",
                           cursor: "pointer",
                           textAlign: "left",
                           transition: "all 0.15s ease",
                         }}
                       >
-                        <div style={{ width: "28px", height: "28px", borderRadius: "50%", backgroundColor: payMethodInput === "upi" ? "var(--color-accent)" : "rgba(0,0,0,0.06)", display: "flex", alignItems: "center", justifyContent: "center", color: payMethodInput === "upi" ? "#FFFFFF" : "var(--color-primary)", flexShrink: 0 }}>
+                        <div style={{ width: "28px", height: "28px", borderRadius: "50%", backgroundColor: payMethodInput === "upi" ? "var(--color-accent)" : "var(--color-surface-muted)", display: "flex", alignItems: "center", justifyContent: "center", color: payMethodInput === "upi" ? "var(--brand-white)" : "var(--color-primary)", flexShrink: 0 }}>
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                             <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
                             <line x1="12" y1="18" x2="12.01" y2="18"/>
@@ -2610,13 +2605,13 @@ export function FeesModule({
                           padding: "10px 12px",
                           borderRadius: "var(--radius-md)",
                           border: payMethodInput === "bank_transfer" ? "2px solid var(--color-accent)" : "1px solid var(--color-border)",
-                          backgroundColor: payMethodInput === "bank_transfer" ? "rgba(0, 122, 255, 0.06)" : "var(--color-surface)",
+                          backgroundColor: payMethodInput === "bank_transfer" ? "var(--brand-sky-subtle)" : "var(--color-surface)",
                           cursor: "pointer",
                           textAlign: "left",
                           transition: "all 0.15s ease",
                         }}
                       >
-                        <div style={{ width: "28px", height: "28px", borderRadius: "50%", backgroundColor: payMethodInput === "bank_transfer" ? "var(--color-accent)" : "rgba(0,0,0,0.06)", display: "flex", alignItems: "center", justifyContent: "center", color: payMethodInput === "bank_transfer" ? "#FFFFFF" : "var(--color-primary)", flexShrink: 0 }}>
+                        <div style={{ width: "28px", height: "28px", borderRadius: "50%", backgroundColor: payMethodInput === "bank_transfer" ? "var(--color-accent)" : "var(--color-surface-muted)", display: "flex", alignItems: "center", justifyContent: "center", color: payMethodInput === "bank_transfer" ? "var(--brand-white)" : "var(--color-primary)", flexShrink: 0 }}>
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                             <polygon points="12 2 2 7 22 7 12 2"/>
                             <rect x="4" y="10" width="16" height="10"/>
@@ -2643,7 +2638,7 @@ export function FeesModule({
                       </div>
 
                       {dest.qrImageUrl ? (
-                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "10px", backgroundColor: "#FFFFFF", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", margin: "6px 0 10px" }}>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "10px", backgroundColor: "var(--brand-white)", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", margin: "6px 0 10px" }}>
                           <img
                             src={dest.qrImageUrl}
                             alt={`${dest.subjectName} UPI QR Code`}
@@ -2655,7 +2650,7 @@ export function FeesModule({
                         </div>
                       ) : null}
 
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", padding: "6px 8px", backgroundColor: "#FFFFFF", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", margin: "6px 0" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", padding: "6px 8px", backgroundColor: "var(--brand-white)", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", margin: "6px 0" }}>
                         <div style={{ fontSize: "11px", overflow: "hidden", textOverflow: "ellipsis" }}>
                           UPI ID: <strong style={{ color: "var(--color-primary)" }}>{dest.upiId}</strong>
                         </div>
@@ -2682,7 +2677,7 @@ export function FeesModule({
                           textAlign: "center",
                           padding: "7px 12px",
                           backgroundColor: "var(--color-primary)",
-                          color: "#FFFFFF",
+                          color: "var(--brand-white)",
                           borderRadius: "var(--radius-sm)",
                           fontSize: "11px",
                           fontWeight: 600,
@@ -2713,7 +2708,7 @@ export function FeesModule({
                         </Button>
                       </div>
 
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "11px", backgroundColor: "#FFFFFF", padding: "10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "11px", backgroundColor: "var(--brand-white)", padding: "10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}>
                         <div>
                           <span style={{ color: "var(--color-neutral-dark)", fontSize: "10px", display: "block" }}>Beneficiary Name</span>
                           <strong>{dest.accountHolderName}</strong>
@@ -2770,11 +2765,11 @@ export function FeesModule({
                       <div
                         onClick={() => document.getElementById("pay-screenshot-file-input")?.click()}
                         style={{
-                          border: "1.5px dashed var(--color-border)",
+                          border: "1.5px dashed var(--color-input-border)",
                           borderRadius: "var(--radius-md)",
                           padding: "16px 12px",
                           textAlign: "center",
-                          backgroundColor: "rgba(0,0,0,0.01)",
+                          backgroundColor: "var(--color-surface-muted)",
                           cursor: "pointer",
                           transition: "border-color 0.15s ease",
                         }}
@@ -2834,10 +2829,10 @@ export function FeesModule({
                             Replace
                           </Button>
                           <Button
-                            variant="secondary"
+                            variant="outline"
                             size="sm"
                             onClick={() => setPayProofFile(null)}
-                            style={{ fontSize: "10px", padding: "2px 6px", color: "#FF3B30", borderColor: "rgba(255, 59, 48, 0.3)" }}
+                            style={{ fontSize: "10px", padding: "2px 6px", color: "var(--color-danger)", borderColor: "var(--color-danger-border)" }}
                           >
                             Remove
                           </Button>
@@ -2856,7 +2851,7 @@ export function FeesModule({
                         value={payAmountInput}
                         onChange={(e) => setPayAmountInput(e.target.value)}
                         max={payModal.balance}
-                        style={{ width: "100%", padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
+                        style={{ width: "100%", padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)" }}
                       />
                     </div>
                     <div>
@@ -2867,7 +2862,7 @@ export function FeesModule({
                         type="date"
                         value={payDateInput}
                         onChange={(e) => setPayDateInput(e.target.value)}
-                        style={{ width: "100%", padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
+                        style={{ width: "100%", padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)" }}
                       />
                     </div>
                   </div>
@@ -2881,7 +2876,7 @@ export function FeesModule({
                       placeholder="Optional if clearly visible in the uploaded screenshot"
                       value={payRefInput}
                       onChange={(e) => setPayRefInput(e.target.value)}
-                      style={{ width: "100%", padding: "5px 8px", fontSize: "11px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
+                      style={{ width: "100%", padding: "5px 8px", fontSize: "11px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)" }}
                     />
                   </div>
 
@@ -2890,7 +2885,7 @@ export function FeesModule({
                   </div>
 
                   {payFormError && (
-                    <div style={{ color: "#FF3B30", fontSize: "11px", fontWeight: 600, marginBottom: "var(--space-2)" }}>
+                    <div style={{ color: "var(--color-danger)", fontSize: "11px", fontWeight: 600, marginBottom: "var(--space-2)" }}>
                       {payFormError}
                     </div>
                   )}
@@ -2928,7 +2923,7 @@ export function FeesModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            backgroundColor: "var(--color-overlay)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -2953,7 +2948,7 @@ export function FeesModule({
                   aria-label="Adjustment Type"
                   value={adjType}
                   onChange={(e) => setAdjType(e.target.value as FeeAdjustment["adjustmentType"])}
-                  style={{ width: "100%", padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
+                  style={{ width: "100%", padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)" }}
                 >
                   <option value="discount">Merit / Sibling Discount (Reduces balance)</option>
                   <option value="waiver">Administrative Fee Waiver (Reduces balance)</option>
@@ -2971,7 +2966,7 @@ export function FeesModule({
                   placeholder="e.g. 200"
                   value={adjAmount}
                   onChange={(e) => setAdjAmount(e.target.value)}
-                  style={{ width: "100%", padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
+                  style={{ width: "100%", padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)" }}
                 />
               </div>
 
@@ -2984,7 +2979,7 @@ export function FeesModule({
                   placeholder="e.g. Merit scholarship waiver approved by Academic Committee"
                   value={adjReason}
                   onChange={(e) => setAdjReason(e.target.value)}
-                  style={{ width: "100%", padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
+                  style={{ width: "100%", padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)" }}
                 />
               </div>
             </div>
@@ -3008,7 +3003,7 @@ export function FeesModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            backgroundColor: "var(--color-overlay)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -3030,7 +3025,7 @@ export function FeesModule({
                 type="text"
                 value={destFormUpi}
                 onChange={(e) => setDestFormUpi(e.target.value)}
-                style={{ padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
+                style={{ padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)" }}
               />
 
               <label style={{ fontSize: "11px", fontWeight: 600 }}>Account Holder Name:</label>
@@ -3038,7 +3033,7 @@ export function FeesModule({
                 type="text"
                 value={destFormHolder}
                 onChange={(e) => setDestFormHolder(e.target.value)}
-                style={{ padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
+                style={{ padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)" }}
               />
 
               <label style={{ fontSize: "11px", fontWeight: 600 }}>Bank Name:</label>
@@ -3046,7 +3041,7 @@ export function FeesModule({
                 type="text"
                 value={destFormBank}
                 onChange={(e) => setDestFormBank(e.target.value)}
-                style={{ padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
+                style={{ padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)" }}
               />
 
               <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "var(--space-2)" }}>
@@ -3056,7 +3051,7 @@ export function FeesModule({
                     type="text"
                     value={destFormAccount}
                     onChange={(e) => setDestFormAccount(e.target.value)}
-                    style={{ width: "100%", padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
+                    style={{ width: "100%", padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)" }}
                   />
                 </div>
                 <div>
@@ -3065,7 +3060,7 @@ export function FeesModule({
                     type="text"
                     value={destFormIfsc}
                     onChange={(e) => setDestFormIfsc(e.target.value.toUpperCase())}
-                    style={{ width: "100%", padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
+                    style={{ width: "100%", padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)" }}
                   />
                 </div>
               </div>
@@ -3075,7 +3070,7 @@ export function FeesModule({
                 type="text"
                 value={destFormBranch}
                 onChange={(e) => setDestFormBranch(e.target.value)}
-                style={{ padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
+                style={{ padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)" }}
               />
 
               <label style={{ fontSize: "11px", fontWeight: 600 }}>Upload / Replace QR Image (PNG/JPEG, max 2MB):</label>
@@ -3120,7 +3115,7 @@ export function FeesModule({
               </div>
 
               {destFormError && (
-                <div style={{ color: "#FF3B30", fontSize: "11px", fontWeight: 600 }}>{destFormError}</div>
+                <div style={{ color: "var(--color-danger)", fontSize: "11px", fontWeight: 600 }}>{destFormError}</div>
               )}
             </div>
 
@@ -3143,7 +3138,7 @@ export function FeesModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            backgroundColor: "var(--color-overlay)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -3165,7 +3160,7 @@ export function FeesModule({
                 type="number"
                 value={revisedFeeInput}
                 onChange={(e) => setRevisedFeeInput(e.target.value)}
-                style={{ padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
+                style={{ padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)" }}
               />
 
               <label style={{ fontSize: "11px", fontWeight: 600 }}>Effective Date:</label>
@@ -3173,7 +3168,7 @@ export function FeesModule({
                 type="date"
                 value={revisionDateInput}
                 onChange={(e) => setRevisionDateInput(e.target.value)}
-                style={{ padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
+                style={{ padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)" }}
               />
 
               <label style={{ fontSize: "11px", fontWeight: 600 }}>Revision Reason:</label>
@@ -3182,7 +3177,7 @@ export function FeesModule({
                 placeholder="e.g. Annual academic fee revision approved by management"
                 value={revisionReasonInput}
                 onChange={(e) => setRevisionReasonInput(e.target.value)}
-                style={{ padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
+                style={{ padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)" }}
               />
             </div>
 
@@ -3205,7 +3200,7 @@ export function FeesModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            backgroundColor: "var(--color-overlay)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -3227,7 +3222,7 @@ export function FeesModule({
                 type="month"
                 value={generateMonthInput}
                 onChange={(e) => setGenerateMonthInput(e.target.value)}
-                style={{ padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)" }}
+                style={{ padding: "6px 8px", fontSize: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)" }}
               />
             </div>
 
@@ -3263,7 +3258,7 @@ export function FeesModule({
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            backgroundColor: "var(--color-overlay)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

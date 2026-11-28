@@ -25,10 +25,10 @@ export function Features({ landing }: { landing: LandingContent }) {
     <section
       id="method"
       style={{
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "var(--color-surface)",
         padding: "clamp(64px, 8vw, 112px) 0",
-        borderTop: "1px solid rgba(170, 170, 170, 0.3)",
-        borderBottom: "1px solid rgba(170, 170, 170, 0.3)",
+        borderTop: "1px solid var(--color-border)",
+        borderBottom: "1px solid var(--color-border)",
       }}
     >
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 24px" }}>
@@ -52,7 +52,7 @@ export function Features({ landing }: { landing: LandingContent }) {
                 fontFamily: "var(--font-display)",
                 fontSize: "clamp(2rem, 4.5vw, 3.25rem)",
                 lineHeight: 1.08,
-                color: "#1D1D1F",
+                color: "var(--brand-navy)",
                 fontWeight: 700,
                 maxWidth: "24ch",
                 margin: 0,
@@ -80,7 +80,7 @@ export function Features({ landing }: { landing: LandingContent }) {
                   key={feat.id}
                   style={{
                     paddingBottom: "28px",
-                    borderBottom: "1px solid rgba(170, 170, 170, 0.3)",
+                    borderBottom: "1px solid var(--color-border)",
                     display: "flex",
                     flexDirection: "column",
                     gap: "10px",
@@ -91,14 +91,14 @@ export function Features({ landing }: { landing: LandingContent }) {
                       fontFamily: "var(--font-display)",
                       fontSize: "18px",
                       fontWeight: 600,
-                      color: "#1D1D1F",
+                      color: "var(--brand-navy)",
                       margin: 0,
                       display: "flex",
                       alignItems: "center",
                       gap: "10px",
                     }}
                   >
-                    <Icon size={18} strokeWidth={2} style={{ color: "#007AFF" }} />
+                    <Icon size={18} strokeWidth={2} style={{ color: "var(--brand-teal)" }} />
                     <span>{feat.title}</span>
                   </dt>
                   <dd

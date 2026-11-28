@@ -1,5 +1,5 @@
 "use client";
-import { Check, FileText } from "lucide-react";
+import { Check, FileText, X } from "lucide-react";
 
 import React, { useState, useMemo, useEffect } from "react";
 import { UserRole, NoticeItem } from "@/types";
@@ -184,8 +184,8 @@ export function NoticesModule({ role }: NoticesModuleProps) {
       {actionSuccessNotice && (
         <div
           style={{
-            backgroundColor: "rgba(52, 199, 89, 0.08)",
-            border: "1px solid rgba(52, 199, 89, 0.25)",
+            backgroundColor: "var(--color-success-bg)",
+            border: "1px solid var(--color-success-border)",
             borderRadius: "var(--radius-md)",
             padding: "10px 14px",
             fontSize: "var(--text-xs)",
@@ -251,8 +251,8 @@ export function NoticesModule({ role }: NoticesModuleProps) {
                 style={{
                   fontSize: "10px",
                   padding: "1px 6px",
-                  borderRadius: "var(--radius-full)",
-                  backgroundColor: isActive ? "var(--color-surface-muted)" : "rgba(0, 0, 0, 0.05)",
+                  borderRadius: "var(--radius-sm)",
+                  backgroundColor: isActive ? "var(--color-surface-muted)" : "var(--brand-sky-soft)",
                   color: isActive ? "var(--color-primary)" : "var(--color-neutral-dark)",
                   fontWeight: 600,
                 }}
@@ -298,10 +298,10 @@ export function NoticesModule({ role }: NoticesModuleProps) {
                   backgroundColor: "var(--color-surface)",
                   borderRadius: "var(--radius-lg)",
                   border: isUrgent
-                    ? "1px solid rgba(255, 59, 48, 0.25)"
+                    ? "1px solid var(--color-danger-border)"
                     : "1px solid var(--color-border)",
                   borderLeft: isUrgent
-                    ? "4px solid #FF3B30"
+                    ? "4px solid var(--color-danger)"
                     : "1px solid var(--color-border)",
                   padding: "var(--space-5)",
                   boxShadow: "var(--shadow-sm)",
@@ -356,7 +356,7 @@ export function NoticesModule({ role }: NoticesModuleProps) {
                 <p
                   style={{
                     fontSize: "var(--text-sm)",
-                    color: "var(--color-primaryLight)",
+                    color: "var(--color-text-secondary)",
                     lineHeight: 1.6,
                     margin: 0,
                     whiteSpace: "pre-line",
@@ -404,7 +404,7 @@ export function NoticesModule({ role }: NoticesModuleProps) {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.45)",
+            backgroundColor: "var(--color-overlay)",
             backdropFilter: "blur(4px)",
             display: "flex",
             alignItems: "center",
@@ -460,7 +460,7 @@ export function NoticesModule({ role }: NoticesModuleProps) {
                   lineHeight: 1,
                 }}
               >
-                
+                <X size={16} />
               </button>
             </div>
 
@@ -483,7 +483,7 @@ export function NoticesModule({ role }: NoticesModuleProps) {
                     width: "100%",
                     padding: "8px 12px",
                     borderRadius: "var(--radius-sm)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                     fontSize: "var(--text-xs)",
                     backgroundColor: "var(--color-surface)",
                     color: "var(--color-primary)",
@@ -514,7 +514,7 @@ export function NoticesModule({ role }: NoticesModuleProps) {
                       width: "100%",
                       padding: "8px 10px",
                       borderRadius: "var(--radius-sm)",
-                      border: "1px solid var(--color-border)",
+                      border: "1px solid var(--color-input-border)",
                       fontSize: "var(--text-xs)",
                       backgroundColor: "var(--color-surface)",
                     }}
@@ -541,7 +541,7 @@ export function NoticesModule({ role }: NoticesModuleProps) {
                       width: "100%",
                       padding: "8px 10px",
                       borderRadius: "var(--radius-sm)",
-                      border: "1px solid var(--color-border)",
+                      border: "1px solid var(--color-input-border)",
                       fontSize: "var(--text-xs)",
                       backgroundColor: "var(--color-surface)",
                     }}
@@ -570,7 +570,7 @@ export function NoticesModule({ role }: NoticesModuleProps) {
                     width: "100%",
                     padding: "8px 12px",
                     borderRadius: "var(--radius-sm)",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--color-input-border)",
                     fontSize: "var(--text-xs)",
                     backgroundColor: "var(--color-surface)",
                     color: "var(--color-primary)",

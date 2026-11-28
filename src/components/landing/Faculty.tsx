@@ -7,7 +7,7 @@ export function Faculty({ landing }: { landing: LandingContent }) {
     <section
       id="faculty"
       style={{
-        backgroundColor: "#F5F5F7",
+        backgroundColor: "var(--brand-beige)",
         padding: "clamp(64px, 8vw, 112px) 0",
       }}
     >
@@ -32,7 +32,7 @@ export function Faculty({ landing }: { landing: LandingContent }) {
                 fontFamily: "var(--font-display)",
                 fontSize: "clamp(2rem, 4.5vw, 3.25rem)",
                 lineHeight: 1.08,
-                color: "#1D1D1F",
+                color: "var(--brand-navy)",
                 fontWeight: 700,
                 maxWidth: "24ch",
                 margin: 0,
@@ -54,9 +54,10 @@ export function Faculty({ landing }: { landing: LandingContent }) {
             <Reveal key={member.id} delay={idx * 60}>
               <div
                 style={{
-                  backgroundColor: "#FFFFFF",
-                  borderRadius: "16px",
-                  border: "1px solid rgba(170, 170, 170, 0.3)",
+                  backgroundColor: "var(--color-surface)",
+                  borderRadius: "var(--radius-lg)",
+                  border: "1px solid var(--color-border)",
+                  boxShadow: "var(--shadow-sm)",
                   padding: "28px 24px",
                   display: "flex",
                   flexDirection: "column",
@@ -76,15 +77,15 @@ export function Faculty({ landing }: { landing: LandingContent }) {
                       width: "48px",
                       height: "48px",
                       borderRadius: "50%",
-                      backgroundColor: "#F5F5F7",
-                      border: "1px solid rgba(170, 170, 170, 0.4)",
+                      backgroundColor: "var(--brand-sky-subtle)",
+                      border: "1px solid var(--color-accent-border)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       fontFamily: "var(--font-display)",
                       fontSize: "16px",
                       fontWeight: 700,
-                      color: "#1D1D1F",
+                      color: "var(--brand-navy)",
                       flexShrink: 0,
                     }}
                   >
@@ -96,7 +97,7 @@ export function Faculty({ landing }: { landing: LandingContent }) {
                         fontFamily: "var(--font-display)",
                         fontSize: "18px",
                         fontWeight: 700,
-                        color: "#1D1D1F",
+                        color: "var(--brand-navy)",
                         margin: "0 0 2px 0",
                         lineHeight: 1.2,
                       }}
@@ -119,10 +120,10 @@ export function Faculty({ landing }: { landing: LandingContent }) {
                   style={{
                     fontSize: "12px",
                     fontWeight: 600,
-                    color: "#1D1D1F",
+                    color: "var(--brand-teal-dark)",
                     marginBottom: "8px",
                     paddingBottom: "8px",
-                    borderBottom: "1px solid rgba(170, 170, 170, 0.2)",
+                    borderBottom: "1px solid var(--color-border-subtle)",
                   }}
                 >
                   {member.subjects}

@@ -42,7 +42,7 @@ export function ServerAccount({ admin }: { admin: boolean }) {
     }
   }
 
-  const field = { padding: "var(--space-3)", border: "1px solid var(--color-border)", width: "100%", maxWidth: 420, background: "var(--color-surface)" };
+  const field = { padding: "var(--space-3)", border: "1px solid var(--color-input-border)", borderRadius: "var(--radius-sm)", width: "100%", maxWidth: 420, background: "var(--color-surface)" };
   return <div style={{ display: "grid", gap: "var(--space-4)" }}>
     <Card><h2>Change password</h2>
       <form onSubmit={(event) => { void submit(event, "/api/auth/change-password"); }} style={{ display: "grid", gap: "var(--space-3)", marginTop: "var(--space-3)" }}>

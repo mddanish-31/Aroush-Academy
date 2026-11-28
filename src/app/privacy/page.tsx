@@ -83,10 +83,10 @@ export default function PrivacyPage() {
           <Link
             href="/"
             style={{
-              color: "#1D1D1F",
+              color: "var(--brand-navy)",
               fontSize: "var(--text-sm)",
               textDecoration: "underline",
-              textDecorationColor: "#007AFF",
+              textDecorationColor: "var(--brand-teal)",
               textUnderlineOffset: "3px",
               fontWeight: 600,
             }}

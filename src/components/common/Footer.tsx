@@ -24,8 +24,8 @@ export function Footer({ settings = siteSettings, media = MEDIA }: { settings?: 
     <footer
       role="contentinfo"
       style={{
-        backgroundColor: "#FFFFFF",
-        borderTop: "1px solid rgba(170, 170, 170, 0.35)",
+        backgroundColor: "var(--color-surface)",
+        borderTop: "1px solid var(--color-border)",
         marginTop: "var(--space-16)",
         paddingTop: "var(--space-16)",
         paddingBottom: "var(--space-12)",
@@ -47,8 +47,8 @@ export function Footer({ settings = siteSettings, media = MEDIA }: { settings?: 
                   width: "28px",
                   height: "28px",
                   borderRadius: "6px",
-                  backgroundColor: "#1D1D1F",
-                  color: "#FFFFFF",
+                  backgroundColor: "var(--brand-navy)",
+                  color: "var(--brand-white)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -58,7 +58,7 @@ export function Footer({ settings = siteSettings, media = MEDIA }: { settings?: 
               >
                 A
               </span>
-              <strong style={{ fontSize: "var(--text-base)", color: "#1D1D1F" }}>
+              <strong style={{ fontSize: "var(--text-base)", color: "var(--brand-navy)" }}>
                 {settings.siteName}
               </strong>
             </div>
@@ -75,13 +75,13 @@ export function Footer({ settings = siteSettings, media = MEDIA }: { settings?: 
                 lineHeight: 1.5,
               }}
             >
-              <MapPin size={16} strokeWidth={2} style={{ color: "#007AFF", flexShrink: 0, marginTop: "2px" }} />
+              <MapPin size={16} strokeWidth={2} style={{ color: "var(--brand-teal)", flexShrink: 0, marginTop: "2px" }} />
               <span>{settings.address}</span>
             </div>
           </div>
 
           <div>
-            <h3 style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.08em", color: "#1D1D1F", fontWeight: 600, marginBottom: "var(--space-3)" }}>
+            <h3 style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--brand-navy)", fontWeight: 600, marginBottom: "var(--space-3)" }}>
               Programs
             </h3>
             <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
@@ -109,7 +109,7 @@ export function Footer({ settings = siteSettings, media = MEDIA }: { settings?: 
           </div>
 
           <div>
-            <h3 style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.08em", color: "#1D1D1F", fontWeight: 600, marginBottom: "var(--space-3)" }}>
+            <h3 style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--brand-navy)", fontWeight: 600, marginBottom: "var(--space-3)" }}>
               Academy
             </h3>
             <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
@@ -142,7 +142,7 @@ export function Footer({ settings = siteSettings, media = MEDIA }: { settings?: 
           </div>
 
           <div>
-            <h3 style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.08em", color: "#1D1D1F", fontWeight: 600, marginBottom: "var(--space-3)" }}>
+            <h3 style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--brand-navy)", fontWeight: 600, marginBottom: "var(--space-3)" }}>
               Legal and Contact
             </h3>
             <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
@@ -170,7 +170,7 @@ export function Footer({ settings = siteSettings, media = MEDIA }: { settings?: 
                     border: "none",
                     transition: "color 200ms ease-out",
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = "#1D1D1F")}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "var(--brand-navy)")}
                   onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-secondary)")}
                 >
                   Cookie Settings
@@ -179,9 +179,9 @@ export function Footer({ settings = siteSettings, media = MEDIA }: { settings?: 
               <li style={{ marginTop: "var(--space-2)" }}>
                 <a
                   href={`tel:${settings.phone.replace(/\s+/g, "")}`}
-                  style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "var(--text-sm)", color: "#1D1D1F", textDecoration: "none" }}
+                  style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "var(--text-sm)", color: "var(--brand-navy)", textDecoration: "none" }}
                 >
-                  <Phone size={14} style={{ color: "#007AFF" }} />
+                  <Phone size={14} style={{ color: "var(--brand-teal)" }} />
                   <span>{settings.phone}</span>
                 </a>
               </li>
@@ -189,9 +189,9 @@ export function Footer({ settings = siteSettings, media = MEDIA }: { settings?: 
                 <li>
                   <a
                     href={`tel:${settings.phoneSecondary.replace(/\s+/g, "")}`}
-                    style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "var(--text-sm)", color: "#1D1D1F", textDecoration: "none" }}
+                    style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "var(--text-sm)", color: "var(--brand-navy)", textDecoration: "none" }}
                   >
-                    <Phone size={14} style={{ color: "#007AFF" }} />
+                    <Phone size={14} style={{ color: "var(--brand-teal)" }} />
                     <span>{settings.phoneSecondary}</span>
                   </a>
                 </li>
@@ -199,10 +199,10 @@ export function Footer({ settings = siteSettings, media = MEDIA }: { settings?: 
               <li>
                 <a
                   href={`mailto:${settings.email}`}
-                  style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "var(--text-sm)", color: "#1D1D1F", textDecoration: "none" }}
+                  style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "var(--text-sm)", color: "var(--brand-navy)", textDecoration: "none" }}
                 >
-                  <Mail size={14} style={{ color: "#007AFF" }} />
-                  <span style={{ textDecoration: "underline", textDecorationColor: "#007AFF", textUnderlineOffset: "3px" }}>Email Admissions</span>
+                  <Mail size={14} style={{ color: "var(--brand-teal)" }} />
+                  <span style={{ textDecoration: "underline", textDecorationColor: "var(--brand-teal)", textUnderlineOffset: "3px" }}>Email Admissions</span>
                 </a>
               </li>
             </ul>
@@ -212,7 +212,7 @@ export function Footer({ settings = siteSettings, media = MEDIA }: { settings?: 
         <div
           style={{
             paddingTop: "var(--space-6)",
-            borderTop: "1px solid rgba(170, 170, 170, 0.35)",
+            borderTop: "1px solid var(--color-border)",
             display: "flex",
             flexWrap: "wrap",
             justifyContent: "space-between",

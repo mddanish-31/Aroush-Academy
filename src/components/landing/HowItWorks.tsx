@@ -7,10 +7,10 @@ export function HowItWorks({ landing }: { landing: LandingContent }) {
     <section
       id="mock-tests"
       style={{
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "var(--color-surface)",
         padding: "clamp(64px, 8vw, 112px) 0",
-        borderTop: "1px solid rgba(170, 170, 170, 0.3)",
-        borderBottom: "1px solid rgba(170, 170, 170, 0.3)",
+        borderTop: "1px solid var(--color-border)",
+        borderBottom: "1px solid var(--color-border)",
       }}
     >
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 24px" }}>
@@ -34,7 +34,7 @@ export function HowItWorks({ landing }: { landing: LandingContent }) {
                 fontFamily: "var(--font-display)",
                 fontSize: "clamp(2rem, 4.5vw, 3.25rem)",
                 lineHeight: 1.08,
-                color: "#1D1D1F",
+                color: "var(--brand-navy)",
                 fontWeight: 700,
                 maxWidth: "24ch",
                 margin: 0,
@@ -62,7 +62,7 @@ export function HowItWorks({ landing }: { landing: LandingContent }) {
                   flexDirection: "column",
                   position: "relative",
                   paddingTop: "24px",
-                  borderTop: "1px solid rgba(170, 170, 170, 0.35)",
+                  borderTop: "1px solid var(--color-border)",
                 }}
               >
                 <div
@@ -73,7 +73,7 @@ export function HowItWorks({ landing }: { landing: LandingContent }) {
                     width: "9px",
                     height: "9px",
                     borderRadius: "50%",
-                    backgroundColor: "#1D1D1F",
+                    backgroundColor: "var(--brand-teal)",
                   }}
                 />
 
@@ -82,7 +82,7 @@ export function HowItWorks({ landing }: { landing: LandingContent }) {
                     fontFamily: "var(--font-display)",
                     fontSize: "28px",
                     fontWeight: 700,
-                    color: "#1D1D1F",
+                    color: "var(--brand-navy)",
                     lineHeight: 1,
                     marginBottom: "12px",
                   }}
@@ -95,7 +95,7 @@ export function HowItWorks({ landing }: { landing: LandingContent }) {
                     fontFamily: "var(--font-display)",
                     fontSize: "18px",
                     fontWeight: 600,
-                    color: "#1D1D1F",
+                    color: "var(--brand-navy)",
                     margin: "0 0 8px 0",
                     lineHeight: 1.25,
                   }}

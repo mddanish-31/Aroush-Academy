@@ -10,7 +10,7 @@ export function Courses({ landing, media }: { landing: LandingContent; media: Me
     <section
       id="courses"
       style={{
-        backgroundColor: "#F5F5F7",
+        backgroundColor: "var(--brand-beige)",
         padding: "clamp(64px, 8vw, 112px) 0",
       }}
     >
@@ -35,7 +35,7 @@ export function Courses({ landing, media }: { landing: LandingContent; media: Me
                 fontFamily: "var(--font-display)",
                 fontSize: "clamp(2rem, 4.5vw, 3.25rem)",
                 lineHeight: 1.08,
-                color: "#1D1D1F",
+                color: "var(--brand-navy)",
                 fontWeight: 700,
                 maxWidth: "24ch",
                 margin: 0,
@@ -66,9 +66,10 @@ export function Courses({ landing, media }: { landing: LandingContent; media: Me
                   id={course.id}
                   className="course-card-wrapper"
                   style={{
-                    backgroundColor: "#FFFFFF",
-                    borderRadius: "20px",
-                    border: "1px solid rgba(170, 170, 170, 0.3)",
+                    backgroundColor: "var(--color-surface)",
+                    borderRadius: "var(--radius-lg)",
+                    border: "1px solid var(--color-border)",
+                    boxShadow: "var(--shadow-sm)",
                     overflow: "hidden",
                     display: "flex",
                     flexDirection: isReversed ? "row-reverse" : "row",
@@ -81,7 +82,7 @@ export function Courses({ landing, media }: { landing: LandingContent; media: Me
                       width: "35%",
                       minHeight: "280px",
                       position: "relative",
-                      backgroundColor: "#E5E5EA",
+                      backgroundColor: "var(--brand-sky)",
                       overflow: "hidden",
                       flexShrink: 0,
                     }}
@@ -147,7 +148,7 @@ export function Courses({ landing, media }: { landing: LandingContent; media: Me
                               fontFamily: "var(--font-display)",
                               fontSize: "clamp(1.2rem, 2vw, 1.6rem)",
                               fontWeight: 600,
-                              color: "#1D1D1F",
+                              color: "var(--brand-navy)",
                               lineHeight: 1.2,
                               margin: "0 0 14px 0",
                             }}
@@ -158,9 +159,9 @@ export function Courses({ landing, media }: { landing: LandingContent; media: Me
                             <a
                               href="#enquiry"
                               style={{
-                                color: "#1D1D1F",
+                                color: "var(--brand-navy)",
                                 textDecoration: "underline",
-                                textDecorationColor: "#007AFF",
+                                textDecorationColor: "var(--brand-teal)",
                                 textUnderlineOffset: "3px",
                               }}
                             >
@@ -175,7 +176,7 @@ export function Courses({ landing, media }: { landing: LandingContent; media: Me
                             fontFamily: "var(--font-display)",
                             fontSize: "clamp(1.5rem, 2.5vw, 2.15rem)",
                             fontWeight: 700,
-                            color: "#1D1D1F",
+                            color: "var(--brand-navy)",
                             lineHeight: 1.2,
                             margin: "0 0 14px 0",
                           }}
@@ -204,16 +205,16 @@ export function Courses({ landing, media }: { landing: LandingContent; media: Me
                           display: "inline-flex",
                           alignItems: "center",
                           gap: "8px",
-                          color: "#1D1D1F",
+                          color: "var(--brand-navy)",
                           fontSize: "14px",
                           fontWeight: 600,
                           textDecoration: "underline",
-                          textDecorationColor: "#007AFF",
+                          textDecorationColor: "var(--brand-teal)",
                           textUnderlineOffset: "3px",
                         }}
                       >
                         <span>{course.ctaLabel}</span>
-                        <ArrowRight size={16} style={{ color: "#007AFF" }} />
+                        <ArrowRight size={16} style={{ color: "var(--brand-teal)" }} />
                       </a>
                     </div>
                   </div>

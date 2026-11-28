@@ -433,7 +433,7 @@ export function AcademicSetupModule() {
               fontSize: "var(--text-xs)",
               fontWeight: activeSubTab === "batches" ? 600 : 400,
               backgroundColor: activeSubTab === "batches" ? "var(--color-primary)" : "var(--color-surface-muted)",
-              color: activeSubTab === "batches" ? "#fff" : "var(--color-primary)",
+              color: activeSubTab === "batches" ? "var(--brand-white)" : "var(--color-primary)",
               cursor: "pointer",
               transition: "all var(--transition-fast)",
             }}
@@ -452,7 +452,7 @@ export function AcademicSetupModule() {
               fontSize: "var(--text-xs)",
               fontWeight: activeSubTab === "classes" ? 600 : 400,
               backgroundColor: activeSubTab === "classes" ? "var(--color-primary)" : "var(--color-surface-muted)",
-              color: activeSubTab === "classes" ? "#fff" : "var(--color-primary)",
+              color: activeSubTab === "classes" ? "var(--brand-white)" : "var(--color-primary)",
               cursor: "pointer",
               transition: "all var(--transition-fast)",
             }}
@@ -471,7 +471,7 @@ export function AcademicSetupModule() {
               fontSize: "var(--text-xs)",
               fontWeight: activeSubTab === "subjects" ? 600 : 400,
               backgroundColor: activeSubTab === "subjects" ? "var(--color-primary)" : "var(--color-surface-muted)",
-              color: activeSubTab === "subjects" ? "#fff" : "var(--color-primary)",
+              color: activeSubTab === "subjects" ? "var(--brand-white)" : "var(--color-primary)",
               cursor: "pointer",
               transition: "all var(--transition-fast)",
             }}
@@ -490,7 +490,7 @@ export function AcademicSetupModule() {
               fontSize: "var(--text-xs)",
               fontWeight: activeSubTab === "faculty" ? 600 : 400,
               backgroundColor: activeSubTab === "faculty" ? "var(--color-primary)" : "var(--color-surface-muted)",
-              color: activeSubTab === "faculty" ? "#fff" : "var(--color-primary)",
+              color: activeSubTab === "faculty" ? "var(--brand-white)" : "var(--color-primary)",
               cursor: "pointer",
               transition: "all var(--transition-fast)",
             }}
@@ -503,13 +503,13 @@ export function AcademicSetupModule() {
       {notification && (
         <div
           style={{
-            backgroundColor: notification.type === "success" ? "rgba(52, 199, 89, 0.12)" : "rgba(255, 59, 48, 0.12)",
-            border: `1px solid ${notification.type === "success" ? "rgba(52, 199, 89, 0.3)" : "rgba(255, 59, 48, 0.3)"}`,
+            backgroundColor: notification.type === "success" ? "var(--color-success-bg)" : "var(--color-danger-bg)",
+            border: `1px solid ${notification.type === "success" ? "var(--color-success-border)" : "var(--color-danger-border)"}`,
             borderRadius: "var(--radius-md)",
             padding: "var(--space-3) var(--space-4)",
             fontSize: "var(--text-xs)",
             fontWeight: 500,
-            color: notification.type === "success" ? "var(--color-positive)" : "#D32F2F",
+            color: notification.type === "success" ? "var(--color-positive)" : "var(--color-danger)",
           }}
           role="status"
         >
@@ -838,7 +838,7 @@ export function AcademicSetupModule() {
       )}
 
       {isAddClassModalOpen && (
-        <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 110, padding: "var(--space-4)" }}>
+        <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, backgroundColor: "var(--color-overlay)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 110, padding: "var(--space-4)" }}>
           <div style={{ backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-xl)", maxWidth: "440px", width: "100%", padding: "var(--space-6)", border: "1px solid var(--color-border)", boxShadow: "var(--shadow-lg)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-4)" }}>
               <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: 0 }}>Add Academic Grade Record</h3>
@@ -853,7 +853,7 @@ export function AcademicSetupModule() {
                   placeholder="e.g. Class VIII"
                   value={newClassName}
                   onChange={(e) => setNewClassName(e.target.value)}
-                  style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-sm)" }}
+                  style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-sm)" }}
                 />
               </div>
               <div>
@@ -884,7 +884,7 @@ export function AcademicSetupModule() {
       )}
 
       {isAddSubjectModalOpen && (
-        <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 110, padding: "var(--space-4)" }}>
+        <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, backgroundColor: "var(--color-overlay)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 110, padding: "var(--space-4)" }}>
           <div style={{ backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-xl)", maxWidth: "480px", width: "100%", padding: "var(--space-6)", border: "1px solid var(--color-border)", boxShadow: "var(--shadow-lg)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-4)" }}>
               <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: 0 }}>Add Catalog Subject</h3>
@@ -899,7 +899,7 @@ export function AcademicSetupModule() {
                   placeholder="e.g. Statistics &amp; Analytics"
                   value={newSubName}
                   onChange={(e) => setNewSubName(e.target.value)}
-                  style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-sm)" }}
+                  style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-sm)" }}
                 />
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-3)" }}>
@@ -911,7 +911,7 @@ export function AcademicSetupModule() {
                     placeholder="STAT"
                     value={newSubCode}
                     onChange={(e) => setNewSubCode(e.target.value)}
-                    style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-sm)" }}
+                    style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-sm)" }}
                   />
                 </div>
                 <div>
@@ -922,7 +922,7 @@ export function AcademicSetupModule() {
                     min="100"
                     value={newSubFee}
                     onChange={(e) => setNewSubFee(e.target.value)}
-                    style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-sm)" }}
+                    style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-sm)" }}
                   />
                 </div>
               </div>
@@ -951,7 +951,7 @@ export function AcademicSetupModule() {
                   placeholder="Curriculum scope, focus topics..."
                   value={newSubDesc}
                   onChange={(e) => setNewSubDesc(e.target.value)}
-                  style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-sm)" }}
+                  style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-sm)" }}
                 />
               </div>
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--space-2)", marginTop: "var(--space-2)" }}>
@@ -964,7 +964,7 @@ export function AcademicSetupModule() {
       )}
 
       {isAddBatchModalOpen && (
-        <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 110, padding: "var(--space-4)" }}>
+        <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, backgroundColor: "var(--color-overlay)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 110, padding: "var(--space-4)" }}>
           <div style={{ backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-xl)", maxWidth: "520px", width: "100%", padding: "var(--space-6)", border: "1px solid var(--color-border)", boxShadow: "var(--shadow-lg)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-4)" }}>
               <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: 0 }}>Create Classroom Batch</h3>
@@ -979,7 +979,7 @@ export function AcademicSetupModule() {
                   placeholder="e.g. Batch Delta (Class X Weekend)"
                   value={batchNameInput}
                   onChange={(e) => setBatchNameInput(e.target.value)}
-                  style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-sm)" }}
+                  style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-sm)" }}
                 />
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-3)" }}>
@@ -989,7 +989,7 @@ export function AcademicSetupModule() {
                     aria-label="Target Grade *"
                     value={batchClassInput}
                     onChange={(e) => setBatchClassInput(e.target.value)}
-                    style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-sm)" }}
+                    style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-sm)" }}
                   >
                     {classes.filter((c) => c.isActive).map((c) => (
                       <option key={c.id} value={c.name}>{c.name}</option>
@@ -1009,7 +1009,7 @@ export function AcademicSetupModule() {
                         setBatchFeeInput(String(foundSub.defaultMonthlyFee));
                       }
                     }}
-                    style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-sm)" }}
+                    style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-sm)" }}
                   >
                     {subjects.filter((s) => s.isActive).map((s) => (
                       <option key={s.id} value={s.name}>{s.name}</option>
@@ -1023,7 +1023,7 @@ export function AcademicSetupModule() {
                   aria-label="Assigned Instructor *"
                   value={batchTeacherIdInput}
                   onChange={(e) => setBatchTeacherIdInput(e.target.value)}
-                  style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-sm)" }}
+                  style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-sm)" }}
                 >
                   {eligibleTeachersForBatch.length > 0 ? (
                     eligibleTeachersForBatch.map((t) => (
@@ -1045,7 +1045,7 @@ export function AcademicSetupModule() {
                     max="60"
                     value={batchCapacityInput}
                     onChange={(e) => setBatchCapacityInput(e.target.value)}
-                    style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-sm)" }}
+                    style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-sm)" }}
                   />
                 </div>
                 <div>
@@ -1055,7 +1055,7 @@ export function AcademicSetupModule() {
                     min="100"
                     value={batchFeeInput}
                     onChange={(e) => setBatchFeeInput(e.target.value)}
-                    style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-sm)" }}
+                    style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-sm)" }}
                   />
                 </div>
               </div>
@@ -1067,7 +1067,7 @@ export function AcademicSetupModule() {
                   placeholder="e.g. Tue, Thu, Sat (05:00 PM - 06:30 PM)"
                   value={batchScheduleInput}
                   onChange={(e) => setBatchScheduleInput(e.target.value)}
-                  style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-sm)" }}
+                  style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-sm)" }}
                 />
               </div>
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--space-2)", marginTop: "var(--space-2)" }}>
@@ -1080,7 +1080,7 @@ export function AcademicSetupModule() {
       )}
 
       {isAddTeacherModalOpen && (
-        <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 110, padding: "var(--space-4)" }}>
+        <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, backgroundColor: "var(--color-overlay)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 110, padding: "var(--space-4)" }}>
           <div style={{ backgroundColor: "var(--color-surface)", borderRadius: "var(--radius-xl)", maxWidth: "460px", width: "100%", padding: "var(--space-6)", border: "1px solid var(--color-border)", boxShadow: "var(--shadow-lg)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-4)" }}>
               <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, margin: 0 }}>Register Faculty Record</h3>
@@ -1095,7 +1095,7 @@ export function AcademicSetupModule() {
                   placeholder="e.g. S. Sen (Senior Lecturer)"
                   value={newTeacherName}
                   onChange={(e) => setNewTeacherName(e.target.value)}
-                  style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-sm)" }}
+                  style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-sm)" }}
                 />
               </div>
               <div>
@@ -1105,7 +1105,7 @@ export function AcademicSetupModule() {
                   placeholder="e.g. s.sen@aroush.academy"
                   value={newTeacherEmail}
                   onChange={(e) => setNewTeacherEmail(e.target.value)}
-                  style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-sm)" }}
+                  style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-sm)" }}
                 />
               </div>
               <div>
@@ -1133,7 +1133,7 @@ export function AcademicSetupModule() {
                   placeholder="e.g. Batch Delta, Batch Alpha"
                   value={newTeacherBatches}
                   onChange={(e) => setNewTeacherBatches(e.target.value)}
-                  style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-border)", fontSize: "var(--text-sm)" }}
+                  style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-input-border)", fontSize: "var(--text-sm)" }}
                 />
               </div>
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--space-2)", marginTop: "var(--space-2)" }}>
